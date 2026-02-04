@@ -387,6 +387,55 @@ export default function SurveyEditorPage() {
     return stats
   }
 
+  const downloadCSV = () => {
+    if (!survey) return
+    const sortedQuestions = [...survey.questions].sort((a, b) => a.order_index - b.order_index)
+
+    const headers = ['Response #', 'Completed At', 'Duration (s)', ...sortedQuestions.map(q => q.text || 'Untitled')]
+
+    const formatAnswer = (question: { type: string; config: Record<string, unknown> }, value: unknown): string => {
+      if (value == null) return ''
+      if (question.type === 'swipe') {
+        const config = question.config as Record<string, string>
+        if (value === 'right') return config.right_label || 'Yes'
+        if (value === 'left') return config.left_label || 'No'
+        if (value === 'up') return config.up_label || 'Meh'
+        return String(value)
+      }
+      if (Array.isArray(value)) return value.join(', ')
+      return String(value)
+    }
+
+    const rows = survey.responses.map((response, i) => {
+      const duration = response.duration_ms ? (response.duration_ms / 1000).toFixed(1) : ''
+      const completedAt = new Date(response.completed_at).toLocaleString()
+      const answers = sortedQuestions.map(q => {
+        const answer = response.answers.find((a: { question_id: string }) => a.question_id === q.id)
+        return formatAnswer(q, answer?.value)
+      })
+      return [String(i + 1), completedAt, duration, ...answers]
+    })
+
+    const escapeCsvField = (field: string) => {
+      if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+        return `"${field.replace(/"/g, '""')}"`
+      }
+      return field
+    }
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(escapeCsvField).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${survey.title || 'survey'}-responses.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -681,7 +730,20 @@ export default function SurveyEditorPage() {
             exit={{ opacity: 0, y: -10 }}
             className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
           >
-            <h2 className="text-lg font-bold text-slate-800 mb-4">Responses</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-800">Responses</h2>
+              {survey.responses.length > 0 && (
+                <button
+                  onClick={downloadCSV}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download CSV
+                </button>
+              )}
+            </div>
 
             {survey.responses.length === 0 ? (
               <div className="text-center py-12 text-slate-500">
