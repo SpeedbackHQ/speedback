@@ -126,15 +126,28 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
           navigator.vibrate([50, 30, 100])
         }
 
-        // Submit after celebration
-        setTimeout(() => {
-          onAnswer(landedBucket)
-        }, 1200)
       }
     }
 
     requestAnimationFrame(animateFall)
-  }, [isDropping, selectedBucket, ballX, ballY, bucketPositions, options, onAnswer])
+  }, [isDropping, selectedBucket, ballX, ballY, bucketPositions, options])
+
+  const handleConfirm = useCallback(() => {
+    if (selectedBucket) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      onAnswer(selectedBucket)
+    }
+  }, [selectedBucket, onAnswer])
+
+  const handleRetry = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(30)
+    setSelectedBucket(null)
+    setShowResult(false)
+    setIsDropping(false)
+    setBallY(8)
+    setBallX(50)
+    setSwayDirection(1)
+  }, [])
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -152,6 +165,8 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
           ? 'Tap to drop the ball!'
           : isDropping && !selectedBucket
           ? 'Falling...'
+          : selectedBucket
+          ? `Landed on: ${selectedBucket}`
           : 'Landed!'}
       </p>
 
@@ -159,7 +174,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
       <motion.div
         ref={containerRef}
         className="relative w-full aspect-[3/4] bg-gradient-to-b from-sky-200 to-sky-100 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-        onClick={handleDrop}
+        onClick={!showResult ? handleDrop : undefined}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
@@ -248,7 +263,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
           })}
         </div>
 
-        {/* Result overlay */}
+        {/* Result overlay with confirm/retry */}
         <AnimatePresence>
           {showResult && selectedBucket && (
             <motion.div
@@ -270,7 +285,24 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                   🪂
                 </motion.div>
                 <p className="text-lg font-bold text-gray-800">{selectedBucket}</p>
-                <p className="text-sm text-gray-500">Landed!</p>
+                <p className="text-sm text-gray-500 mb-4">Landed!</p>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={handleRetry}
+                    className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Try Again
+                  </motion.button>
+                  <motion.button
+                    onClick={handleConfirm}
+                    className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Confirm
+                  </motion.button>
+                </div>
               </motion.div>
             </motion.div>
           )}

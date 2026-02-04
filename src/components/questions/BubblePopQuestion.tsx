@@ -121,12 +121,22 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current)
     }
+  }, [poppedBubble])
 
-    // Submit after celebration
-    setTimeout(() => {
-      onAnswer(bubble.label)
-    }, 1200)
+  const handleConfirm = useCallback(() => {
+    if (poppedBubble) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      onAnswer(poppedBubble)
+    }
   }, [poppedBubble, onAnswer])
+
+  const handleRetry = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(30)
+    setPoppedBubble(null)
+    setShowResult(false)
+    setBubbles([])
+    setEscapedCount(0)
+  }, [])
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -233,7 +243,7 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
           </motion.div>
         )}
 
-        {/* Result overlay */}
+        {/* Result overlay with confirm/retry */}
         <AnimatePresence>
           {showResult && poppedBubble && (
             <motion.div
@@ -255,7 +265,24 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
                   🫧
                 </motion.div>
                 <p className="text-lg font-bold text-gray-800">{poppedBubble}</p>
-                <p className="text-sm text-gray-500">Popped!</p>
+                <p className="text-sm text-gray-500 mb-4">Popped!</p>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={handleRetry}
+                    className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Try Again
+                  </motion.button>
+                  <motion.button
+                    onClick={handleConfirm}
+                    className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Confirm
+                  </motion.button>
+                </div>
               </motion.div>
             </motion.div>
           )}

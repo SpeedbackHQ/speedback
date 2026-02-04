@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion } from './questions'
+import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
 
@@ -178,6 +178,10 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
         return <SlingshotQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'scratch_card':
         return <ScratchCardQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'treasure_chest':
+        return <TreasureChestQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'pinata':
+        return <PinataQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

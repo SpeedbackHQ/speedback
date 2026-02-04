@@ -43,6 +43,8 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'bubble_pop', label: 'Bubble Pop', emoji: '🫧', description: 'Pop before escape' },
       { type: 'slingshot', label: 'Slingshot', emoji: '🏹', description: 'Aim and launch' },
       { type: 'scratch_card', label: 'Scratch Card', emoji: '🎫', description: 'Scratch to reveal' },
+      { type: 'treasure_chest', label: 'Treasure Chest', emoji: '🏴‍☠️', description: 'Tap to crack open' },
+      { type: 'pinata', label: 'Pinata', emoji: '🪅', description: 'Smash to reveal' },
     ],
   },
   'Multi-Select': {
@@ -93,6 +95,8 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'bubble_pop':
     case 'slingshot':
     case 'scratch_card':
+    case 'treasure_chest':
+    case 'pinata':
       return { options: ['Option 1', 'Option 2', 'Option 3'] }
     case 'bullseye':
       return { min_label: 'Disagree', max_label: 'Agree' }
@@ -146,6 +150,8 @@ export function QuestionEditor({
       case 'bubble_pop':
       case 'slingshot':
       case 'scratch_card':
+      case 'treasure_chest':
+      case 'pinata':
         return (
           <div className="space-y-2">
             <label className="text-xs text-gray-500 font-medium">Options</label>
@@ -186,10 +192,16 @@ export function QuestionEditor({
                   config: { ...question.config, options: [...currentOptions, ''] }
                 })
               }}
-              className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm"
+              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${
+                question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5}
             >
               + Add option
             </button>
+            {question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5 && (
+              <p className="text-xs text-amber-600 mt-1">Slingshot supports a maximum of 5 options</p>
+            )}
             {question.type === 'tap' && (
               <label className="flex items-center gap-2 cursor-pointer mt-3">
                 <input

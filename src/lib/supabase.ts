@@ -14,6 +14,7 @@ export type QuestionType =
   // Mini-games
   | 'tilt_maze' | 'racing_lanes' | 'gravity_drop'
   | 'bubble_pop' | 'bullseye' | 'slingshot' | 'scratch_card'
+  | 'treasure_chest' | 'pinata'
 
 export interface Organization {
   id: string

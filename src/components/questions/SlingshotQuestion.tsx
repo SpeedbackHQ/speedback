@@ -18,7 +18,8 @@ const targetColors = [
 ]
 
 export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps) {
-  const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const options = rawOptions.slice(0, 5)  // Cap at 5 options max
 
   const [pullback, setPullback] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -29,27 +30,22 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   const containerRef = useRef<HTMLDivElement>(null)
   const launchOrigin = { x: 50, y: 85 }
 
-  // Calculate target positions (centered and spread across top area)
+  // Dynamic sizing based on option count
+  const targetSizeClass = options.length <= 3 ? 'w-14 h-14' : options.length === 4 ? 'w-12 h-12' : 'w-10 h-10'
+  const labelMaxWidth = options.length <= 3 ? 'max-w-20' : options.length === 4 ? 'max-w-16' : 'max-w-14'
+  const hitRadius = options.length <= 3 ? 12 : options.length === 4 ? 10 : 8
+
+  // All targets in a single row across the top
   const targets = options.map((label, i) => {
-    const cols = Math.min(options.length, 3)
-    const rows = Math.ceil(options.length / cols)
-    const col = i % cols
-    const row = Math.floor(i / cols)
-
-    // Better centering: use 70% of width, centered
-    const totalWidth = 70  // Use 70% of container width
-    const xSpacing = cols > 1 ? totalWidth / (cols - 1) : 0
-    const xOffset = cols > 1 ? (100 - totalWidth) / 2 : 50  // Center single column
-
-    // More vertical spread: use 45% of height for targets
-    const totalHeight = 45
-    const ySpacing = rows > 1 ? totalHeight / (rows - 1) : 0
-    const yOffset = 12  // Start 12% from top
+    const count = options.length
+    const totalWidth = 80
+    const xSpacing = count > 1 ? totalWidth / (count - 1) : 0
+    const xOffset = count > 1 ? (100 - totalWidth) / 2 : 50
 
     return {
       label,
-      x: cols > 1 ? xOffset + col * xSpacing : 50,  // Center if single column
-      y: rows > 1 ? yOffset + row * ySpacing : yOffset + totalHeight / 2,
+      x: count > 1 ? xOffset + i * xSpacing : 50,
+      y: 15,  // Always single row near top
       color: targetColors[i % targetColors.length],
     }
   })
@@ -130,7 +126,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         const dy = currentY - target.y
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        if (distance < 12) {
+        if (distance < hitRadius) {
           // Hit!
           setHitTarget(target.label)
           setShowResult(true)
@@ -208,7 +204,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
             >
               {/* Target board */}
               <div
-                className={`w-16 h-16 rounded-lg ${target.color.bg} ${
+                className={`${targetSizeClass} rounded-lg ${target.color.bg} ${
                   isHit ? `shadow-xl ${target.color.glow} ring-4 ${target.color.ring}` : 'shadow-md'
                 } flex items-center justify-center`}
               >
@@ -222,7 +218,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
                   </motion.div>
                 )}
               </div>
-              <span className="mt-1 text-xs font-medium text-gray-700 bg-white/80 px-2 py-0.5 rounded text-center max-w-20 leading-tight">
+              <span className={`mt-1 text-xs font-medium text-gray-700 bg-white/80 px-2 py-0.5 rounded text-center ${labelMaxWidth} leading-tight`}>
                 {target.label}
               </span>
             </motion.div>
