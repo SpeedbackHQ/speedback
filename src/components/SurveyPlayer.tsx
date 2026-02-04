@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, SlotMachineQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion } from './questions'
+import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
 
@@ -168,8 +168,6 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
         return <TiltMazeQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'racing_lanes':
         return <RacingLanesQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
-      case 'slot_machine':
-        return <SlotMachineQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'gravity_drop':
         return <GravityDropQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'bubble_pop':

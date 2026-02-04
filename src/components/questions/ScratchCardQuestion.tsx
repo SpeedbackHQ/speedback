@@ -10,17 +10,18 @@ interface ScratchCardQuestionProps {
 }
 
 const cardColors = [
-  { bg: 'from-purple-500 to-indigo-600', accent: 'text-purple-300' },
-  { bg: 'from-pink-500 to-rose-600', accent: 'text-pink-300' },
-  { bg: 'from-cyan-500 to-blue-600', accent: 'text-cyan-300' },
-  { bg: 'from-amber-500 to-orange-600', accent: 'text-amber-300' },
-  { bg: 'from-emerald-500 to-green-600', accent: 'text-emerald-300' },
+  { bg: 'from-purple-500 to-indigo-600', text: 'text-white' },
+  { bg: 'from-pink-500 to-rose-600', text: 'text-white' },
+  { bg: 'from-cyan-500 to-blue-600', text: 'text-white' },
+  { bg: 'from-amber-500 to-orange-600', text: 'text-white' },
+  { bg: 'from-emerald-500 to-green-600', text: 'text-white' },
 ]
 
 export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionProps) {
   const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
 
-  const [selectedCard, setSelectedCard] = useState<number | null>(null)
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [scratchProgress, setScratchProgress] = useState(0)
   const [isRevealed, setIsRevealed] = useState(false)
   const [showResult, setShowResult] = useState(false)
@@ -28,9 +29,9 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
   const isScratching = useRef(false)
   const lastPos = useRef({ x: 0, y: 0 })
 
-  // Initialize scratch canvas
+  // Initialize scratch canvas when option is selected
   useEffect(() => {
-    if (selectedCard === null) return
+    if (selectedOption === null) return
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -40,7 +41,7 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
 
     // Set canvas size
     canvas.width = 280
-    canvas.height = 120
+    canvas.height = 140
 
     // Fill with silver scratch coating
     ctx.fillStyle = '#C0C0C0'
@@ -59,12 +60,12 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
     }
     ctx.globalAlpha = 1
 
-    // Add "SCRATCH HERE" text
-    ctx.font = 'bold 16px Arial'
-    ctx.fillStyle = '#888'
+    // Add scratch instruction
+    ctx.font = 'bold 18px Arial'
+    ctx.fillStyle = '#666'
     ctx.textAlign = 'center'
-    ctx.fillText('SCRATCH HERE', canvas.width / 2, canvas.height / 2 + 6)
-  }, [selectedCard])
+    ctx.fillText('✨ SCRATCH TO CONFIRM ✨', canvas.width / 2, canvas.height / 2 + 6)
+  }, [selectedOption])
 
   const scratch = useCallback((x: number, y: number) => {
     const canvas = canvasRef.current
@@ -75,11 +76,11 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
 
     ctx.globalCompositeOperation = 'destination-out'
     ctx.beginPath()
-    ctx.arc(x, y, 25, 0, Math.PI * 2)
+    ctx.arc(x, y, 30, 0, Math.PI * 2)
     ctx.fill()
 
     // Draw line from last position
-    ctx.lineWidth = 50
+    ctx.lineWidth = 60
     ctx.lineCap = 'round'
     ctx.beginPath()
     ctx.moveTo(lastPos.current.x, lastPos.current.y)
@@ -98,8 +99,8 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
     const progress = (transparent / (pixels.length / 4)) * 100
     setScratchProgress(progress)
 
-    // Auto-reveal at 60%
-    if (progress >= 60 && !isRevealed) {
+    // Auto-reveal at 50%
+    if (progress >= 50 && !isRevealed) {
       setIsRevealed(true)
       setShowResult(true)
 
@@ -110,29 +111,30 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
 
       // Submit answer
       setTimeout(() => {
-        onAnswer(options[selectedCard!])
+        onAnswer(selectedOption!)
       }, 1500)
     }
-  }, [isRevealed, options, selectedCard, onAnswer])
+  }, [isRevealed, selectedOption, onAnswer])
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (selectedCard === null || isRevealed) return
+    if (selectedOption === null || isRevealed) return
 
     const canvas = canvasRef.current
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width)
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height)
 
     isScratching.current = true
     lastPos.current = { x, y }
+    scratch(x, y)
 
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(10)
     }
-  }, [selectedCard, isRevealed])
+  }, [selectedOption, isRevealed, scratch])
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isScratching.current || isRevealed) return
@@ -141,8 +143,8 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width)
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height)
 
     scratch(x, y)
   }, [scratch, isRevealed])
@@ -150,6 +152,16 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
   const handlePointerUp = useCallback(() => {
     isScratching.current = false
   }, [])
+
+  const handleSelectOption = (option: string, index: number) => {
+    setSelectedOption(option)
+    setSelectedIndex(index)
+
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(30)
+    }
+  }
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -163,61 +175,38 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-6 text-sm">
-        {selectedCard === null
-          ? 'Choose a card and scratch to reveal!'
+        {selectedOption === null
+          ? 'Pick your answer, then scratch to confirm!'
           : isRevealed
-          ? 'Revealed!'
-          : `Scratch ${Math.min(100, Math.round(scratchProgress * 1.67))}% complete...`}
+          ? 'Confirmed!'
+          : 'Scratch to confirm your choice!'}
       </p>
 
-      {/* Cards to choose from OR scratch area */}
-      {selectedCard === null ? (
-        <div className="grid grid-cols-2 gap-4">
+      {/* Options selection */}
+      {selectedOption === null ? (
+        <div className="space-y-3">
           {options.map((option, index) => {
             const colors = cardColors[index % cardColors.length]
 
             return (
               <motion.button
                 key={option}
-                onClick={() => setSelectedCard(index)}
+                onClick={() => handleSelectOption(option, index)}
                 className={`
-                  relative aspect-[4/3] rounded-xl bg-gradient-to-br ${colors.bg}
-                  shadow-lg overflow-hidden
+                  w-full py-4 px-6 rounded-xl bg-gradient-to-r ${colors.bg}
+                  shadow-lg text-white font-semibold text-lg
+                  transition-all
                 `}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, rotate: Math.random() > 0.5 ? 2 : -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, x: 5 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {/* Card design */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                  <span className={`text-4xl mb-1 ${colors.accent}`}>?</span>
-                  <span className="text-white font-medium text-sm text-center">
-                    Card {index + 1}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <span>{option}</span>
+                  <span className="text-white/70">🎫</span>
                 </div>
-
-                {/* Sparkle effects */}
-                {[...Array(4)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 bg-white rounded-full"
-                    style={{
-                      left: `${20 + Math.random() * 60}%`,
-                      top: `${20 + Math.random() * 60}%`,
-                    }}
-                    animate={{
-                      scale: [0, 1, 0],
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      delay: i * 0.3,
-                    }}
-                  />
-                ))}
               </motion.button>
             )
           })}
@@ -228,47 +217,65 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
-          {/* Selected card with scratch area */}
+          {/* Selected option badge */}
+          <div className="text-center mb-4">
+            <span className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium">
+              Your choice: {selectedOption}
+            </span>
+          </div>
+
+          {/* Scratch card with reveal underneath */}
           <div
-            className={`relative rounded-xl bg-gradient-to-br ${cardColors[selectedCard % cardColors.length].bg} p-6 shadow-xl`}
+            className={`relative rounded-xl bg-gradient-to-br ${cardColors[selectedIndex! % cardColors.length].bg} p-5 shadow-xl overflow-hidden`}
           >
-            {/* Hidden content underneath */}
-            <div className="bg-white rounded-lg p-4 text-center">
+            {/* Content underneath the scratch area */}
+            <div className="bg-white rounded-lg p-5 text-center min-h-[140px] flex flex-col items-center justify-center">
               <motion.div
-                className="text-4xl mb-2"
-                animate={isRevealed ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ duration: 0.3 }}
+                className="text-5xl mb-3"
+                animate={isRevealed ? { scale: [1, 1.3, 1], rotate: [0, 10, -10, 0] } : {}}
+                transition={{ duration: 0.5 }}
               >
-                🎉
+                {isRevealed ? '🎉' : '🎁'}
               </motion.div>
               <p className="text-xl font-bold text-gray-800">
-                {options[selectedCard]}
+                {isRevealed ? selectedOption : '???'}
               </p>
-              <p className="text-sm text-gray-500 mt-1">Your selection!</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {isRevealed ? 'Great choice!' : 'Scratch to reveal!'}
+              </p>
             </div>
 
             {/* Scratch canvas overlay */}
             {!isRevealed && (
               <canvas
                 ref={canvasRef}
-                className="absolute inset-6 rounded-lg cursor-crosshair touch-none"
+                className="absolute top-5 left-5 right-5 bottom-5 rounded-lg cursor-crosshair touch-none"
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp}
-                style={{ touchAction: 'none' }}
+                style={{
+                  touchAction: 'none',
+                  width: 'calc(100% - 40px)',
+                  height: 'calc(100% - 40px)',
+                }}
               />
             )}
           </div>
 
-          {/* Progress bar */}
+          {/* Progress indicator */}
           {!isRevealed && (
-            <div className="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-yellow-400 to-green-500"
-                animate={{ width: `${Math.min(100, scratchProgress * 1.67)}%` }}
-                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-              />
+            <div className="mt-4">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-yellow-400 to-green-500"
+                  animate={{ width: `${Math.min(100, scratchProgress * 2)}%` }}
+                  transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                />
+              </div>
+              <p className="text-center text-sm text-gray-500 mt-2">
+                {Math.min(100, Math.round(scratchProgress * 2))}% scratched
+              </p>
             </div>
           )}
 
@@ -276,12 +283,13 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
           {!isRevealed && (
             <button
               onClick={() => {
-                setSelectedCard(null)
+                setSelectedOption(null)
+                setSelectedIndex(null)
                 setScratchProgress(0)
               }}
-              className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+              className="mt-4 text-sm text-gray-500 hover:text-gray-700 w-full text-center"
             >
-              ← Choose different card
+              ← Pick a different answer
             </button>
           )}
         </motion.div>
@@ -296,12 +304,12 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
             animate={{ opacity: 1, y: 0 }}
           >
             <motion.div
-              className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full"
+              className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-5 py-2.5 rounded-full"
               animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
+              transition={{ duration: 0.5, repeat: 3 }}
             >
               <span className="text-xl">✨</span>
-              <span className="font-bold">Winner!</span>
+              <span className="font-bold">Confirmed!</span>
               <span className="text-xl">✨</span>
             </motion.div>
           </motion.div>

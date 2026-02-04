@@ -12,7 +12,7 @@ export type QuestionType =
   | 'tap_meter' | 'rolodex' | 'stars' | 'thermometer'
   | 'fanned' | 'fanned_swipe' | 'stacked'
   // Mini-games
-  | 'tilt_maze' | 'racing_lanes' | 'slot_machine' | 'gravity_drop'
+  | 'tilt_maze' | 'racing_lanes' | 'gravity_drop'
   | 'bubble_pop' | 'bullseye' | 'slingshot' | 'scratch_card'
 
 export interface Organization {

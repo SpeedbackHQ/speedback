@@ -30,8 +30,6 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
   const [selected, setSelected] = useState<string[]>([])
   const [justSelected, setJustSelected] = useState<string | null>(null)
   const [particles, setParticles] = useState<Particle[]>([])
-  const [comboCount, setComboCount] = useState(0)
-  const lastSelectTime = useRef<number>(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { options = [], multi_select = true } = question.config
@@ -66,15 +64,6 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
       setTimeout(() => {
         setParticles(prev => prev.filter(p => p.id < now || p.id > now + 11))
       }, 600)
-
-      // Track combo for rapid selections
-      const timeSinceLastSelect = now - lastSelectTime.current
-      if (timeSinceLastSelect < 800 && timeSinceLastSelect > 0) {
-        setComboCount(prev => prev + 1)
-      } else {
-        setComboCount(1)
-      }
-      lastSelectTime.current = now
 
       // Trigger selection animation
       setJustSelected(option)
@@ -114,27 +103,6 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
       <p className="text-gray-500 text-center mb-6">
         {multi_select ? 'Tap all that apply' : 'Tap to select'}
       </p>
-
-      {/* Combo indicator */}
-      <AnimatePresence>
-        {comboCount >= 2 && (
-          <motion.div
-            className="flex justify-center mb-4"
-            initial={{ scale: 0, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0, y: -20 }}
-          >
-            <motion.span
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 0.3 }}
-              key={comboCount}
-            >
-              {comboCount}x COMBO!
-            </motion.span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Vertical stack of options */}
       <div className="flex flex-col gap-3 relative">

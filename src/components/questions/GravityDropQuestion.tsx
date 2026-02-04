@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface GravityDropQuestionProps {
@@ -20,15 +20,14 @@ const bucketColors = [
 export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionProps) {
   const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
 
-  const [ballPosition, setBallPosition] = useState({ x: 50, y: 5 })
+  const [ballX, setBallX] = useState(50) // percentage
+  const [ballY, setBallY] = useState(8) // percentage
   const [isDropping, setIsDropping] = useState(false)
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null)
   const [showResult, setShowResult] = useState(false)
   const [swayDirection, setSwayDirection] = useState(1)
   const swayRef = useRef<NodeJS.Timeout | null>(null)
-
-  const ballY = useMotionValue(5)
-  const ballX = useMotionValue(50)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Calculate bucket positions
   const bucketWidth = 100 / options.length
@@ -43,22 +42,26 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
     if (isDropping || selectedBucket) return
 
     const sway = () => {
-      setBallPosition(prev => {
-        let newX = prev.x + swayDirection * 0.5
+      setBallX(prev => {
+        let newX = prev + swayDirection * 0.8
         let newDirection = swayDirection
 
         // Reverse direction at edges
-        if (newX >= 90) {
-          newX = 90
+        if (newX >= 85) {
+          newX = 85
           newDirection = -1
-        } else if (newX <= 10) {
-          newX = 10
+          setSwayDirection(-1)
+        } else if (newX <= 15) {
+          newX = 15
           newDirection = 1
+          setSwayDirection(1)
         }
 
-        setSwayDirection(newDirection)
-        ballX.set(newX)
-        return { ...prev, x: newX }
+        if (newDirection !== swayDirection) {
+          setSwayDirection(newDirection)
+        }
+
+        return newX
       })
     }
 
@@ -66,7 +69,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
     return () => {
       if (swayRef.current) clearInterval(swayRef.current)
     }
-  }, [isDropping, selectedBucket, swayDirection, ballX])
+  }, [isDropping, selectedBucket, swayDirection])
 
   const handleDrop = useCallback(() => {
     if (isDropping || selectedBucket) return
@@ -81,22 +84,40 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
       navigator.vibrate(30)
     }
 
-    // Animate ball falling
-    const currentX = ballPosition.x
-
     // Determine which bucket the ball lands in
+    const currentX = ballX
     const bucketIndex = bucketPositions.findIndex(
       pos => currentX >= pos.left && currentX < pos.right
     )
     const landedBucket = bucketIndex >= 0 ? options[bucketIndex] : options[0]
     const targetX = bucketPositions[bucketIndex >= 0 ? bucketIndex : 0].center
 
-    // Animate falling with slight curve toward bucket center
-    animate(ballY, 85, {
-      type: 'spring',
-      stiffness: 50,
-      damping: 8,
-      onComplete: () => {
+    // Animate falling - use state updates with requestAnimationFrame for smooth animation
+    const startY = ballY
+    const targetY = 72 // percentage - lands in bucket area
+    const startX = currentX
+    const duration = 800 // ms
+    const startTime = Date.now()
+
+    const animateFall = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Ease out curve for natural gravity feel
+      const easeProgress = 1 - Math.pow(1 - progress, 2)
+
+      // Update Y position (falling)
+      const newY = startY + (targetY - startY) * easeProgress
+      setBallY(newY)
+
+      // Update X position (slight curve toward bucket center)
+      const newX = startX + (targetX - startX) * easeProgress
+      setBallX(newX)
+
+      if (progress < 1) {
+        requestAnimationFrame(animateFall)
+      } else {
+        // Landing complete
         setSelectedBucket(landedBucket)
         setShowResult(true)
 
@@ -109,15 +130,11 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
         setTimeout(() => {
           onAnswer(landedBucket)
         }, 1200)
-      },
-    })
+      }
+    }
 
-    // Slight curve toward bucket center
-    animate(ballX, targetX, {
-      duration: 1,
-      ease: 'easeOut',
-    })
-  }, [isDropping, selectedBucket, ballPosition.x, bucketPositions, options, ballX, ballY, onAnswer])
+    requestAnimationFrame(animateFall)
+  }, [isDropping, selectedBucket, ballX, ballY, bucketPositions, options, onAnswer])
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -133,13 +150,14 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
       <p className="text-gray-500 text-center mb-4 text-sm">
         {!isDropping && !selectedBucket
           ? 'Tap to drop the ball!'
-          : isDropping
+          : isDropping && !selectedBucket
           ? 'Falling...'
           : 'Landed!'}
       </p>
 
       {/* Game area */}
       <motion.div
+        ref={containerRef}
         className="relative w-full aspect-[3/4] bg-gradient-to-b from-sky-200 to-sky-100 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
         onClick={handleDrop}
         initial={{ scale: 0.9, opacity: 0 }}
@@ -160,17 +178,25 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
 
         {/* Ball */}
         <motion.div
-          className="absolute w-10 h-10 -ml-5 -mt-5 z-20"
-          style={{ left: `${ballPosition.x}%`, top: ballY }}
+          className="absolute w-12 h-12 z-20 pointer-events-none"
+          style={{
+            left: `${ballX}%`,
+            top: `${ballY}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+          animate={!isDropping && !selectedBucket ? { scale: [1, 1.08, 1] } : {}}
+          transition={{ duration: 0.6, repeat: Infinity }}
         >
-          <motion.div
-            className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-400 shadow-lg"
-            animate={isDropping ? {} : { scale: [1, 1.05, 1] }}
-            transition={{ duration: 0.5, repeat: Infinity }}
+          <div
+            className="w-full h-full rounded-full shadow-lg"
+            style={{
+              background: 'radial-gradient(circle at 35% 35%, #e0e0e0, #606060)',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+            }}
           >
             {/* Ball highlight */}
-            <div className="absolute top-1 left-2 w-3 h-2 rounded-full bg-white opacity-70" />
-          </motion.div>
+            <div className="absolute top-1.5 left-2.5 w-4 h-2.5 rounded-full bg-white opacity-60" />
+          </div>
         </motion.div>
 
         {/* Drop hint */}
@@ -187,7 +213,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
         )}
 
         {/* Buckets at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 flex h-24">
+        <div className="absolute bottom-0 left-0 right-0 flex" style={{ height: '25%' }}>
           {options.map((option, index) => {
             const colors = bucketColors[index % bucketColors.length]
             const isSelected = selectedBucket === option
@@ -203,7 +229,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                 {/* Bucket */}
                 <motion.div
                   className={`
-                    w-[90%] h-16 rounded-b-xl border-4 ${colors.border} ${colors.bg}
+                    w-[90%] h-20 rounded-b-xl border-4 ${colors.border} ${colors.bg}
                     flex items-center justify-center
                     ${isSelected ? `shadow-lg ${colors.glow}` : ''}
                   `}
@@ -213,7 +239,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                     clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)',
                   }}
                 >
-                  <span className="text-white font-bold text-xs text-center px-1 leading-tight">
+                  <span className="text-white font-bold text-sm text-center px-2 leading-tight">
                     {option}
                   </span>
                 </motion.div>
@@ -250,26 +276,6 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* Options legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {options.map((option, index) => {
-          const colors = bucketColors[index % bucketColors.length]
-          return (
-            <motion.span
-              key={option}
-              className={`px-3 py-1 rounded-full text-sm text-white ${colors.bg} ${
-                selectedBucket === option ? 'ring-2 ring-offset-2 ring-gray-400' : ''
-              }`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
-            >
-              {option}
-            </motion.span>
-          )
-        })}
-      </div>
     </div>
   )
 }

@@ -39,7 +39,6 @@ export const questionCategories: Record<string, { description: string; types: Qu
       // Mini-games
       { type: 'tilt_maze', label: 'Tilt Maze', emoji: '🎱', description: 'Roll ball into hole' },
       { type: 'racing_lanes', label: 'Racing Lanes', emoji: '🏎️', description: 'Tap to race ahead' },
-      { type: 'slot_machine', label: 'Slot Machine', emoji: '🎰', description: 'Stop the reel' },
       { type: 'gravity_drop', label: 'Gravity Drop', emoji: '🪂', description: 'Drop into bucket' },
       { type: 'bubble_pop', label: 'Bubble Pop', emoji: '🫧', description: 'Pop before escape' },
       { type: 'slingshot', label: 'Slingshot', emoji: '🏹', description: 'Aim and launch' },
@@ -90,7 +89,6 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'stacked':
     case 'tilt_maze':
     case 'racing_lanes':
-    case 'slot_machine':
     case 'gravity_drop':
     case 'bubble_pop':
     case 'slingshot':
@@ -144,7 +142,6 @@ export function QuestionEditor({
       case 'stacked':
       case 'tilt_maze':
       case 'racing_lanes':
-      case 'slot_machine':
       case 'gravity_drop':
       case 'bubble_pop':
       case 'slingshot':

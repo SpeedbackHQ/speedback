@@ -11,7 +11,6 @@ export { StackedCardsQuestion } from './StackedCardsQuestion'
 // Mini-games
 export { TiltMazeQuestion } from './TiltMazeQuestion'
 export { RacingLanesQuestion } from './RacingLanesQuestion'
-export { SlotMachineQuestion } from './SlotMachineQuestion'
 export { GravityDropQuestion } from './GravityDropQuestion'
 export { BubblePopQuestion } from './BubblePopQuestion'
 export { BullseyeQuestion } from './BullseyeQuestion'
