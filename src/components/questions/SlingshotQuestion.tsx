@@ -38,14 +38,14 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   // All targets in a single row across the top
   const targets = options.map((label, i) => {
     const count = options.length
-    const totalWidth = 80
+    const totalWidth = count <= 3 ? 60 : 70
     const xSpacing = count > 1 ? totalWidth / (count - 1) : 0
     const xOffset = count > 1 ? (100 - totalWidth) / 2 : 50
 
     return {
       label,
       x: count > 1 ? xOffset + i * xSpacing : 50,
-      y: 15,  // Always single row near top
+      y: 18,  // Below rounded corners
       color: targetColors[i % targetColors.length],
     }
   })
