@@ -9,7 +9,8 @@ interface RacingLanesQuestionProps {
   onAnswer: (answer: string) => void
 }
 
-type GamePhase = 'car' | 'answer' | 'countdown' | 'racing' | 'won' | 'lost'
+// Added 'ready' phase to show track before countdown
+type GamePhase = 'car' | 'answer' | 'ready' | 'countdown' | 'racing' | 'won' | 'lost'
 
 interface AIRacer {
   option: string
@@ -48,11 +49,11 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
   const [userProgress, setUserProgress] = useState(0)
   const [aiRacers, setAiRacers] = useState<AIRacer[]>([])
   const [tapCount, setTapCount] = useState(0)
-  const gameLoopRef = useRef<number | null>(null)
+  const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const finishLine = 100
-  const progressPerTap = 5
-  const userDecay = 0.3
+  const progressPerTap = 4
+  const userDecay = 0.15  // Slower decay
 
   // Handle car selection
   const handleSelectCar = (carIndex: number) => {
@@ -61,7 +62,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     if (navigator.vibrate) navigator.vibrate(30)
   }
 
-  // Handle answer/lane selection
+  // Handle answer/lane selection - now goes to 'ready' phase
   const handleSelectAnswer = (option: string) => {
     setSelectedOption(option)
 
@@ -73,11 +74,18 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       option: opt,
       carIndex: (selectedCar + i + 1) % carOptions.length,
       progress: 0,
-      speed: 2.5 + Math.random() * 1.5,  // 2.5-4 per tick
-      burstChance: 0.08 + Math.random() * 0.07,  // 8-15%
+      // Much slower AI speeds (0.3-0.6 per tick at 100ms intervals = ~3-6 per second)
+      speed: 0.3 + Math.random() * 0.3,
+      burstChance: 0.03 + Math.random() * 0.03,  // 3-6% burst chance
     }))
 
     setAiRacers(racers)
+    setGamePhase('ready')  // Show track first, wait for user to start
+    if (navigator.vibrate) navigator.vibrate(50)
+  }
+
+  // Start race from ready phase
+  const handleStartRace = () => {
     setGamePhase('countdown')
     if (navigator.vibrate) navigator.vibrate(50)
   }
@@ -94,57 +102,48 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     }
   }, [gamePhase, countdown])
 
-  // Game loop for racing
+  // Game loop for racing - using interval for more controlled timing
   useEffect(() => {
     if (gamePhase !== 'racing') return
 
-    const gameLoop = () => {
+    // Update every 100ms for smoother, more controlled racing
+    gameLoopRef.current = setInterval(() => {
       // Update AI racers
-      setAiRacers(prev => prev.map(racer => {
-        let newProgress = racer.progress + racer.speed
-        if (Math.random() < racer.burstChance) {
-          newProgress += 4  // Speed burst
+      setAiRacers(prev => {
+        const updated = prev.map(racer => {
+          let newProgress = racer.progress + racer.speed
+          if (Math.random() < racer.burstChance) {
+            newProgress += 1.5  // Small speed burst
+          }
+          return { ...racer, progress: Math.min(finishLine, newProgress) }
+        })
+
+        // Check if any AI won
+        const aiWinner = updated.find(r => r.progress >= finishLine)
+        if (aiWinner) {
+          setGamePhase('lost')
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100])
         }
-        return { ...racer, progress: Math.min(finishLine, newProgress) }
-      }))
+
+        return updated
+      })
 
       // Apply decay to user
-      setUserProgress(prev => Math.max(0, prev - userDecay))
+      setUserProgress(prev => {
+        const newProgress = Math.max(0, prev - userDecay)
 
-      gameLoopRef.current = requestAnimationFrame(gameLoop)
-    }
+        // Check if user won
+        if (prev >= finishLine) {
+          setGamePhase('won')
+          if (navigator.vibrate) navigator.vibrate([50, 30, 100])
+        }
 
-    // Run at ~60fps but process every ~100ms worth
-    const interval = setInterval(() => {
-      // Check for win/lose
-      setUserProgress(currentUser => {
-        setAiRacers(currentAi => {
-          // Check if user won
-          if (currentUser >= finishLine) {
-            setGamePhase('won')
-            if (navigator.vibrate) navigator.vibrate([50, 30, 100])
-            return currentAi
-          }
-
-          // Check if any AI won
-          const aiWinner = currentAi.find(r => r.progress >= finishLine)
-          if (aiWinner) {
-            setGamePhase('lost')
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100])
-            return currentAi
-          }
-
-          return currentAi
-        })
-        return currentUser
+        return newProgress
       })
     }, 100)
 
-    gameLoopRef.current = requestAnimationFrame(gameLoop)
-
     return () => {
-      if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current)
-      clearInterval(interval)
+      if (gameLoopRef.current) clearInterval(gameLoopRef.current)
     }
   }, [gamePhase])
 
@@ -176,8 +175,8 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     setAiRacers(prev => prev.map(racer => ({
       ...racer,
       progress: 0,
-      speed: 2.5 + Math.random() * 1.5,
-      burstChance: 0.08 + Math.random() * 0.07,
+      speed: 0.3 + Math.random() * 0.3,
+      burstChance: 0.03 + Math.random() * 0.03,
     })))
 
     setGamePhase('countdown')
@@ -197,6 +196,134 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     }))
   ] : []
 
+  // Render the race track (reused in 'ready' and 'racing' phases)
+  const renderTrack = (isPreview: boolean = false) => (
+    <motion.div
+      className={`relative bg-gray-800 rounded-2xl p-4 shadow-xl overflow-hidden ${
+        !isPreview ? 'cursor-pointer' : ''
+      }`}
+      onClick={!isPreview ? handleRaceTap : undefined}
+      whileTap={gamePhase === 'racing' ? { scale: 0.98 } : {}}
+    >
+      {/* Track markings */}
+      <div className="absolute inset-4 pointer-events-none">
+        {[0, 25, 50, 75].map(mark => (
+          <div
+            key={mark}
+            className="absolute top-0 bottom-0 w-px bg-gray-600/50"
+            style={{ left: `${mark}%` }}
+          />
+        ))}
+        {/* Finish line */}
+        <div
+          className="absolute top-0 bottom-0 w-2"
+          style={{ left: 'calc(100% - 8px)' }}
+        >
+          <div className="h-full w-full bg-[repeating-linear-gradient(0deg,black,black_8px,white_8px,white_16px)]" />
+        </div>
+      </div>
+
+      {/* Race lanes */}
+      <div className="space-y-3">
+        {lanes.map((lane) => (
+          <div
+            key={lane.option}
+            className={`relative h-14 rounded-lg overflow-hidden ${
+              lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
+            }`}
+          >
+            {/* Lane label */}
+            <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/60 font-medium max-w-20 truncate z-10">
+              {lane.option}
+            </div>
+
+            {/* Progress track */}
+            <motion.div
+              className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
+              initial={{ width: '5%' }}
+              animate={{ width: `${Math.max(lane.progress, 5)}%` }}
+              transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+            />
+
+            {/* Car */}
+            <motion.div
+              className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
+              animate={{
+                left: `${Math.max(lane.progress - 3, 2)}%`,
+                rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
+              }}
+              transition={{
+                left: { type: 'spring', stiffness: 400, damping: 35 },
+                rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
+              }}
+            >
+              {lane.car.emoji}
+            </motion.div>
+
+            {/* User indicator */}
+            {lane.isUser && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
+                YOU
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tap indicator during race */}
+      {gamePhase === 'racing' && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 0.3, repeat: Infinity }}
+        >
+          <span className="text-white font-bold text-2xl">TAP HERE!</span>
+        </motion.div>
+      )}
+
+      {/* Preview hint */}
+      {isPreview && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-white/40 font-medium text-sm">Tap here during the race!</span>
+        </div>
+      )}
+
+      {/* Result overlay */}
+      <AnimatePresence>
+        {(gamePhase === 'won' || gamePhase === 'lost') && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <motion.div
+              className="bg-white rounded-xl px-8 py-6 shadow-2xl text-center"
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <motion.div
+                className="text-5xl mb-2"
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.5, repeat: 2 }}
+              >
+                {gamePhase === 'won' ? '🏆' : '😅'}
+              </motion.div>
+              <p className="text-xl font-bold text-gray-800">
+                {gamePhase === 'won' ? selectedOption : 'Not quite!'}
+              </p>
+              <p className="text-sm text-gray-500">
+                {gamePhase === 'won'
+                  ? `${tapCount} taps to victory!`
+                  : 'The competition was fierce!'}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+
   return (
     <div className="w-full max-w-md mx-auto px-4">
       {/* Question text */}
@@ -211,6 +338,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       <p className="text-gray-500 text-center mb-4 text-sm">
         {gamePhase === 'car' && 'Choose your racer!'}
         {gamePhase === 'answer' && 'Pick your answer to race for it!'}
+        {gamePhase === 'ready' && 'Ready? Tap the track to race!'}
         {gamePhase === 'countdown' && 'Get ready...'}
         {gamePhase === 'racing' && 'TAP TAP TAP to win!'}
         {gamePhase === 'won' && '🏆 You won!'}
@@ -283,6 +411,44 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
           </motion.div>
         )}
 
+        {/* Phase 3: Ready - Show track with Start button */}
+        {gamePhase === 'ready' && (
+          <motion.div
+            key="ready"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {/* Racing for badge */}
+            <div className="text-center mb-4">
+              <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                Racing for: {selectedOption}
+              </span>
+            </div>
+
+            {/* Preview track */}
+            {renderTrack(true)}
+
+            {/* Start button */}
+            <motion.button
+              onClick={handleStartRace}
+              className="w-full mt-6 py-5 bg-green-500 text-white rounded-xl font-bold text-xl shadow-lg hover:bg-green-600 transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              animate={{
+                boxShadow: ['0 0 0 0 rgba(34, 197, 94, 0.4)', '0 0 0 15px rgba(34, 197, 94, 0)', '0 0 0 0 rgba(34, 197, 94, 0)']
+              }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              🏁 Start Race!
+            </motion.button>
+
+            <p className="text-center text-gray-400 text-xs mt-3">
+              Tap as fast as you can to beat the other racers!
+            </p>
+          </motion.div>
+        )}
+
         {/* Countdown overlay */}
         {gamePhase === 'countdown' && (
           <motion.div
@@ -330,121 +496,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             </div>
 
             {/* Race track */}
-            <motion.div
-              className="relative bg-gray-800 rounded-2xl p-4 shadow-xl overflow-hidden cursor-pointer"
-              onClick={handleRaceTap}
-              whileTap={gamePhase === 'racing' ? { scale: 0.98 } : {}}
-            >
-              {/* Track markings */}
-              <div className="absolute inset-4 pointer-events-none">
-                {[0, 25, 50, 75].map(mark => (
-                  <div
-                    key={mark}
-                    className="absolute top-0 bottom-0 w-px bg-gray-600/50"
-                    style={{ left: `${mark}%` }}
-                  />
-                ))}
-                {/* Finish line */}
-                <div
-                  className="absolute top-0 bottom-0 w-2"
-                  style={{ left: 'calc(100% - 8px)' }}
-                >
-                  <div className="h-full w-full bg-[repeating-linear-gradient(0deg,black,black_8px,white_8px,white_16px)]" />
-                </div>
-              </div>
-
-              {/* Race lanes */}
-              <div className="space-y-3">
-                {lanes.map((lane, index) => (
-                  <div
-                    key={lane.option}
-                    className={`relative h-14 rounded-lg overflow-hidden ${
-                      lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
-                    }`}
-                  >
-                    {/* Lane label */}
-                    <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/60 font-medium max-w-16 truncate z-10">
-                      {lane.option}
-                    </div>
-
-                    {/* Progress track */}
-                    <motion.div
-                      className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
-                      initial={{ width: '5%' }}
-                      animate={{ width: `${Math.max(lane.progress, 5)}%` }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                    />
-
-                    {/* Car */}
-                    <motion.div
-                      className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
-                      animate={{
-                        left: `${Math.max(lane.progress - 3, 2)}%`,
-                        rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
-                      }}
-                      transition={{
-                        left: { type: 'spring', stiffness: 400, damping: 35 },
-                        rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
-                      }}
-                    >
-                      {lane.car.emoji}
-                    </motion.div>
-
-                    {/* User indicator */}
-                    {lane.isUser && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
-                        YOU
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Tap indicator during race */}
-              {gamePhase === 'racing' && (
-                <motion.div
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  animate={{ opacity: [0.3, 0.7, 0.3] }}
-                  transition={{ duration: 0.3, repeat: Infinity }}
-                >
-                  <span className="text-white font-bold text-xl">TAP!</span>
-                </motion.div>
-              )}
-
-              {/* Result overlay */}
-              <AnimatePresence>
-                {(gamePhase === 'won' || gamePhase === 'lost') && (
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <motion.div
-                      className="bg-white rounded-xl px-8 py-6 shadow-2xl text-center"
-                      initial={{ scale: 0, rotate: -10 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    >
-                      <motion.div
-                        className="text-5xl mb-2"
-                        animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 0.5, repeat: 2 }}
-                      >
-                        {gamePhase === 'won' ? '🏆' : '😅'}
-                      </motion.div>
-                      <p className="text-xl font-bold text-gray-800">
-                        {gamePhase === 'won' ? selectedOption : 'Not quite!'}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {gamePhase === 'won'
-                          ? `${tapCount} taps to victory!`
-                          : 'The competition was fierce!'}
-                      </p>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+            {renderTrack(false)}
 
             {/* Tap counter */}
             <div className="mt-4 text-center">
