@@ -52,6 +52,9 @@ export default function SurveyEditorPage() {
   // Warning banner dismissed
   const [warningDismissed, setWarningDismissed] = useState(false)
 
+  // Prevent useEffect from resetting questions/title after initial load
+  const hasInitializedRef = useRef(false)
+
   useEffect(() => {
     loadSurvey()
   }, [surveyId])
@@ -59,13 +62,16 @@ export default function SurveyEditorPage() {
   useEffect(() => {
     if (survey) {
       generateQRCode()
-      setTitle(survey.title)
-      setQuestions(survey.questions.map(q => ({
-        id: q.id,
-        type: q.type,
-        text: q.text,
-        config: q.config || {},
-      })))
+      if (!hasInitializedRef.current) {
+        setTitle(survey.title)
+        setQuestions(survey.questions.map(q => ({
+          id: q.id,
+          type: q.type,
+          text: q.text,
+          config: q.config || {},
+        })))
+        hasInitializedRef.current = true
+      }
     }
   }, [survey])
 

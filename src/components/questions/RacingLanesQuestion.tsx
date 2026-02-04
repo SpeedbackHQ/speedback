@@ -155,6 +155,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
   const handleRetry = () => {
     setUserProgress(0)
     setCountdown(3)
+    hasSubmittedRef.current = false
 
     setAiRacers(prev => prev.map(racer => ({
       ...racer,
@@ -191,7 +192,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
   // Render the race track
   const renderTrack = (showCountdown: boolean = false) => (
     <motion.div
-      className={`relative bg-gray-800 rounded-2xl p-4 shadow-xl overflow-hidden ${
+      className={`relative bg-gray-800 rounded-2xl p-4 shadow-xl overflow-hidden min-h-[200px] ${
         gamePhase === 'racing' ? 'cursor-pointer' : ''
       }`}
       onClick={gamePhase === 'racing' ? handleRaceTap : undefined}
@@ -215,44 +216,40 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       </div>
 
       {/* Race lanes */}
-      <div className="space-y-3">
+      <div className="space-y-1">
         {lanes.map((lane) => (
-          <div
-            key={lane.option}
-            className={`relative h-14 rounded-lg overflow-hidden ${
-              lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
-            }`}
-          >
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/60 font-medium max-w-20 truncate z-10">
-              {lane.option}
+          <div key={lane.option}>
+            {/* Lane label above */}
+            <div className={`flex items-center gap-1 px-1 mb-0.5 ${lane.isUser ? 'text-indigo-300' : 'text-white/50'}`}>
+              <span className="text-xs font-medium truncate">{lane.option}</span>
+              {lane.isUser && <span className="text-[10px] font-bold bg-indigo-500/30 px-1.5 rounded">YOU</span>}
             </div>
-
-            <motion.div
-              className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
-              initial={{ width: '5%' }}
-              animate={{ width: `${Math.max(lane.progress, 5)}%` }}
-              transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-            />
-
-            <motion.div
-              className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
-              animate={{
-                left: `${Math.max(lane.progress - 3, 2)}%`,
-                rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
-              }}
-              transition={{
-                left: { type: 'spring', stiffness: 400, damping: 35 },
-                rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
-              }}
+            <div
+              className={`relative h-12 rounded-lg overflow-hidden ${
+                lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
+              }`}
             >
-              {lane.car.emoji}
-            </motion.div>
+              <motion.div
+                className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
+                initial={{ width: '5%' }}
+                animate={{ width: `${Math.max(lane.progress, 5)}%` }}
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+              />
 
-            {lane.isUser && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
-                YOU
-              </div>
-            )}
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
+                animate={{
+                  left: `${Math.max(lane.progress - 3, 2)}%`,
+                  rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
+                }}
+                transition={{
+                  left: { type: 'spring', stiffness: 400, damping: 35 },
+                  rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
+                }}
+              >
+                {lane.car.emoji}
+              </motion.div>
+            </div>
           </div>
         ))}
       </div>
