@@ -16,9 +16,11 @@ interface Hole {
   radius: number
 }
 
-interface Position {
-  x: number
-  y: number
+interface Wall {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
 }
 
 export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) {
@@ -26,48 +28,76 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState({ width: 300, height: 400 })
-  const [isDropping, setIsDropping] = useState(false)
   const [selectedHole, setSelectedHole] = useState<string | null>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [showHint, setShowHint] = useState(true)
 
   // Ball physics
   const ballX = useMotionValue(containerSize.width / 2)
-  const ballY = useMotionValue(50)
+  const ballY = useMotionValue(40)
   const velocityX = useRef(0)
   const velocityY = useRef(0)
 
   // Smooth spring for visual position
-  const springX = useSpring(ballX, { stiffness: 300, damping: 30 })
-  const springY = useSpring(ballY, { stiffness: 300, damping: 30 })
+  const springX = useSpring(ballX, { stiffness: 400, damping: 35 })
+  const springY = useSpring(ballY, { stiffness: 400, damping: 35 })
 
   // Tilt values (from device orientation or drag)
   const tiltX = useRef(0)
   const tiltY = useRef(0)
 
-  const ballRadius = 18
-  const holeRadius = 32
-  const friction = 0.98
-  const gravity = 0.5
-  const maxVelocity = 12
+  const ballRadius = 14
+  const holeRadius = 32 // Larger holes for easier landing
+  const friction = 0.96
+  const gravity = 0.35
+  const maxVelocity = 8
 
-  // Calculate hole positions based on options count
+  // Calculate hole positions based on options count (bottom area of board)
   const holes: Hole[] = options.map((label, index) => {
     const count = options.length
-    const cols = count <= 2 ? count : count <= 4 ? 2 : 3
-    const rows = Math.ceil(count / cols)
-    const col = index % cols
-    const row = Math.floor(index / cols)
-
-    const xSpacing = containerSize.width / (cols + 1)
-    const ySpacing = (containerSize.height - 120) / (rows + 1)
+    const xSpacing = containerSize.width / (count + 1)
 
     return {
-      x: xSpacing * (col + 1),
-      y: 150 + ySpacing * (row + 1),
+      x: xSpacing * (index + 1),
+      y: containerSize.height - 70,
       label,
       radius: holeRadius,
     }
   })
+
+  // Create funnel/channel walls that guide ball toward holes
+  const walls: Wall[] = []
+  const wallThickness = 6
+
+  // Add horizontal rails at different heights that create a pachinko effect
+  const railY1 = 90
+  const railY2 = 160
+  const railY3 = 230
+  const gapWidth = 50
+
+  // Row 1 - Two gaps
+  walls.push({ x1: 0, y1: railY1, x2: containerSize.width * 0.3, y2: railY1 })
+  walls.push({ x1: containerSize.width * 0.3 + gapWidth, y1: railY1, x2: containerSize.width * 0.7 - gapWidth, y2: railY1 })
+  walls.push({ x1: containerSize.width * 0.7, y1: railY1, x2: containerSize.width, y2: railY1 })
+
+  // Row 2 - Offset gaps
+  walls.push({ x1: 0, y1: railY2, x2: containerSize.width * 0.15, y2: railY2 })
+  walls.push({ x1: containerSize.width * 0.15 + gapWidth, y1: railY2, x2: containerSize.width * 0.5 - gapWidth / 2, y2: railY2 })
+  walls.push({ x1: containerSize.width * 0.5 + gapWidth / 2, y1: railY2, x2: containerSize.width * 0.85 - gapWidth, y2: railY2 })
+  walls.push({ x1: containerSize.width * 0.85, y1: railY2, x2: containerSize.width, y2: railY2 })
+
+  // Row 3 - Guide toward holes
+  walls.push({ x1: 0, y1: railY3, x2: containerSize.width * 0.2, y2: railY3 })
+  walls.push({ x1: containerSize.width * 0.2 + gapWidth, y1: railY3, x2: containerSize.width * 0.8 - gapWidth, y2: railY3 })
+  walls.push({ x1: containerSize.width * 0.8, y1: railY3, x2: containerSize.width, y2: railY3 })
+
+  // Vertical dividers between holes (if 2+ options)
+  if (options.length >= 2) {
+    for (let i = 1; i < options.length; i++) {
+      const dividerX = containerSize.width / (options.length + 1) * (i + 0.5)
+      walls.push({ x1: dividerX, y1: railY3 + 30, x2: dividerX, y2: containerSize.height - holeRadius - 50 })
+    }
+  }
 
   // Update container size
   useEffect(() => {
@@ -80,9 +110,64 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
 
   // Hide hint after a few seconds
   useEffect(() => {
-    const timer = setTimeout(() => setShowHint(false), 3000)
+    const timer = setTimeout(() => setShowHint(false), 4000)
     return () => clearTimeout(timer)
   }, [])
+
+  // Check collision with walls
+  const checkWallCollision = useCallback((x: number, y: number, vx: number, vy: number): { x: number; y: number; vx: number; vy: number } => {
+    let newX = x
+    let newY = y
+    let newVx = vx
+    let newVy = vy
+
+    for (const wall of walls) {
+      const isHorizontal = Math.abs(wall.y1 - wall.y2) < 2
+      const isVertical = Math.abs(wall.x1 - wall.x2) < 2
+
+      if (isHorizontal) {
+        const wallY = wall.y1
+        const minX = Math.min(wall.x1, wall.x2)
+        const maxX = Math.max(wall.x1, wall.x2)
+
+        // Check if ball is within wall's horizontal range
+        if (x >= minX - ballRadius && x <= maxX + ballRadius) {
+          // Ball hitting from above
+          if (y + ballRadius > wallY - 4 && y + ballRadius < wallY + 12 && vy > 0) {
+            newY = wallY - ballRadius - 4
+            newVy = -vy * 0.4
+          }
+          // Ball hitting from below
+          else if (y - ballRadius < wallY + 4 && y - ballRadius > wallY - 12 && vy < 0) {
+            newY = wallY + ballRadius + 4
+            newVy = -vy * 0.4
+          }
+        }
+      }
+
+      if (isVertical) {
+        const wallX = wall.x1
+        const minY = Math.min(wall.y1, wall.y2)
+        const maxY = Math.max(wall.y1, wall.y2)
+
+        // Check if ball is within wall's vertical range
+        if (y >= minY - ballRadius && y <= maxY + ballRadius) {
+          // Ball hitting from left
+          if (x + ballRadius > wallX - 4 && x + ballRadius < wallX + 12 && vx > 0) {
+            newX = wallX - ballRadius - 4
+            newVx = -vx * 0.4
+          }
+          // Ball hitting from right
+          else if (x - ballRadius < wallX + 4 && x - ballRadius > wallX - 12 && vx < 0) {
+            newX = wallX + ballRadius + 4
+            newVx = -vx * 0.4
+          }
+        }
+      }
+    }
+
+    return { x: newX, y: newY, vx: newVx, vy: newVy }
+  }, [walls, ballRadius])
 
   // Check if ball is in a hole
   const checkHoleCollision = useCallback((x: number, y: number): Hole | null => {
@@ -95,11 +180,11 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       }
     }
     return null
-  }, [holes])
+  }, [holes, ballRadius])
 
   // Physics update loop
   useEffect(() => {
-    if (isDropping) return
+    if (showConfirm) return
 
     let animationId: number
 
@@ -120,21 +205,28 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       let newX = ballX.get() + velocityX.current
       let newY = ballY.get() + velocityY.current
 
-      // Bounce off walls
+      // Check wall collisions
+      const wallResult = checkWallCollision(newX, newY, velocityX.current, velocityY.current)
+      newX = wallResult.x
+      newY = wallResult.y
+      velocityX.current = wallResult.vx
+      velocityY.current = wallResult.vy
+
+      // Bounce off container walls
       if (newX < ballRadius) {
         newX = ballRadius
-        velocityX.current = -velocityX.current * 0.6
+        velocityX.current = -velocityX.current * 0.4
       } else if (newX > containerSize.width - ballRadius) {
         newX = containerSize.width - ballRadius
-        velocityX.current = -velocityX.current * 0.6
+        velocityX.current = -velocityX.current * 0.4
       }
 
       if (newY < ballRadius) {
         newY = ballRadius
-        velocityY.current = -velocityY.current * 0.6
+        velocityY.current = -velocityY.current * 0.4
       } else if (newY > containerSize.height - ballRadius) {
         newY = containerSize.height - ballRadius
-        velocityY.current = -velocityY.current * 0.6
+        velocityY.current = -velocityY.current * 0.4
       }
 
       ballX.set(newX)
@@ -143,8 +235,8 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       // Check for hole collision
       const hole = checkHoleCollision(newX, newY)
       if (hole) {
-        setIsDropping(true)
         setSelectedHole(hole.label)
+        setShowConfirm(true)
 
         // Haptic feedback
         if (navigator.vibrate) {
@@ -155,11 +247,6 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
         animate(ballX, hole.x, { duration: 0.3 })
         animate(ballY, hole.y, { duration: 0.3 })
 
-        // Submit answer after animation
-        setTimeout(() => {
-          onAnswer(hole.label)
-        }, 600)
-
         return
       }
 
@@ -168,24 +255,21 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
 
     animationId = requestAnimationFrame(updatePhysics)
     return () => cancelAnimationFrame(animationId)
-  }, [ballX, ballY, containerSize, isDropping, checkHoleCollision, onAnswer])
+  }, [ballX, ballY, containerSize, showConfirm, checkHoleCollision, checkWallCollision, friction, gravity, maxVelocity, ballRadius])
 
   // Device orientation (mobile tilt)
   useEffect(() => {
     const handleOrientation = (event: DeviceOrientationEvent) => {
       if (event.gamma !== null && event.beta !== null) {
-        // gamma is left-right tilt (-90 to 90)
-        // beta is front-back tilt (-180 to 180)
-        tiltX.current = (event.gamma / 90) * 2
-        tiltY.current = Math.max(-1, Math.min(1, (event.beta - 30) / 45))
+        tiltX.current = (event.gamma / 90) * 2.5
+        tiltY.current = Math.max(-1, Math.min(1, (event.beta - 30) / 40))
         setShowHint(false)
       }
     }
 
-    // Request permission on iOS 13+
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
-      // We'll request on first interaction
+      // iOS - will request on first touch
     } else {
       window.addEventListener('deviceorientation', handleOrientation)
     }
@@ -197,26 +281,24 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
 
   // Mouse/touch drag for desktop
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (isDropping) return
+    if (showConfirm) return
 
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
 
-    // Calculate tilt based on pointer position relative to center
     const centerX = rect.width / 2
     const centerY = rect.height / 2
     const offsetX = (e.clientX - rect.left - centerX) / centerX
     const offsetY = (e.clientY - rect.top - centerY) / centerY
 
-    tiltX.current = offsetX * 1.5
-    tiltY.current = offsetY * 1.5
+    tiltX.current = offsetX * 2
+    tiltY.current = offsetY * 2
     setShowHint(false)
-  }, [isDropping])
+  }, [showConfirm])
 
   const handlePointerLeave = useCallback(() => {
-    // Gradually return to level
-    tiltX.current *= 0.5
-    tiltY.current *= 0.5
+    tiltX.current *= 0.3
+    tiltY.current *= 0.3
   }, [])
 
   // Request device orientation permission on touch
@@ -228,8 +310,8 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
         if (permission === 'granted') {
           window.addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
             if (event.gamma !== null && event.beta !== null) {
-              tiltX.current = (event.gamma / 90) * 2
-              tiltY.current = Math.max(-1, Math.min(1, (event.beta - 30) / 45))
+              tiltX.current = (event.gamma / 90) * 2.5
+              tiltY.current = Math.max(-1, Math.min(1, (event.beta - 30) / 40))
             }
           })
         }
@@ -237,6 +319,21 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
         // Fall back to touch drag
       }
     }
+  }
+
+  const handleConfirm = () => {
+    if (selectedHole) {
+      onAnswer(selectedHole)
+    }
+  }
+
+  const handleReset = () => {
+    setSelectedHole(null)
+    setShowConfirm(false)
+    velocityX.current = 0
+    velocityY.current = 0
+    ballX.set(containerSize.width / 2)
+    ballY.set(40)
   }
 
   return (
@@ -257,50 +354,64 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       {/* Game board */}
       <motion.div
         ref={containerRef}
-        className="relative w-full aspect-[3/4] bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl shadow-lg overflow-hidden border-4 border-amber-300"
+        className="relative w-full aspect-[3/4] bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl shadow-lg overflow-hidden border-4 border-amber-400"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
         onTouchStart={handleTouchStart}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        style={{
-          perspective: '1000px',
-          transformStyle: 'preserve-3d',
-        }}
       >
-        {/* Wood grain texture overlay */}
+        {/* Wood grain texture */}
         <div
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
             backgroundImage: `repeating-linear-gradient(
               90deg,
               transparent,
-              transparent 20px,
-              rgba(139, 69, 19, 0.1) 20px,
-              rgba(139, 69, 19, 0.1) 40px
+              transparent 30px,
+              rgba(139, 69, 19, 0.15) 30px,
+              rgba(139, 69, 19, 0.15) 60px
             )`,
           }}
         />
 
         {/* Hint text */}
-        {showHint && (
+        {showHint && !showConfirm && (
           <motion.div
-            className="absolute top-4 left-0 right-0 text-center"
+            className="absolute top-6 left-0 right-0 text-center z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <span className="text-amber-700 text-sm font-medium bg-white/80 px-3 py-1 rounded-full">
-              Move cursor or tilt device
+            <span className="text-amber-800 text-sm font-medium bg-white/90 px-4 py-2 rounded-full shadow">
+              📱 Tilt device or move cursor
             </span>
           </motion.div>
         )}
+
+        {/* Rails/Walls */}
+        {walls.map((wall, index) => {
+          const isHorizontal = Math.abs(wall.y1 - wall.y2) < 2
+          return (
+            <div
+              key={index}
+              className="absolute bg-amber-700 rounded-sm"
+              style={{
+                left: Math.min(wall.x1, wall.x2),
+                top: Math.min(wall.y1, wall.y2) - (isHorizontal ? 3 : 0),
+                width: isHorizontal ? Math.abs(wall.x2 - wall.x1) : wallThickness,
+                height: isHorizontal ? wallThickness : Math.abs(wall.y2 - wall.y1),
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}
+            />
+          )
+        })}
 
         {/* Holes */}
         {holes.map((hole, index) => (
           <motion.div
             key={hole.label}
-            className="absolute flex flex-col items-center"
+            className="absolute"
             style={{
               left: hole.x,
               top: hole.y,
@@ -310,31 +421,34 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
             animate={{ scale: 1 }}
             transition={{ delay: index * 0.1, type: 'spring' }}
           >
-            {/* Hole shadow */}
+            {/* Hole */}
             <div
-              className={`rounded-full ${
+              className={`rounded-full flex items-center justify-center ${
                 selectedHole === hole.label
                   ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50'
-                  : 'bg-gray-800'
+                  : 'bg-gray-900'
               }`}
               style={{
                 width: hole.radius * 2,
                 height: hole.radius * 2,
                 boxShadow: selectedHole === hole.label
                   ? undefined
-                  : 'inset 0 4px 8px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.2)',
+                  : 'inset 0 6px 12px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.3)',
               }}
-            />
-            {/* Label */}
-            <span className="mt-2 text-sm font-medium text-gray-700 text-center max-w-[80px] leading-tight">
-              {hole.label}
-            </span>
+            >
+              {/* Label inside hole */}
+              <span className={`text-[10px] font-bold text-center px-1 leading-tight ${
+                selectedHole === hole.label ? 'text-white' : 'text-gray-400'
+              }`} style={{ maxWidth: hole.radius * 1.8 }}>
+                {hole.label}
+              </span>
+            </div>
           </motion.div>
         ))}
 
         {/* Ball */}
         <motion.div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none z-10"
           style={{
             x: springX,
             y: springY,
@@ -343,60 +457,62 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
             marginLeft: -ballRadius,
             marginTop: -ballRadius,
           }}
-          animate={isDropping ? { scale: [1, 0.8, 0], opacity: [1, 1, 0] } : {}}
+          animate={showConfirm ? { scale: [1, 0.7, 0], opacity: [1, 1, 0] } : {}}
           transition={{ duration: 0.4 }}
         >
-          {/* Ball gradient */}
           <div
             className="w-full h-full rounded-full"
             style={{
-              background: 'radial-gradient(circle at 30% 30%, #e0e0e0, #888888)',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)',
+              background: 'radial-gradient(circle at 30% 30%, #f5f5f5, #777777)',
+              boxShadow: '0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.2)',
             }}
           />
-          {/* Ball highlight */}
           <div
-            className="absolute top-1 left-2 w-3 h-2 rounded-full bg-white opacity-60"
+            className="absolute top-0.5 left-1.5 w-2 h-1.5 rounded-full bg-white opacity-70"
           />
         </motion.div>
 
-        {/* Success overlay */}
-        {selectedHole && (
+        {/* Confirm/Reset overlay */}
+        {showConfirm && selectedHole && (
           <motion.div
-            className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center"
+            className="absolute inset-0 bg-black/40 flex items-center justify-center z-20"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             <motion.div
-              className="bg-white rounded-xl px-6 py-4 shadow-xl"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              className="bg-white rounded-2xl px-6 py-5 shadow-2xl text-center mx-4"
+              initial={{ scale: 0, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
               transition={{ type: 'spring', delay: 0.2 }}
             >
-              <p className="text-emerald-600 font-bold text-lg">{selectedHole}</p>
+              <motion.div
+                className="text-4xl mb-2"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.5 }}
+              >
+                🎱
+              </motion.div>
+              <p className="text-lg font-bold text-gray-800 mb-1">{selectedHole}</p>
+              <p className="text-sm text-gray-500 mb-4">Is this your answer?</p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleReset}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Try Again
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="flex-1 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
+                >
+                  Confirm
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </motion.div>
-
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {options.map((option, index) => (
-          <motion.span
-            key={option}
-            className={`px-3 py-1 rounded-full text-sm ${
-              selectedHole === option
-                ? 'bg-emerald-500 text-white'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * index }}
-          >
-            {option}
-          </motion.span>
-        ))}
-      </div>
     </div>
   )
 }

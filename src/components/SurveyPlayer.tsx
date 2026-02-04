@@ -202,12 +202,12 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   const primaryColor = survey.branding_config?.primary_color || '#6366F1'
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="h-screen h-[100dvh] bg-slate-50 flex flex-col overflow-hidden">
       {/* Streak counter */}
       <StreakCounter streak={swipeStreak} isSpeedBonus={isSpeedBonus} />
 
       {/* Segmented progress bar */}
-      <div className="flex gap-1.5 px-4 py-3">
+      <div className="flex gap-1.5 px-4 py-3 flex-shrink-0">
         {questions.map((_, i) => (
           <div
             key={i}
@@ -224,7 +224,7 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
       </div>
 
       {/* Question area - full height */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
         <AnimatePresence mode="wait">
           {currentQuestion && (
           <motion.div
