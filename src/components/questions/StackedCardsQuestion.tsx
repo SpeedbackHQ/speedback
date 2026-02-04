@@ -39,28 +39,28 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
     if (isSubmitting) return
 
     const threshold = 50
-    const velocity = 400
+    const velocityThreshold = 200  // Lower threshold for snappier response
 
-    // Swipe up to go forward, down to go back
-    if (info.offset.y < -threshold || info.velocity.y < -velocity) {
+    // Swipe up to go forward, down to go back (use velocity OR position)
+    if (info.offset.y < -threshold || info.velocity.y < -velocityThreshold) {
       goToNext()
-    } else if (info.offset.y > threshold || info.velocity.y > velocity) {
+    } else if (info.offset.y > threshold || info.velocity.y > velocityThreshold) {
       goToPrevious()
     } else {
-      // Snap back
-      animate(y, 0, { type: 'spring', stiffness: 400, damping: 30 })
+      // Snap back with snappy spring
+      animate(y, 0, { type: 'spring', stiffness: 250, damping: 40 })
     }
   }
 
   const goToNext = () => {
     setCurrentIndex(prev => getWrappedIndex(prev + 1))
-    animate(y, 0, { type: 'spring', stiffness: 400, damping: 30 })
+    animate(y, 0, { type: 'spring', stiffness: 250, damping: 40 })
     if (navigator.vibrate) navigator.vibrate(15)
   }
 
   const goToPrevious = () => {
     setCurrentIndex(prev => getWrappedIndex(prev - 1))
-    animate(y, 0, { type: 'spring', stiffness: 400, damping: 30 })
+    animate(y, 0, { type: 'spring', stiffness: 250, damping: 40 })
     if (navigator.vibrate) navigator.vibrate(15)
   }
 
@@ -119,7 +119,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
           whileHover={{ opacity: 0.6, y: 80 }}
           whileTap={{ scale: 0.82 }}
           onClick={() => !isSubmitting && goToPrevious()}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 40 }}
         >
           <span className="text-xl font-bold text-white text-center px-6 opacity-60">
             {optionsArray[prevIndex]}
@@ -135,7 +135,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
           `}
           style={{ zIndex: 1 }}
           animate={{ y: -20, opacity: 0.5, scale: 0.88 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 40 }}
         >
           <span className="text-lg font-bold text-white text-center px-6 opacity-50">
             {optionsArray[nextIndex2]}
@@ -151,7 +151,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
           `}
           style={{ zIndex: 2 }}
           animate={{ y: -10, opacity: 0.7, scale: 0.94 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 40 }}
         >
           <span className="text-xl font-bold text-white text-center px-6 opacity-70">
             {optionsArray[nextIndex1]}
@@ -169,7 +169,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
           style={{ y, rotateX: mainCardRotateX, scale: mainCardScale }}
           drag={!isSubmitting ? 'y' : false}
           dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.7}
+          dragElastic={0.3}
           onDragEnd={handleDragEnd}
           whileTap={{ cursor: 'grabbing' }}
         >

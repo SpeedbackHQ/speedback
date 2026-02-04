@@ -113,14 +113,14 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
 
       {/* Score display */}
       <motion.div
-        className="text-center mb-4"
+        className="text-center mb-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         <span className={`text-3xl font-bold ${positionLabel.color}`}>
           {currentScore}%
         </span>
-        <p className={`text-sm ${positionLabel.color}`}>{positionLabel.text}</p>
+        <p className={`text-xs mt-1 ${positionLabel.color}`}>{positionLabel.text}</p>
       </motion.div>
 
       {/* Bullseye target */}
@@ -170,11 +170,11 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-300/50" />
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300/50" />
 
-        {/* Labels */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500">
+        {/* Labels - positioned further from circle */}
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
           {max_label}
         </div>
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500">
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
           {min_label}
         </div>
 

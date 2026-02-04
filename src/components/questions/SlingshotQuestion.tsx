@@ -29,20 +29,27 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   const containerRef = useRef<HTMLDivElement>(null)
   const launchOrigin = { x: 50, y: 85 }
 
-  // Calculate target positions (spread across top area)
+  // Calculate target positions (centered and spread across top area)
   const targets = options.map((label, i) => {
     const cols = Math.min(options.length, 3)
     const rows = Math.ceil(options.length / cols)
     const col = i % cols
     const row = Math.floor(i / cols)
 
-    const xSpacing = 100 / (cols + 1)
-    const ySpacing = 40 / (rows + 1)
+    // Better centering: use 70% of width, centered
+    const totalWidth = 70  // Use 70% of container width
+    const xSpacing = cols > 1 ? totalWidth / (cols - 1) : 0
+    const xOffset = cols > 1 ? (100 - totalWidth) / 2 : 50  // Center single column
+
+    // More vertical spread: use 45% of height for targets
+    const totalHeight = 45
+    const ySpacing = rows > 1 ? totalHeight / (rows - 1) : 0
+    const yOffset = 12  // Start 12% from top
 
     return {
       label,
-      x: xSpacing * (col + 1),
-      y: 10 + ySpacing * (row + 1),
+      x: cols > 1 ? xOffset + col * xSpacing : 50,  // Center if single column
+      y: rows > 1 ? yOffset + row * ySpacing : yOffset + totalHeight / 2,
       color: targetColors[i % targetColors.length],
     }
   })

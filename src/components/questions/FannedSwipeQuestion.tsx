@@ -36,11 +36,12 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
     if (isSubmitting) return
 
     const threshold = 50
-    const velocity = 300
+    const velocityThreshold = 200  // Lower threshold for snappier response
 
-    if (info.offset.x < -threshold || info.velocity.x < -velocity) {
+    // Use velocity OR position to trigger navigation
+    if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       goToNext()
-    } else if (info.offset.x > threshold || info.velocity.x > velocity) {
+    } else if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
       goToPrevious()
     }
   }
@@ -133,7 +134,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
             scale: 0.85,
             opacity: 0.6,
           }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 40 }}
           onClick={() => !isSubmitting && goToPrevious()}
           whileHover={{ scale: 0.88, opacity: 0.8 }}
         >
@@ -160,7 +161,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
             scale: 0.85,
             opacity: 0.6,
           }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 40 }}
           onClick={() => !isSubmitting && goToNext()}
           whileHover={{ scale: 0.88, opacity: 0.8 }}
         >
@@ -180,12 +181,12 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
             exit="exit"
             transition={{
               type: 'spring',
-              stiffness: 300,
-              damping: 30,
+              stiffness: 250,
+              damping: 40,
             }}
             drag={!isSubmitting ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.5}
+            dragElastic={0.2}
             onDragEnd={handleDragEnd}
             className={`
               w-44 h-64 rounded-2xl shadow-2xl z-10

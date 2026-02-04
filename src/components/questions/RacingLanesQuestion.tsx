@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Question } from '@/lib/types'
 
@@ -9,7 +9,15 @@ interface RacingLanesQuestionProps {
   onAnswer: (answer: string) => void
 }
 
-type GamePhase = 'select' | 'countdown' | 'racing' | 'finished'
+type GamePhase = 'car' | 'answer' | 'countdown' | 'racing' | 'won' | 'lost'
+
+interface AIRacer {
+  option: string
+  carIndex: number
+  progress: number
+  speed: number
+  burstChance: number
+}
 
 const carOptions = [
   { emoji: '🚗', color: 'bg-red-500', name: 'Red Racer' },
@@ -20,41 +28,58 @@ const carOptions = [
   { emoji: '🚐', color: 'bg-orange-500', name: 'Orange Cruiser' },
 ]
 
+// Shuffle array helper
+function shuffle<T>(array: T[]): T[] {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionProps) {
   const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
 
-  const [gamePhase, setGamePhase] = useState<GamePhase>('select')
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [gamePhase, setGamePhase] = useState<GamePhase>('car')
   const [selectedCar, setSelectedCar] = useState<number>(0)
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(3)
-  const [progress, setProgress] = useState(0)
+  const [userProgress, setUserProgress] = useState(0)
+  const [aiRacers, setAiRacers] = useState<AIRacer[]>([])
   const [tapCount, setTapCount] = useState(0)
+  const gameLoopRef = useRef<number | null>(null)
 
   const finishLine = 100
-  const progressPerTap = 4
-  const decayRate = 0.5
+  const progressPerTap = 5
+  const userDecay = 0.3
 
-  // Handle option selection
-  const handleSelectOption = (option: string) => {
-    setSelectedOption(option)
-
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(30)
-    }
+  // Handle car selection
+  const handleSelectCar = (carIndex: number) => {
+    setSelectedCar(carIndex)
+    setGamePhase('answer')
+    if (navigator.vibrate) navigator.vibrate(30)
   }
 
-  // Handle car selection and start race
-  const handleSelectCar = (carIndex: number) => {
-    if (!selectedOption) return
+  // Handle answer/lane selection
+  const handleSelectAnswer = (option: string) => {
+    setSelectedOption(option)
 
-    setSelectedCar(carIndex)
+    // Set up AI racers from other options
+    const otherOptions = options.filter(o => o !== option)
+    const aiOptions = shuffle(otherOptions).slice(0, Math.min(2, otherOptions.length))
+
+    const racers: AIRacer[] = aiOptions.map((opt, i) => ({
+      option: opt,
+      carIndex: (selectedCar + i + 1) % carOptions.length,
+      progress: 0,
+      speed: 2.5 + Math.random() * 1.5,  // 2.5-4 per tick
+      burstChance: 0.08 + Math.random() * 0.07,  // 8-15%
+    }))
+
+    setAiRacers(racers)
     setGamePhase('countdown')
-
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(50)
-    }
+    if (navigator.vibrate) navigator.vibrate(50)
   }
 
   // Countdown timer
@@ -62,58 +87,115 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     if (gamePhase !== 'countdown') return
 
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 800)
+      const timer = setTimeout(() => setCountdown(countdown - 1), 700)
       return () => clearTimeout(timer)
     } else {
       setGamePhase('racing')
     }
   }, [gamePhase, countdown])
 
-  // Decay during racing
+  // Game loop for racing
   useEffect(() => {
     if (gamePhase !== 'racing') return
 
-    const decayInterval = setInterval(() => {
-      setProgress(prev => Math.max(0, prev - decayRate))
+    const gameLoop = () => {
+      // Update AI racers
+      setAiRacers(prev => prev.map(racer => {
+        let newProgress = racer.progress + racer.speed
+        if (Math.random() < racer.burstChance) {
+          newProgress += 4  // Speed burst
+        }
+        return { ...racer, progress: Math.min(finishLine, newProgress) }
+      }))
+
+      // Apply decay to user
+      setUserProgress(prev => Math.max(0, prev - userDecay))
+
+      gameLoopRef.current = requestAnimationFrame(gameLoop)
+    }
+
+    // Run at ~60fps but process every ~100ms worth
+    const interval = setInterval(() => {
+      // Check for win/lose
+      setUserProgress(currentUser => {
+        setAiRacers(currentAi => {
+          // Check if user won
+          if (currentUser >= finishLine) {
+            setGamePhase('won')
+            if (navigator.vibrate) navigator.vibrate([50, 30, 100])
+            return currentAi
+          }
+
+          // Check if any AI won
+          const aiWinner = currentAi.find(r => r.progress >= finishLine)
+          if (aiWinner) {
+            setGamePhase('lost')
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100])
+            return currentAi
+          }
+
+          return currentAi
+        })
+        return currentUser
+      })
     }, 100)
 
-    return () => clearInterval(decayInterval)
+    gameLoopRef.current = requestAnimationFrame(gameLoop)
+
+    return () => {
+      if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current)
+      clearInterval(interval)
+    }
   }, [gamePhase])
 
   // Handle tap during race
   const handleRaceTap = useCallback(() => {
     if (gamePhase !== 'racing') return
 
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(15)
-    }
-
+    if (navigator.vibrate) navigator.vibrate(15)
     setTapCount(prev => prev + 1)
-    setProgress(prev => {
-      const newProgress = prev + progressPerTap
+    setUserProgress(prev => Math.min(finishLine, prev + progressPerTap))
+  }, [gamePhase])
 
-      if (newProgress >= finishLine) {
-        setGamePhase('finished')
-
-        // Strong haptic for win
-        if (navigator.vibrate) {
-          navigator.vibrate([50, 30, 100])
-        }
-
-        // Submit answer
-        setTimeout(() => {
-          onAnswer(selectedOption!)
-        }, 1200)
-
-        return finishLine
-      }
-
-      return newProgress
-    })
+  // Handle winning
+  useEffect(() => {
+    if (gamePhase === 'won' && selectedOption) {
+      setTimeout(() => {
+        onAnswer(selectedOption)
+      }, 1500)
+    }
   }, [gamePhase, selectedOption, onAnswer])
 
-  const selectedCarInfo = carOptions[selectedCar]
+  // Handle retry
+  const handleRetry = () => {
+    setUserProgress(0)
+    setTapCount(0)
+    setCountdown(3)
+
+    // Reset AI racers with new random speeds
+    setAiRacers(prev => prev.map(racer => ({
+      ...racer,
+      progress: 0,
+      speed: 2.5 + Math.random() * 1.5,
+      burstChance: 0.08 + Math.random() * 0.07,
+    })))
+
+    setGamePhase('countdown')
+    if (navigator.vibrate) navigator.vibrate(30)
+  }
+
+  const userCar = carOptions[selectedCar]
+
+  // Build lanes array: user's lane + AI lanes
+  const lanes = selectedOption ? [
+    { option: selectedOption, progress: userProgress, car: userCar, isUser: true },
+    ...aiRacers.map(r => ({
+      option: r.option,
+      progress: r.progress,
+      car: carOptions[r.carIndex],
+      isUser: false,
+    }))
+  ] : []
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -127,60 +209,25 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-4 text-sm">
-        {gamePhase === 'select' && !selectedOption && 'First, pick your answer'}
-        {gamePhase === 'select' && selectedOption && 'Now choose your car!'}
+        {gamePhase === 'car' && 'Choose your racer!'}
+        {gamePhase === 'answer' && 'Pick your answer to race for it!'}
         {gamePhase === 'countdown' && 'Get ready...'}
         {gamePhase === 'racing' && 'TAP TAP TAP to win!'}
-        {gamePhase === 'finished' && 'You made it!'}
+        {gamePhase === 'won' && '🏆 You won!'}
+        {gamePhase === 'lost' && 'So close! Try again?'}
       </p>
 
-      {/* Phase 1: Select Option */}
+      {/* Phase 1: Car Selection */}
       <AnimatePresence mode="wait">
-        {gamePhase === 'select' && !selectedOption && (
+        {gamePhase === 'car' && (
           <motion.div
-            key="options"
-            className="space-y-3"
+            key="car-select"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <p className="text-center text-gray-600 font-medium mb-4">What&apos;s your answer?</p>
-            {options.map((option, index) => (
-              <motion.button
-                key={option}
-                onClick={() => handleSelectOption(option)}
-                className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-indigo-400 hover:bg-indigo-50 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                {option}
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-
-        {/* Phase 1b: Select Car */}
-        {gamePhase === 'select' && selectedOption && (
-          <motion.div
-            key="cars"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            {/* Selected answer badge */}
-            <div className="text-center mb-6">
-              <span className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium">
-                Your answer: {selectedOption}
-              </span>
-            </div>
-
-            <p className="text-center text-gray-600 font-medium mb-4">Pick your car to race!</p>
-
             <div className="grid grid-cols-3 gap-3">
-              {carOptions.slice(0, 6).map((car, index) => (
+              {carOptions.map((car, index) => (
                 <motion.button
                   key={index}
                   onClick={() => handleSelectCar(index)}
@@ -203,6 +250,39 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
           </motion.div>
         )}
 
+        {/* Phase 2: Answer Selection */}
+        {gamePhase === 'answer' && (
+          <motion.div
+            key="answer-select"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {/* Show selected car */}
+            <div className="text-center mb-4">
+              <span className="text-4xl">{userCar.emoji}</span>
+              <p className="text-sm text-gray-500 mt-1">Your racer: {userCar.name}</p>
+            </div>
+
+            <div className="space-y-3">
+              {options.map((option, index) => (
+                <motion.button
+                  key={option}
+                  onClick={() => handleSelectAnswer(option)}
+                  className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-indigo-400 hover:bg-indigo-50 transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {option}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Countdown overlay */}
         {gamePhase === 'countdown' && (
           <motion.div
@@ -218,7 +298,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                {selectedCarInfo.emoji}
+                {userCar.emoji}
               </motion.div>
               <motion.div
                 key={countdown}
@@ -230,18 +310,19 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
               >
                 {countdown > 0 ? countdown : 'GO!'}
               </motion.div>
+              <p className="text-white/70 mt-4">Racing for: {selectedOption}</p>
             </div>
           </motion.div>
         )}
 
         {/* Racing phase */}
-        {(gamePhase === 'racing' || gamePhase === 'finished') && (
+        {(gamePhase === 'racing' || gamePhase === 'won' || gamePhase === 'lost') && (
           <motion.div
             key="racing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            {/* Selected answer reminder */}
+            {/* Racing for badge */}
             <div className="text-center mb-4">
               <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
                 Racing for: {selectedOption}
@@ -272,47 +353,67 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
                 </div>
               </div>
 
-              {/* Single race lane */}
-              <div className="relative h-20 bg-gray-700 rounded-lg overflow-hidden">
-                {/* Progress track */}
-                <motion.div
-                  className={`absolute inset-y-1 left-1 rounded-md ${selectedCarInfo.color}`}
-                  style={{ width: `${Math.max(progress, 5)}%` }}
-                  animate={{ width: `${Math.max(progress, 5)}%` }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-
-                {/* Car */}
-                <motion.div
-                  className="absolute top-1/2 -translate-y-1/2 text-4xl z-10"
-                  style={{ left: `${Math.max(progress - 3, 2)}%` }}
-                  animate={{
-                    left: `${Math.max(progress - 3, 2)}%`,
-                    rotate: gamePhase === 'finished' ? [0, 15, -15, 0] : 0,
-                  }}
-                  transition={{
-                    left: { type: 'spring', stiffness: 400, damping: 35 },
-                    rotate: { duration: 0.3, repeat: gamePhase === 'finished' ? 3 : 0 },
-                  }}
-                >
-                  {selectedCarInfo.emoji}
-                </motion.div>
-
-                {/* Tap indicator */}
-                {gamePhase === 'racing' && (
-                  <motion.div
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white font-bold text-lg"
-                    animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 0.3, repeat: Infinity }}
+              {/* Race lanes */}
+              <div className="space-y-3">
+                {lanes.map((lane, index) => (
+                  <div
+                    key={lane.option}
+                    className={`relative h-14 rounded-lg overflow-hidden ${
+                      lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
+                    }`}
                   >
-                    TAP!
-                  </motion.div>
-                )}
+                    {/* Lane label */}
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/60 font-medium max-w-16 truncate z-10">
+                      {lane.option}
+                    </div>
+
+                    {/* Progress track */}
+                    <motion.div
+                      className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
+                      initial={{ width: '5%' }}
+                      animate={{ width: `${Math.max(lane.progress, 5)}%` }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                    />
+
+                    {/* Car */}
+                    <motion.div
+                      className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
+                      animate={{
+                        left: `${Math.max(lane.progress - 3, 2)}%`,
+                        rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
+                      }}
+                      transition={{
+                        left: { type: 'spring', stiffness: 400, damping: 35 },
+                        rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
+                      }}
+                    >
+                      {lane.car.emoji}
+                    </motion.div>
+
+                    {/* User indicator */}
+                    {lane.isUser && (
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
+                        YOU
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
-              {/* Winner celebration overlay */}
+              {/* Tap indicator during race */}
+              {gamePhase === 'racing' && (
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  animate={{ opacity: [0.3, 0.7, 0.3] }}
+                  transition={{ duration: 0.3, repeat: Infinity }}
+                >
+                  <span className="text-white font-bold text-xl">TAP!</span>
+                </motion.div>
+              )}
+
+              {/* Result overlay */}
               <AnimatePresence>
-                {gamePhase === 'finished' && (
+                {(gamePhase === 'won' || gamePhase === 'lost') && (
                   <motion.div
                     className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl"
                     initial={{ opacity: 0 }}
@@ -329,10 +430,16 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
                         animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 0.5, repeat: 2 }}
                       >
-                        🏆
+                        {gamePhase === 'won' ? '🏆' : '😅'}
                       </motion.div>
-                      <p className="text-xl font-bold text-gray-800">{selectedOption}</p>
-                      <p className="text-sm text-gray-500">You made it in {tapCount} taps!</p>
+                      <p className="text-xl font-bold text-gray-800">
+                        {gamePhase === 'won' ? selectedOption : 'Not quite!'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {gamePhase === 'won'
+                          ? `${tapCount} taps to victory!`
+                          : 'The competition was fierce!'}
+                      </p>
                     </motion.div>
                   </motion.div>
                 )}
@@ -352,18 +459,19 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
               <p className="text-sm text-gray-500">taps</p>
             </div>
 
-            {/* Progress bar */}
-            <div className="mt-4 bg-gray-200 rounded-full h-3 overflow-hidden">
-              <motion.div
-                className={`h-full ${selectedCarInfo.color}`}
-                style={{ width: `${progress}%` }}
-                animate={{ width: `${progress}%` }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              />
-            </div>
-            <p className="text-center text-sm text-gray-500 mt-1">
-              {Math.round(progress)}% to finish
-            </p>
+            {/* Retry button */}
+            {gamePhase === 'lost' && (
+              <motion.button
+                onClick={handleRetry}
+                className="w-full mt-4 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Try Again! 🔄
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

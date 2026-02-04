@@ -68,7 +68,7 @@ export function SliderQuestion({ question, onAnswer }: SliderQuestionProps) {
 
       {/* Slider container with gradient background */}
       <motion.div
-        className="relative h-16 rounded-full overflow-hidden mb-4"
+        className="relative h-20 rounded-full overflow-hidden mb-4"
         style={{
           background: `linear-gradient(to right, #ef4444, #eab308, #22c55e)`,
           boxShadow: isDragging ? `0 0 30px ${gradientColor}` : 'none'
@@ -78,7 +78,7 @@ export function SliderQuestion({ question, onAnswer }: SliderQuestionProps) {
         {/* Slider track overlay */}
         <div className="absolute inset-0 bg-gray-200/30" />
 
-        {/* Custom slider */}
+        {/* Custom slider - larger touch target */}
         <input
           type="range"
           min="0"
@@ -92,11 +92,11 @@ export function SliderQuestion({ question, onAnswer }: SliderQuestionProps) {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
 
-        {/* Slider thumb */}
+        {/* Slider thumb - larger for easier grabbing */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center text-2xl"
-          style={{ left: `calc(${value}% - 28px)` }}
-          animate={{ scale: isDragging ? 1.2 : 1 }}
+          className="absolute top-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center text-3xl"
+          style={{ left: `calc(${value}% - 40px)` }}
+          animate={{ scale: isDragging ? 1.15 : 1 }}
         >
           {currentEmoji}
         </motion.div>
