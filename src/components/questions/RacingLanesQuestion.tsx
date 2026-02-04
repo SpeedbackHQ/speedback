@@ -41,7 +41,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
   const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
 
   const [gamePhase, setGamePhase] = useState<GamePhase>('car')
-  const [selectedCar, setSelectedCar] = useState<number>(0)
+  const [selectedCar, setSelectedCar] = useState<number | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(3)
   const [userProgress, setUserProgress] = useState(0)
@@ -67,7 +67,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
 
     const racers: AIRacer[] = aiOptions.map((opt, i) => ({
       option: opt,
-      carIndex: (selectedCar + i + 1) % carOptions.length,
+      carIndex: ((selectedCar ?? 0) + i + 1) % carOptions.length,
       progress: 0,
       speed: 0.3 + Math.random() * 0.3,
       burstChance: 0.03 + Math.random() * 0.03,
@@ -168,7 +168,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
     if (navigator.vibrate) navigator.vibrate(30)
   }
 
-  const userCar = carOptions[selectedCar]
+  const userCar = selectedCar !== null ? carOptions[selectedCar] : carOptions[0]
 
   // Build lanes with user in the MIDDLE position
   const lanes = selectedOption ? (() => {
@@ -216,40 +216,40 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       </div>
 
       {/* Race lanes */}
-      <div className="space-y-1">
+      <div className="space-y-3">
         {lanes.map((lane) => (
-          <div key={lane.option}>
-            {/* Lane label above */}
-            <div className={`flex items-center gap-1 px-1 mb-0.5 ${lane.isUser ? 'text-indigo-300' : 'text-white/50'}`}>
-              <span className="text-xs font-medium truncate">{lane.option}</span>
-              {lane.isUser && <span className="text-[10px] font-bold bg-indigo-500/30 px-1.5 rounded">YOU</span>}
-            </div>
-            <div
-              className={`relative h-12 rounded-lg overflow-hidden ${
-                lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
-              }`}
-            >
-              <motion.div
-                className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
-                initial={{ width: '5%' }}
-                animate={{ width: `${Math.max(lane.progress, 5)}%` }}
-                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-              />
+          <div
+            key={lane.option}
+            className={`relative h-14 rounded-lg overflow-hidden ${
+              lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
+            }`}
+          >
+            <motion.div
+              className={`absolute inset-y-1 left-1 rounded-md ${lane.car.color}`}
+              initial={{ width: '5%' }}
+              animate={{ width: `${Math.max(lane.progress, 5)}%` }}
+              transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+            />
 
-              <motion.div
-                className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
-                animate={{
-                  left: `${Math.max(lane.progress - 3, 2)}%`,
-                  rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
-                }}
-                transition={{
-                  left: { type: 'spring', stiffness: 400, damping: 35 },
-                  rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
-                }}
-              >
-                {lane.car.emoji}
-              </motion.div>
-            </div>
+            <motion.div
+              className="absolute top-1/2 -translate-y-1/2 text-2xl z-20"
+              animate={{
+                left: `${Math.max(lane.progress - 3, 2)}%`,
+                rotate: gamePhase === 'won' && lane.isUser ? [0, 15, -15, 0] : 0,
+              }}
+              transition={{
+                left: { type: 'spring', stiffness: 400, damping: 35 },
+                rotate: { duration: 0.3, repeat: gamePhase === 'won' && lane.isUser ? 3 : 0 },
+              }}
+            >
+              {lane.car.emoji}
+            </motion.div>
+
+            {lane.isUser && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
+                YOU
+              </div>
+            )}
           </div>
         ))}
       </div>

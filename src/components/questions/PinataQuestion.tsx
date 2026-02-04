@@ -9,7 +9,7 @@ interface PinataQuestionProps {
   onAnswer: (answer: string) => void
 }
 
-const TAPS_TO_BREAK = 12
+const TAPS_TO_BREAK = 10
 
 const pinataColors = [
   { body: 'from-pink-400 to-rose-500', stripe: 'bg-yellow-300', candy: ['bg-pink-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-400'] },
@@ -234,20 +234,6 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
                 </>
               )}
             </motion.div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="w-40 mt-2">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-pink-400 to-rose-500"
-                animate={{ width: `${progress}%` }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-              />
-            </div>
-            <p className="text-center text-xs text-gray-500 mt-1">
-              {TAPS_TO_BREAK - tapCount > 0 ? `${TAPS_TO_BREAK - tapCount} hits left` : 'Smashed!'}
-            </p>
           </div>
 
           {/* Back button */}

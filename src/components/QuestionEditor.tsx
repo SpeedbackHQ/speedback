@@ -189,7 +189,7 @@ export function QuestionEditor({
               onClick={() => {
                 const currentOptions = (question.config.options as string[]) || []
                 onQuestionUpdate(question.id, {
-                  config: { ...question.config, options: [...currentOptions, ''] }
+                  config: { ...question.config, options: [...currentOptions, `Option ${currentOptions.length + 1}`] }
                 })
               }}
               className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${

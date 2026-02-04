@@ -9,7 +9,7 @@ interface TreasureChestQuestionProps {
   onAnswer: (answer: string) => void
 }
 
-const TAPS_TO_OPEN = 15
+const TAPS_TO_OPEN = 10
 
 const chestColors = [
   { base: 'from-amber-600 to-amber-800', accent: 'bg-amber-700' },
@@ -209,20 +209,6 @@ export function TreasureChestQuestion({ question, onAnswer }: TreasureChestQuest
               />
             )}
           </motion.div>
-
-          {/* Progress bar */}
-          <div className="w-40 mt-4">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-amber-400 to-yellow-500"
-                animate={{ width: `${progress}%` }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-              />
-            </div>
-            <p className="text-center text-xs text-gray-500 mt-1">
-              {TAPS_TO_OPEN - tapCount > 0 ? `${TAPS_TO_OPEN - tapCount} taps left` : 'Open!'}
-            </p>
-          </div>
 
           {/* Back button */}
           <button
