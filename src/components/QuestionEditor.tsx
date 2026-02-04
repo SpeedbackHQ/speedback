@@ -37,7 +37,7 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'fanned_swipe', label: 'Fanned Swipe', emoji: '🎴', description: 'Swipe to browse' },
       { type: 'stacked', label: 'Card Stack', emoji: '📚', description: 'Swipe through stack' },
       // Mini-games
-      { type: 'tilt_maze', label: 'Tilt Maze', emoji: '🎱', description: 'Roll ball into hole' },
+      { type: 'tilt_maze', label: 'Drop Zone', emoji: '📦', description: 'Drag to your answer' },
       { type: 'racing_lanes', label: 'Racing Lanes', emoji: '🏎️', description: 'Tap to race ahead' },
       { type: 'gravity_drop', label: 'Gravity Drop', emoji: '🪂', description: 'Drop into bucket' },
       { type: 'bubble_pop', label: 'Bubble Pop', emoji: '🫧', description: 'Pop before escape' },
