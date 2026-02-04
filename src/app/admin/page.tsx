@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { CreateSurveyButton } from '@/components/CreateSurveyButton'
 
 async function getSurveys() {
   const { data: surveys, error } = await supabase
@@ -25,6 +26,13 @@ export default async function AdminDashboard() {
           <h1 className="text-3xl font-bold text-slate-800">Your Surveys</h1>
           <p className="text-slate-500 mt-1">{surveys.length} survey{surveys.length !== 1 ? 's' : ''} created</p>
         </div>
+        {surveys.length > 0 && (
+          <CreateSurveyButton
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
+          >
+            + New Survey
+          </CreateSurveyButton>
+        )}
       </div>
 
       {surveys.length === 0 ? (
@@ -32,12 +40,11 @@ export default async function AdminDashboard() {
           <div className="text-6xl mb-4 animate-bounce-subtle">📝</div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">No surveys yet</h2>
           <p className="text-slate-500 mb-6 font-medium">Create your first gamified feedback survey!</p>
-          <Link
-            href="/admin/surveys/new"
+          <CreateSurveyButton
             className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover-lift hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
           >
             Create Survey
-          </Link>
+          </CreateSurveyButton>
         </div>
       ) : (
         <div className="grid gap-4">

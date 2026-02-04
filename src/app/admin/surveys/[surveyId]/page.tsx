@@ -1,55 +1,45 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { Survey, Question, Response, QuestionType } from '@/lib/types'
 import Link from 'next/link'
+import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
 
-const questionTypeInfo: Partial<Record<QuestionType, { label: string; emoji: string }>> = {
-  swipe: { label: 'Swipe Cards', emoji: '👆' },
-  slider: { label: 'Emotion Slider', emoji: '😊' },
-  tap: { label: 'Tap to Select', emoji: '💥' },
-  tap_meter: { label: 'Tap Meter', emoji: '📈' },
-  rolodex: { label: 'Carousel', emoji: '🎠' },
-  stars: { label: 'Star Rating', emoji: '⭐' },
-  thermometer: { label: 'Thermometer', emoji: '🌡️' },
-  fanned: { label: 'Fanned Cards', emoji: '🃏' },
-  fanned_swipe: { label: 'Fanned Swipe', emoji: '🎴' },
-  stacked: { label: 'Card Stack', emoji: '📚' },
-  rank: { label: 'Drag & Rank', emoji: '📊' },
-  counter: { label: 'Tap Counter', emoji: '🔢' },
-  // Mini-games
-  tilt_maze: { label: 'Tilt Maze', emoji: '🎱' },
-  racing_lanes: { label: 'Racing Lanes', emoji: '🏎️' },
-  slot_machine: { label: 'Slot Machine', emoji: '🎰' },
-  gravity_drop: { label: 'Gravity Drop', emoji: '🪂' },
-  bubble_pop: { label: 'Bubble Pop', emoji: '🫧' },
-  bullseye: { label: 'Bullseye', emoji: '🎯' },
-  slingshot: { label: 'Slingshot', emoji: '🏹' },
-  scratch_card: { label: 'Scratch Card', emoji: '🎫' },
-}
+type TabType = 'questions' | 'share' | 'responses'
 
 interface SurveyData extends Survey {
   questions: Question[]
   responses: Response[]
 }
 
-export default function SurveyDetailPage() {
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+export default function SurveyEditorPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const surveyId = params.surveyId as string
+
+  // Tab state from URL
+  const currentTab = (searchParams.get('tab') as TabType) || 'questions'
 
   const [survey, setSurvey] = useState<SurveyData | null>(null)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
   // Edit state
-  const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [editedTitle, setEditedTitle] = useState('')
-  const [isSavingTitle, setIsSavingTitle] = useState(false)
+  const [title, setTitle] = useState('')
+  const [questions, setQuestions] = useState<QuestionDraft[]>([])
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false)
+
+  // Save status (Google Docs style)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Delete state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -59,11 +49,8 @@ export default function SurveyDetailPage() {
   // Toggle state
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
 
-  // Question editing state
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
-  const [editedQuestionText, setEditedQuestionText] = useState('')
-  const [editedQuestionConfig, setEditedQuestionConfig] = useState<Record<string, unknown>>({})
-  const [isSavingQuestion, setIsSavingQuestion] = useState(false)
+  // Warning banner dismissed
+  const [warningDismissed, setWarningDismissed] = useState(false)
 
   useEffect(() => {
     loadSurvey()
@@ -72,7 +59,13 @@ export default function SurveyDetailPage() {
   useEffect(() => {
     if (survey) {
       generateQRCode()
-      setEditedTitle(survey.title)
+      setTitle(survey.title)
+      setQuestions(survey.questions.map(q => ({
+        id: q.id,
+        type: q.type,
+        text: q.text,
+        config: q.config || {},
+      })))
     }
   }, [survey])
 
@@ -135,29 +128,152 @@ export default function SurveyDetailPage() {
     alert('Link copied to clipboard!')
   }
 
-  const handleSaveTitle = async () => {
-    if (!editedTitle.trim() || editedTitle === survey?.title) {
-      setIsEditingTitle(false)
-      return
+  // Auto-save with debounce
+  const saveWithFeedback = useCallback(async (saveFn: () => Promise<void>) => {
+    // Clear any existing save timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    if (saveStatusTimeoutRef.current) {
+      clearTimeout(saveStatusTimeoutRef.current)
     }
 
-    setIsSavingTitle(true)
+    // Only show "Saving..." if it takes more than 300ms
+    const showSavingTimer = setTimeout(() => setSaveStatus('saving'), 300)
+
     try {
-      const { error } = await supabase
-        .from('surveys')
-        .update({ title: editedTitle.trim() })
-        .eq('id', surveyId)
-
-      if (error) throw error
-
-      setSurvey(prev => prev ? { ...prev, title: editedTitle.trim() } : null)
-      setIsEditingTitle(false)
+      await saveFn()
+      clearTimeout(showSavingTimer)
+      setSaveStatus('saved')
+      // Hide "Saved" after 2 seconds
+      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000)
     } catch (error) {
-      console.error('Error updating title:', error)
-      alert('Failed to update title')
-    } finally {
-      setIsSavingTitle(false)
+      clearTimeout(showSavingTimer)
+      console.error('Save error:', error)
+      setSaveStatus('error')
     }
+  }, [])
+
+  // Debounced save for title
+  const debouncedSaveTitle = useCallback((newTitle: string) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveWithFeedback(async () => {
+        const { error } = await supabase
+          .from('surveys')
+          .update({ title: newTitle.trim() || 'Untitled Survey' })
+          .eq('id', surveyId)
+        if (error) throw error
+        setSurvey(prev => prev ? { ...prev, title: newTitle.trim() || 'Untitled Survey' } : null)
+      })
+    }, 500)
+  }, [surveyId, saveWithFeedback])
+
+  // Debounced save for questions
+  const debouncedSaveQuestions = useCallback((updatedQuestions: QuestionDraft[]) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveWithFeedback(async () => {
+        // Find new questions (those not in original survey)
+        const existingIds = new Set(survey?.questions.map(q => q.id) || [])
+        const newQuestions = updatedQuestions.filter(q => !existingIds.has(q.id))
+        const existingQuestions = updatedQuestions.filter(q => existingIds.has(q.id))
+
+        // Insert new questions
+        if (newQuestions.length > 0) {
+          const toInsert = newQuestions.map((q, i) => ({
+            id: q.id,
+            survey_id: surveyId,
+            type: q.type,
+            text: q.text,
+            config: q.config,
+            order_index: existingQuestions.length + i,
+          }))
+          const { error } = await supabase.from('questions').insert(toInsert)
+          if (error) throw error
+        }
+
+        // Update existing questions
+        for (let i = 0; i < existingQuestions.length; i++) {
+          const q = existingQuestions[i]
+          const { error } = await supabase
+            .from('questions')
+            .update({
+              text: q.text,
+              config: q.config,
+              order_index: i,
+            })
+            .eq('id', q.id)
+          if (error) throw error
+        }
+
+        // Update local survey state
+        setSurvey(prev => {
+          if (!prev) return null
+          return {
+            ...prev,
+            questions: updatedQuestions.map((q, i) => ({
+              ...q,
+              survey_id: surveyId,
+              order_index: i,
+            })) as Question[],
+          }
+        })
+      })
+    }, 500)
+  }, [surveyId, survey, saveWithFeedback])
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle)
+    debouncedSaveTitle(newTitle)
+  }
+
+  const handleQuestionsChange = (newQuestions: QuestionDraft[]) => {
+    setQuestions(newQuestions)
+    debouncedSaveQuestions(newQuestions)
+  }
+
+  const handleQuestionUpdate = (id: string, updates: Partial<QuestionDraft>) => {
+    const newQuestions = questions.map(q => q.id === id ? { ...q, ...updates } : q)
+    setQuestions(newQuestions)
+    debouncedSaveQuestions(newQuestions)
+  }
+
+  const handleQuestionDelete = async (id: string) => {
+    if (!confirm('Delete this question?')) return
+
+    const newQuestions = questions.filter(q => q.id !== id)
+    setQuestions(newQuestions)
+
+    // Delete immediately from DB
+    await supabase.from('questions').delete().eq('id', id)
+
+    // Update survey state
+    setSurvey(prev => {
+      if (!prev) return null
+      return {
+        ...prev,
+        questions: prev.questions.filter(q => q.id !== id),
+      }
+    })
+  }
+
+  const addQuestion = (type: QuestionType) => {
+    const newQuestion: QuestionDraft = {
+      id: crypto.randomUUID(),
+      type,
+      text: '',
+      config: getDefaultConfig(type),
+      isNew: true,
+    }
+    const newQuestions = [...questions, newQuestion]
+    setQuestions(newQuestions)
+    setIsAddingQuestion(false)
+    debouncedSaveQuestions(newQuestions)
   }
 
   const handleToggleStatus = async () => {
@@ -178,77 +294,6 @@ export default function SurveyDetailPage() {
       alert('Failed to update survey status')
     } finally {
       setIsTogglingStatus(false)
-    }
-  }
-
-  const startEditingQuestion = (question: Question) => {
-    setEditingQuestionId(question.id)
-    setEditedQuestionText(question.text)
-    setEditedQuestionConfig(question.config || {})
-  }
-
-  const cancelEditingQuestion = () => {
-    setEditingQuestionId(null)
-    setEditedQuestionText('')
-    setEditedQuestionConfig({})
-  }
-
-  const handleSaveQuestion = async (questionId: string) => {
-    setIsSavingQuestion(true)
-    try {
-      const { error } = await supabase
-        .from('questions')
-        .update({
-          text: editedQuestionText.trim(),
-          config: editedQuestionConfig,
-        })
-        .eq('id', questionId)
-
-      if (error) throw error
-
-      // Update local state
-      setSurvey(prev => {
-        if (!prev) return null
-        return {
-          ...prev,
-          questions: prev.questions.map(q =>
-            q.id === questionId
-              ? { ...q, text: editedQuestionText.trim(), config: editedQuestionConfig }
-              : q
-          ),
-        }
-      })
-      cancelEditingQuestion()
-    } catch (error) {
-      console.error('Error updating question:', error)
-      alert('Failed to update question')
-    } finally {
-      setIsSavingQuestion(false)
-    }
-  }
-
-  const handleDeleteQuestion = async (questionId: string) => {
-    if (!confirm('Delete this question?')) return
-
-    try {
-      const { error } = await supabase
-        .from('questions')
-        .delete()
-        .eq('id', questionId)
-
-      if (error) throw error
-
-      // Update local state
-      setSurvey(prev => {
-        if (!prev) return null
-        return {
-          ...prev,
-          questions: prev.questions.filter(q => q.id !== questionId),
-        }
-      })
-    } catch (error) {
-      console.error('Error deleting question:', error)
-      alert('Failed to delete question')
     }
   }
 
@@ -283,6 +328,10 @@ export default function SurveyDetailPage() {
       alert('Failed to delete survey')
       setIsDeleting(false)
     }
+  }
+
+  const setTab = (tab: TabType) => {
+    router.push(`/admin/surveys/${surveyId}?tab=${tab}`, { scroll: false })
   }
 
   const calculateStats = () => {
@@ -365,7 +414,7 @@ export default function SurveyDetailPage() {
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <Link
             href="/admin"
@@ -375,56 +424,47 @@ export default function SurveyDetailPage() {
           </Link>
 
           {/* Editable title */}
-          {isEditingTitle ? (
-            <div className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                className="text-3xl font-bold text-slate-800 bg-white border-2 border-indigo-300 rounded-xl px-3 py-1 focus:outline-none focus:border-indigo-500"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveTitle()
-                  if (e.key === 'Escape') {
-                    setEditedTitle(survey.title)
-                    setIsEditingTitle(false)
-                  }
-                }}
-              />
-              <button
-                onClick={handleSaveTitle}
-                disabled={isSavingTitle}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
-              >
-                {isSavingTitle ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={() => {
-                  setEditedTitle(survey.title)
-                  setIsEditingTitle(false)
-                }}
-                className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition-colors"
-              >
-                Cancel
-              </button>
+          <div className="flex items-center gap-3 mt-2">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="Survey title..."
+              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-1 transition-colors"
+            />
+            {/* Save status indicator */}
+            <div className="text-sm font-medium">
+              {saveStatus === 'saving' && (
+                <span className="text-slate-400 flex items-center gap-1">
+                  <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                  Saving...
+                </span>
+              )}
+              {saveStatus === 'saved' && (
+                <motion.span
+                  className="text-emerald-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  ✓ Saved
+                </motion.span>
+              )}
+              {saveStatus === 'error' && (
+                <span className="text-red-500 flex items-center gap-1">
+                  ⚠️ Unable to save
+                  <button
+                    onClick={() => debouncedSaveQuestions(questions)}
+                    className="underline hover:no-underline"
+                  >
+                    Retry
+                  </button>
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center gap-3 mt-2">
-              <h1 className="text-3xl font-bold text-slate-800">{survey.title}</h1>
-              <button
-                onClick={() => setIsEditingTitle(true)}
-                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                title="Edit title"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </button>
-            </div>
-          )}
+          </div>
 
           <p className="text-slate-500 mt-1 font-medium">
-            {survey.questions.length} questions • {survey.responses.length} responses
+            {questions.length} questions • {survey.responses.length} responses
           </p>
         </div>
 
@@ -458,323 +498,297 @@ export default function SurveyDetailPage() {
         </div>
       </div>
 
-      {/* Warning banner for locked questions */}
-      {hasResponses && (
+      {/* Warning banner for surveys with responses */}
+      {hasResponses && !warningDismissed && (
         <motion.div
-          className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3"
+          className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-start gap-3"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <span className="text-2xl">🔒</span>
-          <div>
-            <p className="font-semibold text-amber-800">Questions are locked</p>
+          <span className="text-2xl">⚠️</span>
+          <div className="flex-1">
+            <p className="font-semibold text-amber-800">This survey has {survey.responses.length} response{survey.responses.length !== 1 ? 's' : ''}</p>
             <p className="text-amber-700 text-sm">
-              This survey has {survey.responses.length} response{survey.responses.length !== 1 ? 's' : ''}.
-              Questions cannot be edited to preserve data integrity. You can still edit the title and toggle the survey status.
+              Editing questions may affect how results are displayed. Changes are saved automatically.
             </p>
           </div>
+          <button
+            onClick={() => setWarningDismissed(true)}
+            className="text-amber-600 hover:text-amber-800 p-1"
+          >
+            ✕
+          </button>
         </motion.div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* QR Code Card */}
-        <motion.div
-          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Share Survey</h2>
-
-          {qrCodeUrl && (
-            <div className="flex justify-center mb-4">
-              <img src={qrCodeUrl} alt="QR Code" className="rounded-xl shadow-sm" />
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <button
-              onClick={downloadQRCode}
-              className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-semibold hover-lift shadow-md shadow-indigo-200"
-            >
-              Download QR Code
-            </button>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={playUrl}
-                readOnly
-                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-600 font-medium"
-              />
-              <button
-                onClick={copyLink}
-                className="px-4 py-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors font-medium text-slate-600"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Results Card */}
-        <motion.div
-          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Results Summary</h2>
-
-          {survey.responses.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              <div className="text-4xl mb-2">📊</div>
-              <p className="font-medium">No responses yet</p>
-              <p className="text-sm">Share the QR code to start collecting feedback!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {survey.questions.map((question) => {
-                const questionStats = stats?.[question.id] as Record<string, unknown> | undefined
-
-                return (
-                  <div key={question.id} className="border-b border-slate-100 pb-4 last:border-0">
-                    <p className="font-semibold text-slate-800 mb-2">{question.text}</p>
-
-                    {questionStats?.type === 'swipe' && (
-                      <div className="flex gap-4 text-sm font-medium">
-                        <span className="text-emerald-600">
-                          ✓ {String(questionStats.right)} ({Math.round((Number(questionStats.right) / Number(questionStats.total)) * 100)}%)
-                        </span>
-                        <span className="text-red-500">
-                          ✗ {String(questionStats.left)} ({Math.round((Number(questionStats.left) / Number(questionStats.total)) * 100)}%)
-                        </span>
-                        <span className="text-amber-500">
-                          ~ {String(questionStats.up)} ({Math.round((Number(questionStats.up) / Number(questionStats.total)) * 100)}%)
-                        </span>
-                      </div>
-                    )}
-
-                    {questionStats?.type === 'slider' && (
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400 progress-fill"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${questionStats.average}%` }}
-                            transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-                          />
-                        </div>
-                        <span className="text-sm font-bold text-slate-600 min-w-[3rem]">
-                          {String(questionStats.average)}%
-                        </span>
-                      </div>
-                    )}
-
-                    {questionStats?.type === 'tap' && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(questionStats.options as Record<string, number>).map(([opt, count]) => (
-                          <span
-                            key={opt}
-                            className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium"
-                          >
-                            {opt}: {count}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </motion.div>
+      {/* Tab navigation */}
+      <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl">
+        {(['questions', 'share', 'responses'] as TabType[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setTab(tab)}
+            className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
+              currentTab === tab
+                ? 'bg-white text-slate-800 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab === 'questions' && '📝 Questions'}
+            {tab === 'share' && '🔗 Share'}
+            {tab === 'responses' && `📊 Responses ${hasResponses ? `(${survey.responses.length})` : ''}`}
+          </button>
+        ))}
       </div>
 
-      {/* Questions List */}
-      <motion.div
-        className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mt-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-slate-800">Questions</h2>
-          {hasResponses ? (
-            <span className="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full flex items-center gap-1">
-              <span>🔒</span> Locked
-            </span>
-          ) : (
-            <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">
-              ✏️ Editable
-            </span>
-          )}
-        </div>
-        <div className="space-y-3">
-          {survey.questions.map((question, index) => {
-            const isEditing = editingQuestionId === question.id
-            const typeInfo = questionTypeInfo[question.type] || { label: question.type, emoji: '❓' }
+      {/* Tab content */}
+      <AnimatePresence mode="wait">
+        {currentTab === 'questions' && (
+          <motion.div
+            key="questions"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+          >
+            {questions.length === 0 && !isAddingQuestion ? (
+              <div className="text-center py-12">
+                <div className="text-5xl mb-4">📝</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">No questions yet</h3>
+                <p className="text-slate-500 mb-4">Add your first question to get started!</p>
+                <button
+                  onClick={() => setIsAddingQuestion(true)}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+                >
+                  + Add Question
+                </button>
+              </div>
+            ) : (
+              <>
+                <QuestionEditor
+                  questions={questions}
+                  onQuestionsChange={handleQuestionsChange}
+                  onQuestionUpdate={handleQuestionUpdate}
+                  onQuestionDelete={handleQuestionDelete}
+                />
 
-            return (
-              <div
-                key={question.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  isEditing
-                    ? 'bg-indigo-50 border-indigo-200'
-                    : 'bg-slate-50 border-slate-100'
-                }`}
-              >
-                {isEditing ? (
-                  // Edit mode
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{typeInfo.emoji}</span>
-                      <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded">
-                        {typeInfo.label}
-                      </span>
-                      <span className="text-slate-400 text-sm">#{index + 1}</span>
-                    </div>
-
-                    <input
-                      type="text"
-                      value={editedQuestionText}
-                      onChange={(e) => setEditedQuestionText(e.target.value)}
-                      placeholder="Enter your question..."
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-900"
-                      autoFocus
-                    />
-
-                    {/* Swipe config */}
-                    {question.type === 'swipe' && (
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={(editedQuestionConfig.show_meh as boolean) ?? false}
-                          onChange={(e) => setEditedQuestionConfig({
-                            ...editedQuestionConfig,
-                            show_meh: e.target.checked
-                          })}
-                          className="w-4 h-4 text-indigo-600 border-slate-300 rounded"
-                        />
-                        <span className="text-sm text-slate-600">Include &quot;Meh&quot; option</span>
-                      </label>
-                    )}
-
-                    {/* Options config for tap, rolodex, etc. */}
-                    {['tap', 'tap_meter', 'rolodex', 'fanned', 'fanned_swipe', 'stacked'].includes(question.type) && (
-                      <div className="space-y-2">
-                        <label className="text-xs text-slate-500 font-medium">Options</label>
-                        {((editedQuestionConfig.options as string[]) || []).map((option, optIndex) => (
-                          <div key={optIndex} className="flex gap-2">
-                            <input
-                              type="text"
-                              value={option}
-                              onChange={(e) => {
-                                const newOptions = [...((editedQuestionConfig.options as string[]) || [])]
-                                newOptions[optIndex] = e.target.value
-                                setEditedQuestionConfig({ ...editedQuestionConfig, options: newOptions })
-                              }}
-                              placeholder={`Option ${optIndex + 1}`}
-                              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newOptions = ((editedQuestionConfig.options as string[]) || []).filter((_, i) => i !== optIndex)
-                                setEditedQuestionConfig({ ...editedQuestionConfig, options: newOptions })
-                              }}
-                              className="px-3 py-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const currentOptions = (editedQuestionConfig.options as string[]) || []
-                            setEditedQuestionConfig({ ...editedQuestionConfig, options: [...currentOptions, ''] })
-                          }}
-                          className="w-full py-2 border border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-indigo-400 hover:text-indigo-500 text-sm"
-                        >
-                          + Add option
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Tap multi-select toggle */}
-                    {question.type === 'tap' && (
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={(editedQuestionConfig.multi_select as boolean) ?? true}
-                          onChange={(e) => setEditedQuestionConfig({
-                            ...editedQuestionConfig,
-                            multi_select: e.target.checked
-                          })}
-                          className="w-4 h-4 text-indigo-600 border-slate-300 rounded"
-                        />
-                        <span className="text-sm text-slate-600">Allow multiple selections</span>
-                      </label>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={() => handleSaveQuestion(question.id)}
-                        disabled={isSavingQuestion}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
-                      >
-                        {isSavingQuestion ? 'Saving...' : 'Save'}
-                      </button>
-                      <button
-                        onClick={cancelEditingQuestion}
-                        className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+                {/* Add question button */}
+                {!isAddingQuestion ? (
+                  <button
+                    onClick={() => setIsAddingQuestion(true)}
+                    className="w-full mt-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors"
+                  >
+                    + Add Question
+                  </button>
                 ) : (
-                  // View mode
-                  <div className="flex items-center gap-4">
-                    <span className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-800">{question.text || <span className="text-slate-400 italic">No question text</span>}</p>
-                      <p className="text-sm text-slate-500 font-medium flex items-center gap-1">
-                        <span>{typeInfo.emoji}</span> {typeInfo.label}
-                      </p>
-                    </div>
-                    {!hasResponses && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => startEditingQuestion(question)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="Edit question"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete question"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
+                  <div className="mt-4">
+                    <QuestionTypeSelector
+                      onSelect={addQuestion}
+                      onCancel={() => setIsAddingQuestion(false)}
+                    />
                   </div>
                 )}
+              </>
+            )}
+          </motion.div>
+        )}
+
+        {currentTab === 'share' && (
+          <motion.div
+            key="share"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+          >
+            <h2 className="text-lg font-bold text-slate-800 mb-4">Share Survey</h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* QR Code */}
+              <div className="text-center">
+                {qrCodeUrl && (
+                  <div className="inline-block p-4 bg-white rounded-2xl shadow-md mb-4">
+                    <img src={qrCodeUrl} alt="QR Code" className="rounded-xl" />
+                  </div>
+                )}
+                <button
+                  onClick={downloadQRCode}
+                  className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-semibold"
+                >
+                  Download QR Code
+                </button>
               </div>
-            )
-          })}
-        </div>
-      </motion.div>
+
+              {/* Link and embed */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Survey Link</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={playUrl}
+                      readOnly
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-600 font-medium"
+                    />
+                    <button
+                      onClick={copyLink}
+                      className="px-4 py-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors font-medium text-slate-600"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Preview</label>
+                  <Link
+                    href={`/play/${surveyId}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    Open survey in new tab →
+                  </Link>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2">Survey Status</h3>
+                  <p className="text-sm text-slate-500 mb-3">
+                    {survey.is_active
+                      ? 'Survey is active and accepting responses.'
+                      : 'Survey is paused. Visitors will see a "survey closed" message.'}
+                  </p>
+                  <button
+                    onClick={handleToggleStatus}
+                    disabled={isTogglingStatus}
+                    className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+                      survey.is_active
+                        ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                        : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                    }`}
+                  >
+                    {survey.is_active ? 'Pause Survey' : 'Activate Survey'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {currentTab === 'responses' && (
+          <motion.div
+            key="responses"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+          >
+            <h2 className="text-lg font-bold text-slate-800 mb-4">Responses</h2>
+
+            {survey.responses.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <div className="text-5xl mb-4">📊</div>
+                <p className="font-medium mb-2">No responses yet</p>
+                <p className="text-sm">Share the QR code to start collecting feedback!</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Summary stats */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-indigo-600">{survey.responses.length}</div>
+                    <div className="text-sm text-slate-500 font-medium">Total Responses</div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-emerald-600">
+                      {survey.responses.length > 0
+                        ? Math.round(
+                            survey.responses.reduce((sum, r) => sum + (r.duration_ms || 0), 0) /
+                              survey.responses.length /
+                              1000
+                          )
+                        : 0}s
+                    </div>
+                    <div className="text-sm text-slate-500 font-medium">Avg. Duration</div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <div className="text-3xl font-bold text-amber-600">{questions.length}</div>
+                    <div className="text-sm text-slate-500 font-medium">Questions</div>
+                  </div>
+                </div>
+
+                {/* Question-by-question breakdown */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Results by Question</h3>
+                  {survey.questions.map((question) => {
+                    const questionStats = stats?.[question.id] as Record<string, unknown> | undefined
+                    const typeInfo = questionTypeInfo[question.type]
+
+                    return (
+                      <div key={question.id} className="border border-slate-100 rounded-xl p-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <span className="text-xl">{typeInfo?.emoji || '❓'}</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">{question.text || 'Untitled question'}</p>
+                            <p className="text-xs text-slate-500">{typeInfo?.label || question.type}</p>
+                          </div>
+                        </div>
+
+                        {questionStats?.type === 'swipe' && (
+                          <div className="flex gap-4 text-sm font-medium">
+                            <span className="text-emerald-600">
+                              ✓ {String(questionStats.right)} ({Math.round((Number(questionStats.right) / Number(questionStats.total)) * 100)}%)
+                            </span>
+                            <span className="text-red-500">
+                              ✗ {String(questionStats.left)} ({Math.round((Number(questionStats.left) / Number(questionStats.total)) * 100)}%)
+                            </span>
+                            {Number(questionStats.up) > 0 && (
+                              <span className="text-amber-500">
+                                ~ {String(questionStats.up)} ({Math.round((Number(questionStats.up) / Number(questionStats.total)) * 100)}%)
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {questionStats?.type === 'slider' && (
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${questionStats.average}%` }}
+                                transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+                              />
+                            </div>
+                            <span className="text-sm font-bold text-slate-600 min-w-[3rem]">
+                              {String(questionStats.average)}%
+                            </span>
+                          </div>
+                        )}
+
+                        {questionStats?.type === 'tap' && (
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(questionStats.options as Record<string, number>).map(([opt, count]) => (
+                              <span
+                                key={opt}
+                                className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium"
+                              >
+                                {opt}: {count}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {!questionStats && (
+                          <p className="text-sm text-slate-400 italic">No responses for this question yet</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
