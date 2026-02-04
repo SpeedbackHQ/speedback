@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface TiltMazeQuestionProps {
@@ -9,113 +9,80 @@ interface TiltMazeQuestionProps {
   onAnswer: (answer: string) => void
 }
 
-// Fun themes for the drag item
-const themes = [
-  { item: '📦', zones: '📍', name: 'Delivery' },
-  { item: '🌱', zones: '🌷', name: 'Garden' },
-  { item: '⭐', zones: '🎯', name: 'Star' },
-  { item: '🎁', zones: '🎄', name: 'Gift' },
-]
-
-const zoneColors = [
-  { bg: 'from-rose-400 to-red-500', border: 'border-red-400', shadow: 'shadow-red-500/30' },
-  { bg: 'from-sky-400 to-blue-500', border: 'border-blue-400', shadow: 'shadow-blue-500/30' },
-  { bg: 'from-emerald-400 to-green-500', border: 'border-green-400', shadow: 'shadow-green-500/30' },
-  { bg: 'from-violet-400 to-purple-500', border: 'border-purple-400', shadow: 'shadow-purple-500/30' },
-  { bg: 'from-amber-400 to-orange-500', border: 'border-orange-400', shadow: 'shadow-orange-500/30' },
+const optionColors = [
+  { bg: 'bg-rose-500', light: 'bg-rose-100', border: 'border-rose-300' },
+  { bg: 'bg-sky-500', light: 'bg-sky-100', border: 'border-sky-300' },
+  { bg: 'bg-emerald-500', light: 'bg-emerald-100', border: 'border-emerald-300' },
+  { bg: 'bg-violet-500', light: 'bg-violet-100', border: 'border-violet-300' },
+  { bg: 'bg-amber-500', light: 'bg-amber-100', border: 'border-amber-300' },
 ]
 
 export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) {
   const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
-  const [hoveredZone, setHoveredZone] = useState<number | null>(null)
-  const [droppedZone, setDroppedZone] = useState<string | null>(null)
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
+  const [isOverTarget, setIsOverTarget] = useState(false)
+  const [droppedOption, setDroppedOption] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
-  const zoneRefs = useRef<(HTMLDivElement | null)[]>([])
+  const targetRef = useRef<HTMLDivElement>(null)
 
-  // Pick a random theme
-  const theme = themes[Math.floor(Math.random() * themes.length)]
+  const checkOverTarget = useCallback((info: PanInfo, element: HTMLElement) => {
+    if (!targetRef.current) return false
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (showConfirm) return
+    const targetRect = targetRef.current.getBoundingClientRect()
+    const elementRect = element.getBoundingClientRect()
 
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
+    // Get center of dragged element
+    const centerX = elementRect.left + elementRect.width / 2 + info.offset.x
+    const centerY = elementRect.top + elementRect.height / 2 + info.offset.y
 
-    setIsDragging(true)
-    setStartPosition({ x: e.clientX, y: e.clientY })
-    setDragPosition({ x: 0, y: 0 })
-    e.currentTarget.setPointerCapture(e.pointerId)
+    // Check if center is within target
+    return (
+      centerX >= targetRect.left &&
+      centerX <= targetRect.right &&
+      centerY >= targetRect.top &&
+      centerY <= targetRect.bottom
+    )
+  }, [])
 
+  const handleDragStart = (index: number) => {
+    setDraggingIndex(index)
     if (navigator.vibrate) {
       navigator.vibrate(20)
     }
-  }, [showConfirm])
+  }
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || showConfirm) return
+  const handleDrag = (info: PanInfo, element: HTMLElement) => {
+    const over = checkOverTarget(info, element)
+    setIsOverTarget(over)
+  }
 
-    const dx = e.clientX - startPosition.x
-    const dy = e.clientY - startPosition.y
-    setDragPosition({ x: dx, y: dy })
+  const handleDragEnd = (index: number, info: PanInfo, element: HTMLElement) => {
+    const over = checkOverTarget(info, element)
 
-    // Check which zone we're hovering over
-    const itemRect = e.currentTarget.getBoundingClientRect()
-    const itemCenterX = itemRect.left + itemRect.width / 2 + dx
-    const itemCenterY = itemRect.top + itemRect.height / 2 + dy
-
-    let foundZone: number | null = null
-    zoneRefs.current.forEach((zone, index) => {
-      if (zone) {
-        const zoneRect = zone.getBoundingClientRect()
-        if (
-          itemCenterX >= zoneRect.left &&
-          itemCenterX <= zoneRect.right &&
-          itemCenterY >= zoneRect.top &&
-          itemCenterY <= zoneRect.bottom
-        ) {
-          foundZone = index
-        }
-      }
-    })
-    setHoveredZone(foundZone)
-  }, [isDragging, startPosition, showConfirm])
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return
-
-    e.currentTarget.releasePointerCapture(e.pointerId)
-    setIsDragging(false)
-
-    if (hoveredZone !== null) {
-      // Dropped in a zone!
-      setDroppedZone(options[hoveredZone])
+    if (over) {
+      // Dropped in target!
+      setDroppedOption(options[index])
       setShowConfirm(true)
 
       if (navigator.vibrate) {
         navigator.vibrate([30, 50, 80])
       }
-    } else {
-      // Snap back
-      setDragPosition({ x: 0, y: 0 })
     }
-    setHoveredZone(null)
-  }, [isDragging, hoveredZone, options])
+
+    setDraggingIndex(null)
+    setIsOverTarget(false)
+  }
 
   const handleConfirm = () => {
-    if (droppedZone) {
-      onAnswer(droppedZone)
+    if (droppedOption) {
+      onAnswer(droppedOption)
     }
   }
 
   const handleReset = () => {
-    setDroppedZone(null)
+    setDroppedOption(null)
     setShowConfirm(false)
-    setDragPosition({ x: 0, y: 0 })
   }
 
   return (
@@ -130,142 +97,122 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-6 text-sm">
-        {showConfirm ? 'Confirm your choice' : 'Drag to your answer'}
+        {showConfirm ? 'Confirm your choice' : 'Drag your answer to the target'}
       </p>
 
       {/* Game area */}
-      <div
-        ref={containerRef}
-        className="relative w-full max-w-sm bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl shadow-lg p-6 min-h-[400px] flex flex-col"
-      >
-        {/* Draggable item area */}
-        <div className="flex-1 flex items-center justify-center mb-6">
-          {!showConfirm && (
-            <motion.div
-              className={`
-                w-24 h-24 rounded-2xl bg-white shadow-xl
-                flex items-center justify-center text-5xl
-                cursor-grab active:cursor-grabbing
-                border-4 border-dashed border-gray-300
-                ${isDragging ? 'z-50' : ''}
-              `}
-              style={{
-                x: dragPosition.x,
-                y: dragPosition.y,
-              }}
-              animate={{
-                scale: isDragging ? 1.1 : 1,
-                boxShadow: isDragging
-                  ? '0 20px 40px rgba(0,0,0,0.2)'
-                  : '0 10px 25px rgba(0,0,0,0.1)',
-              }}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            >
-              <motion.span
-                animate={isDragging ? { rotate: [0, -10, 10, 0] } : {}}
-                transition={{ duration: 0.3, repeat: isDragging ? Infinity : 0 }}
-              >
-                {theme.item}
-              </motion.span>
-            </motion.div>
-          )}
+      <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl shadow-lg p-6 min-h-[420px] flex flex-col">
 
-          {/* Instruction when not dragging */}
-          {!isDragging && !showConfirm && (
-            <motion.div
-              className="absolute top-1/4 left-0 right-0 text-center pointer-events-none"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span className="text-gray-400 text-sm">👆 Drag me down!</span>
-            </motion.div>
-          )}
-        </div>
+        {/* Options to drag */}
+        {!showConfirm && (
+          <div className="space-y-3 mb-6">
+            {options.map((option, index) => {
+              const colors = optionColors[index % optionColors.length]
+              const isDragging = draggingIndex === index
 
-        {/* Drop zones */}
-        <div className={`grid gap-3 ${options.length <= 2 ? 'grid-cols-2' : options.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          {options.map((option, index) => {
-            const colors = zoneColors[index % zoneColors.length]
-            const isHovered = hoveredZone === index
-            const isDropped = droppedZone === option
+              return (
+                <motion.div
+                  key={option}
+                  className={`
+                    relative px-5 py-4 rounded-xl cursor-grab active:cursor-grabbing
+                    ${colors.light} border-2 ${colors.border}
+                    ${isDragging ? 'z-50 shadow-2xl' : 'shadow-md'}
+                  `}
+                  drag
+                  dragSnapToOrigin
+                  dragElastic={0.1}
+                  onDragStart={() => handleDragStart(index)}
+                  onDrag={(_, info) => handleDrag(info, _.target as HTMLElement)}
+                  onDragEnd={(_, info) => handleDragEnd(index, info, _.target as HTMLElement)}
+                  whileDrag={{ scale: 1.05, rotate: 2 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${colors.bg}`} />
+                    <span className="font-semibold text-gray-700">{option}</span>
+                  </div>
 
-            return (
+                  {/* Drag hint on first option */}
+                  {index === 0 && !draggingIndex && (
+                    <motion.div
+                      className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      ← drag
+                    </motion.div>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Drop target */}
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div
+            ref={targetRef}
+            className={`
+              w-40 h-40 rounded-full border-4 border-dashed
+              flex items-center justify-center
+              transition-all duration-200
+              ${isOverTarget
+                ? 'border-emerald-500 bg-emerald-100 scale-110'
+                : showConfirm
+                ? 'border-emerald-500 bg-emerald-500'
+                : 'border-gray-300 bg-white/50'
+              }
+            `}
+            animate={isOverTarget ? { scale: 1.1 } : { scale: 1 }}
+          >
+            {showConfirm && droppedOption ? (
               <motion.div
-                key={option}
-                ref={el => { zoneRefs.current[index] = el }}
-                className={`
-                  relative rounded-xl p-4 min-h-[80px]
-                  flex flex-col items-center justify-center
-                  bg-gradient-to-br ${colors.bg}
-                  border-2 ${colors.border}
-                  transition-all duration-200
-                  ${isHovered ? `scale-110 ${colors.shadow} shadow-lg` : ''}
-                  ${isDropped ? 'ring-4 ring-white ring-offset-2' : ''}
-                `}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                className="text-center"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
               >
-                {/* Dropped item */}
-                {isDropped && (
-                  <motion.div
-                    className="text-3xl mb-1"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                  >
-                    {theme.item}
-                  </motion.div>
-                )}
-
-                {/* Zone label */}
-                <span className={`text-white font-semibold text-sm text-center leading-tight ${isDropped ? 'text-xs' : ''}`}>
-                  {option}
-                </span>
-
-                {/* Hover indicator */}
-                {isHovered && !isDropped && (
-                  <motion.div
-                    className="absolute inset-0 rounded-xl bg-white/20"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  />
-                )}
+                <motion.div
+                  className="text-4xl mb-1"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  ✓
+                </motion.div>
+                <span className="text-white font-bold text-sm">{droppedOption}</span>
               </motion.div>
-            )
-          })}
+            ) : (
+              <div className="text-center">
+                <motion.div
+                  className="text-3xl mb-1"
+                  animate={isOverTarget ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                >
+                  🎯
+                </motion.div>
+                <span className="text-gray-400 text-sm font-medium">
+                  {isOverTarget ? 'Release!' : 'Drop here'}
+                </span>
+              </div>
+            )}
+          </motion.div>
         </div>
 
         {/* Confirm overlay */}
         <AnimatePresence>
-          {showConfirm && droppedZone && (
+          {showConfirm && droppedOption && (
             <motion.div
-              className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              className="absolute bottom-6 left-6 right-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
             >
-              <motion.div
-                className="bg-white rounded-2xl px-6 py-5 shadow-2xl text-center mx-4"
-                initial={{ scale: 0, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                transition={{ type: 'spring', delay: 0.1 }}
-              >
-                <motion.div
-                  className="text-4xl mb-2"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {theme.item}
-                </motion.div>
-                <p className="text-lg font-bold text-gray-800 mb-1">{droppedZone}</p>
-                <p className="text-sm text-gray-500 mb-4">Is this your answer?</p>
-
+              <div className="bg-white rounded-xl p-4 shadow-lg">
+                <p className="text-center text-gray-600 mb-3">
+                  You selected <span className="font-bold text-gray-800">{droppedOption}</span>
+                </p>
                 <div className="flex gap-3">
                   <button
                     onClick={handleReset}
@@ -280,7 +227,7 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
                     Confirm
                   </button>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
