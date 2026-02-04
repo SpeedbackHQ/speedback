@@ -94,7 +94,7 @@ export function SliderQuestion({ question, onAnswer }: SliderQuestionProps) {
 
         {/* Slider thumb - larger for easier grabbing */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center text-3xl"
+          className="absolute top-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center text-3xl pointer-events-none"
           style={{ left: `calc(${value}% - 40px)` }}
           animate={{ scale: isDragging ? 1.15 : 1 }}
         >
