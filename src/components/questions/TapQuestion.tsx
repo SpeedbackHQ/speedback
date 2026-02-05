@@ -32,7 +32,8 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
   const [particles, setParticles] = useState<Particle[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const { options = [], multi_select = true } = question.config
+  const { options: rawOptions = [], multi_select = true } = question.config
+  const options = (rawOptions as string[]).slice(0, 4)  // Cap at 4 options max
 
   const handleTap = (option: string, event: React.MouseEvent<HTMLButtonElement>, colorIndex: number) => {
     const colors = optionColors[colorIndex % optionColors.length]

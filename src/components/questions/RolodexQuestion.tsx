@@ -18,7 +18,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
   const x = useMotionValue(0)
 
   const { options = [] } = question.config
-  const optionsArray = options as string[]
+  const optionsArray = (options as string[]).slice(0, 4)  // Cap at 4 options max
   const totalOptions = optionsArray.length
 
   // Helper to get wrapped index for infinite looping

@@ -19,7 +19,7 @@ const targetColors = [
 
 export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps) {
   const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
-  const options = rawOptions.slice(0, 5)  // Cap at 5 options max
+  const options = rawOptions.slice(0, 4)  // Cap at 4 options max
 
   const [pullback, setPullback] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -30,10 +30,10 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   const containerRef = useRef<HTMLDivElement>(null)
   const launchOrigin = { x: 50, y: 85 }
 
-  // Dynamic sizing based on option count
-  const targetSizeClass = options.length <= 3 ? 'w-14 h-14' : options.length === 4 ? 'w-12 h-12' : 'w-10 h-10'
-  const labelMaxWidth = options.length <= 3 ? 'max-w-20' : options.length === 4 ? 'max-w-16' : 'max-w-14'
-  const hitRadius = options.length <= 3 ? 12 : options.length === 4 ? 10 : 8
+  // Dynamic sizing based on option count (max 4 options)
+  const targetSizeClass = options.length <= 3 ? 'w-14 h-14' : 'w-12 h-12'
+  const labelMaxWidth = options.length <= 3 ? 'max-w-20' : 'max-w-16'
+  const hitRadius = options.length <= 3 ? 12 : 10
 
   // All targets in a single row across the top
   const targets = options.map((label, i) => {

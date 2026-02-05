@@ -178,7 +178,10 @@ export function QuestionEditor({
                       config: { ...question.config, options: newOptions }
                     })
                   }}
-                  className="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className={`px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ${
+                    ((question.config.options as string[]) || []).length <= 2 ? 'opacity-30 cursor-not-allowed' : ''
+                  }`}
+                  disabled={((question.config.options as string[]) || []).length <= 2}
                 >
                   ✕
                 </button>
@@ -193,14 +196,14 @@ export function QuestionEditor({
                 })
               }}
               className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${
-                question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5 ? 'opacity-50 cursor-not-allowed' : ''
+                ((question.config.options as string[]) || []).length >= 4 ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              disabled={question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5}
+              disabled={((question.config.options as string[]) || []).length >= 4}
             >
               + Add option
             </button>
-            {question.type === 'slingshot' && ((question.config.options as string[]) || []).length >= 5 && (
-              <p className="text-xs text-amber-600 mt-1">Slingshot supports a maximum of 5 options</p>
+            {((question.config.options as string[]) || []).length >= 4 && (
+              <p className="text-xs text-gray-400 mt-1">Maximum 4 options</p>
             )}
             {question.type === 'tap' && (
               <label className="flex items-center gap-2 cursor-pointer mt-3">

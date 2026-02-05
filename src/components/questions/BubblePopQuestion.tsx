@@ -10,12 +10,12 @@ interface BubblePopQuestionProps {
 }
 
 interface Bubble {
-  id: number
   label: string
   x: number
   y: number
+  vx: number
+  vy: number
   size: number
-  speed: number
   color: string
 }
 
@@ -24,78 +24,79 @@ const bubbleColors = [
   'from-blue-400 to-blue-600',
   'from-green-400 to-green-600',
   'from-purple-400 to-purple-600',
-  'from-orange-400 to-orange-600',
-  'from-cyan-400 to-cyan-600',
 ]
 
+// Bubble size based on option count — fewer bubbles = bigger
+const getBubbleSize = (count: number) => {
+  if (count <= 2) return 100
+  if (count === 3) return 90
+  return 80
+}
+
 export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps) {
-  const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const options = rawOptions.slice(0, 4)  // Cap at 4 options max
 
   const [bubbles, setBubbles] = useState<Bubble[]>([])
   const [poppedBubble, setPoppedBubble] = useState<string | null>(null)
   const [showResult, setShowResult] = useState(false)
-  const [escapedCount, setEscapedCount] = useState(0)
   const animationRef = useRef<number | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const bubbleIdRef = useRef(0)
 
-  // Spawn bubbles
+  // Initialize bubbles — one per option, spread out
   useEffect(() => {
-    if (poppedBubble) return
+    const size = getBubbleSize(options.length)
+    // Convert size to percentage of container for boundary math
+    // Container is ~300px wide (max-w-md) and ~400px tall (aspect 3/4)
+    const sizePercent = { x: (size / 2) * 100 / 300, y: (size / 2) * 100 / 400 }
 
-    const spawnBubble = () => {
-      if (poppedBubble) return
+    const initialBubbles: Bubble[] = options.map((label, i) => {
+      // Spread initial positions to avoid overlap
+      const angle = (i / options.length) * Math.PI * 2
+      const cx = 50 + Math.cos(angle) * 20
+      const cy = 50 + Math.sin(angle) * 20
 
-      const optionIndex = Math.floor(Math.random() * options.length)
-      const label = options[optionIndex]
-      const x = 10 + Math.random() * 80 // 10-90% from left
-      const size = 60 + Math.random() * 30 // 60-90px
-      const speed = 0.3 + Math.random() * 0.4 // 0.3-0.7 speed
+      // Random velocity direction, gentle speed
+      const speed = 0.15 + Math.random() * 0.15
+      const velAngle = Math.random() * Math.PI * 2
 
-      const newBubble: Bubble = {
-        id: bubbleIdRef.current++,
+      return {
         label,
-        x,
-        y: 110, // Start below container
+        x: Math.max(sizePercent.x + 2, Math.min(100 - sizePercent.x - 2, cx)),
+        y: Math.max(sizePercent.y + 2, Math.min(100 - sizePercent.y - 2, cy)),
+        vx: Math.cos(velAngle) * speed,
+        vy: Math.sin(velAngle) * speed,
         size,
-        speed,
-        color: bubbleColors[optionIndex % bubbleColors.length],
+        color: bubbleColors[i % bubbleColors.length],
       }
+    })
 
-      setBubbles(prev => [...prev, newBubble])
-    }
+    setBubbles(initialBubbles)
+  }, [options])
 
-    // Spawn a bubble every 1.5 seconds
-    const spawnInterval = setInterval(spawnBubble, 1500)
-    // Spawn first few immediately
-    setTimeout(spawnBubble, 0)
-    setTimeout(spawnBubble, 500)
-    setTimeout(spawnBubble, 1000)
-
-    return () => clearInterval(spawnInterval)
-  }, [options, poppedBubble])
-
-  // Animate bubbles floating up
+  // Physics loop — gentle floating with wall bouncing
   useEffect(() => {
     if (poppedBubble) return
 
     const animate = () => {
-      setBubbles(prev => {
-        const updated = prev
-          .map(bubble => ({
-            ...bubble,
-            y: bubble.y - bubble.speed,
-          }))
-          .filter(bubble => {
-            // Remove bubbles that escaped (went above top)
-            if (bubble.y < -20) {
-              setEscapedCount(c => c + 1)
-              return false
-            }
-            return true
-          })
-        return updated
-      })
+      setBubbles(prev => prev.map(bubble => {
+        let { x, y, vx, vy, size } = bubble
+        const sizePercent = { x: (size / 2) * 100 / 300, y: (size / 2) * 100 / 400 }
+
+        x += vx
+        y += vy
+
+        // Bounce off walls
+        if (x <= sizePercent.x + 1 || x >= 100 - sizePercent.x - 1) {
+          vx = -vx
+          x = Math.max(sizePercent.x + 1, Math.min(100 - sizePercent.x - 1, x))
+        }
+        if (y <= sizePercent.y + 1 || y >= 100 - sizePercent.y - 1) {
+          vy = -vy
+          y = Math.max(sizePercent.y + 1, Math.min(100 - sizePercent.y - 1, y))
+        }
+
+        return { ...bubble, x, y, vx, vy }
+      }))
 
       animationRef.current = requestAnimationFrame(animate)
     }
@@ -121,22 +122,12 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current)
     }
-  }, [poppedBubble])
 
-  const handleConfirm = useCallback(() => {
-    if (poppedBubble) {
-      if (navigator.vibrate) navigator.vibrate(50)
-      onAnswer(poppedBubble)
-    }
+    // Auto-submit after brief delay
+    setTimeout(() => {
+      onAnswer(bubble.label)
+    }, 1200)
   }, [poppedBubble, onAnswer])
-
-  const handleRetry = useCallback(() => {
-    if (navigator.vibrate) navigator.vibrate(30)
-    setPoppedBubble(null)
-    setShowResult(false)
-    setBubbles([])
-    setEscapedCount(0)
-  }, [])
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -153,22 +144,8 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
         Pop a bubble to select your answer!
       </p>
 
-      {/* Escaped counter */}
-      {escapedCount > 0 && !poppedBubble && (
-        <motion.div
-          className="text-center mb-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <span className="text-sm text-orange-500">
-            {escapedCount} escaped! Quick, pop one!
-          </span>
-        </motion.div>
-      )}
-
       {/* Game area */}
       <motion.div
-        ref={containerRef}
         className="relative w-full aspect-[3/4] bg-gradient-to-b from-blue-100 to-blue-50 rounded-2xl overflow-hidden shadow-lg"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -198,64 +175,68 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
 
         {/* Bubbles */}
         <AnimatePresence>
-          {bubbles.map(bubble => (
-            <motion.button
-              key={bubble.id}
-              className={`absolute rounded-full bg-gradient-to-br ${bubble.color} flex items-center justify-center text-white font-bold shadow-lg cursor-pointer`}
-              style={{
-                width: bubble.size,
-                height: bubble.size,
-                left: `${bubble.x}%`,
-                top: `${bubble.y}%`,
-                marginLeft: -bubble.size / 2,
-                marginTop: -bubble.size / 2,
-              }}
-              onClick={() => handlePop(bubble)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 1.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              {/* Bubble highlight */}
-              <div
-                className="absolute top-2 left-3 w-1/4 h-1/4 rounded-full bg-white opacity-50"
-              />
-              <span
-                className="text-center px-1 leading-tight"
-                style={{ fontSize: Math.max(10, bubble.size / 6) }}
+          {bubbles.map((bubble, index) => {
+            const isPopped = poppedBubble === bubble.label
+            const isOther = poppedBubble && !isPopped
+
+            return (
+              <motion.button
+                key={bubble.label}
+                className={`absolute rounded-full bg-gradient-to-br ${bubble.color} flex items-center justify-center text-white font-bold shadow-lg cursor-pointer`}
+                style={{
+                  width: bubble.size,
+                  height: bubble.size,
+                  left: `${bubble.x}%`,
+                  top: `${bubble.y}%`,
+                  marginLeft: -bubble.size / 2,
+                  marginTop: -bubble.size / 2,
+                }}
+                onClick={() => handlePop(bubble)}
+                whileHover={!poppedBubble ? { scale: 1.1 } : {}}
+                whileTap={!poppedBubble ? { scale: 0.9 } : {}}
+                initial={{ scale: 0 }}
+                animate={{
+                  scale: isPopped ? [1, 1.5, 0] : isOther ? 0 : 1,
+                  opacity: isPopped ? [1, 1, 0] : isOther ? 0 : 1,
+                }}
+                transition={
+                  isPopped
+                    ? { duration: 0.4, times: [0, 0.5, 1] }
+                    : isOther
+                    ? { duration: 0.3, delay: 0.1 }
+                    : { type: 'spring', stiffness: 300, damping: 20, delay: index * 0.1 }
+                }
+                disabled={!!poppedBubble}
               >
-                {bubble.label}
-              </span>
-            </motion.button>
-          ))}
+                {/* Bubble highlight */}
+                <div
+                  className="absolute top-2 left-3 w-1/4 h-1/4 rounded-full bg-white opacity-50"
+                />
+                <span
+                  className="text-center px-2 leading-tight"
+                  style={{ fontSize: Math.max(11, bubble.size / 5.5) }}
+                >
+                  {bubble.label}
+                </span>
+              </motion.button>
+            )
+          })}
         </AnimatePresence>
 
-        {/* Escape zone indicator */}
-        {!poppedBubble && (
-          <motion.div
-            className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-red-200/50 to-transparent flex items-start justify-center pt-1"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <span className="text-xs text-red-500 font-medium">⬆️ Escape zone</span>
-          </motion.div>
-        )}
-
-        {/* Result overlay with confirm/retry */}
+        {/* Result overlay */}
         <AnimatePresence>
           {showResult && poppedBubble && (
             <motion.div
               className="absolute inset-0 flex items-center justify-center bg-black/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
               <motion.div
                 className="bg-white rounded-xl px-6 py-4 shadow-2xl text-center"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.4 }}
               >
                 <motion.div
                   className="text-4xl mb-2"
@@ -265,24 +246,7 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
                   🫧
                 </motion.div>
                 <p className="text-lg font-bold text-gray-800">{poppedBubble}</p>
-                <p className="text-sm text-gray-500 mb-4">Popped!</p>
-
-                <div className="flex gap-3">
-                  <motion.button
-                    onClick={handleRetry}
-                    className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Try Again
-                  </motion.button>
-                  <motion.button
-                    onClick={handleConfirm}
-                    className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700"
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Confirm
-                  </motion.button>
-                </div>
+                <p className="text-sm text-gray-500">Popped!</p>
               </motion.div>
             </motion.div>
           )}

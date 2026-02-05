@@ -18,7 +18,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
   const y = useMotionValue(0)
 
   const { options = [] } = question.config
-  const optionsArray = options as string[]
+  const optionsArray = (options as string[]).slice(0, 4)  // Cap at 4 options max
   const totalOptions = optionsArray.length
 
   // Card colors

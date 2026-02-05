@@ -38,7 +38,8 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionProps) {
-  const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const options = rawOptions.slice(0, 4)  // Cap at 4 options max
 
   const [gamePhase, setGamePhase] = useState<GamePhase>('car')
   const [selectedCar, setSelectedCar] = useState<number | null>(null)

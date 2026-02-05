@@ -22,7 +22,8 @@ const pinataColors = [
 type Phase = 'select' | 'hitting' | 'broken'
 
 export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
-  const { options = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
+  const options = rawOptions.slice(0, 4)  // Cap at 4 options max
 
   const [phase, setPhase] = useState<Phase>('select')
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
@@ -101,7 +102,7 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
 
       {/* Phase: Select */}
       {phase === 'select' && (
-        <div className={`grid ${options.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'} gap-4`}>
+        <div className="grid grid-cols-2 gap-4">
           {options.map((option, index) => {
             const c = pinataColors[index % pinataColors.length]
             return (

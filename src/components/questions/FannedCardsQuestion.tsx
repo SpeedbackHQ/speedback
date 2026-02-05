@@ -14,7 +14,7 @@ export function FannedCardsQuestion({ question, onAnswer }: FannedCardsQuestionP
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { options = [] } = question.config
-  const optionsArray = options as string[]
+  const optionsArray = (options as string[]).slice(0, 4)  // Cap at 4 options max
 
   // Card colors
   const cardColors = [

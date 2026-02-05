@@ -19,7 +19,8 @@ export function TapMeterQuestion({ question, onAnswer }: TapMeterQuestionProps) 
   const [isLocking, setIsLocking] = useState<string | null>(null)
   const decayTimer = useRef<NodeJS.Timeout | null>(null)
 
-  const { options = [] } = question.config
+  const { options: rawOptions = [] } = question.config
+  const options = (rawOptions as string[]).slice(0, 4)  // Cap at 4 options max
 
   // Decay effect - meters slowly drain when not tapping
   useEffect(() => {
