@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { BunnyMascot } from './BunnyMascot'
 
@@ -20,19 +21,34 @@ const formatTime = (ms: number) => {
   return `${minutes}m ${remainingSecs}s`  // "2m 15s"
 }
 
-export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, onComplete }: CelebrationProps) {
-  // Generate confetti particles
-  const confetti = Array.from({ length: 50 }, (_, i) => ({
+// Pre-generate confetti data (seeded by index for stability)
+const generateConfetti = () => Array.from({ length: 50 }, (_, i) => {
+  // Use index-based pseudo-random for stable values
+  const r1 = ((i * 9301 + 49297) % 233280) / 233280
+  const r2 = ((i * 7919 + 12345) % 233280) / 233280
+  const r3 = ((i * 3571 + 67890) % 233280) / 233280
+  const r4 = ((i * 5387 + 11111) % 233280) / 233280
+  const r5 = ((i * 2749 + 22222) % 233280) / 233280
+  const r6 = ((i * 8191 + 33333) % 233280) / 233280
+
+  return {
     id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.5,
-    duration: 2 + Math.random() * 2,
+    x: r1 * 100,
+    delay: r2 * 0.5,
+    duration: 2 + r3 * 2,
     color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'][
-      Math.floor(Math.random() * 7)
+      Math.floor(r4 * 7)
     ],
-    size: 8 + Math.random() * 8,
-    rotation: Math.random() * 360,
-  }))
+    size: 8 + r5 * 8,
+    rotation: r6 * 360,
+    isRound: r4 > 0.5,
+  }
+})
+
+const CONFETTI_DATA = generateConfetti()
+
+export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, onComplete }: CelebrationProps) {
+  const confetti = useMemo(() => CONFETTI_DATA, [])
 
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-400 overflow-hidden">
@@ -47,7 +63,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
             width: piece.size,
             height: piece.size,
             backgroundColor: piece.color,
-            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            borderRadius: piece.isRound ? '50%' : '2px',
           }}
           initial={{ y: -20, rotate: 0, opacity: 1 }}
           animate={{

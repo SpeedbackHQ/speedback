@@ -114,7 +114,6 @@ export function StarsQuestion({ question, onAnswer }: StarsQuestionProps) {
         {Array.from({ length: STAR_COUNT }).map((_, index) => {
           const fillPercentage = Math.max(0, Math.min(1, displayRating - index))
           const isFullyFilled = fillPercentage >= 1
-          const isPartiallyFilled = fillPercentage > 0 && fillPercentage < 1
 
           return (
             <motion.button

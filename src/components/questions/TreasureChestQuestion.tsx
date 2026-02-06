@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface TreasureChestQuestionProps {
@@ -29,7 +29,7 @@ export function TreasureChestQuestion({ question, onAnswer }: TreasureChestQuest
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [tapCount, setTapCount] = useState(0)
-  const [particles, setParticles] = useState<{ id: number; angle: number }[]>([])
+  const [particles, setParticles] = useState<{ id: number; angle: number; distance: number }[]>([])
 
   const progress = Math.min(100, (tapCount / TAPS_TO_OPEN) * 100)
   const colors = chestColors[selectedIndex % chestColors.length]
@@ -50,11 +50,12 @@ export function TreasureChestQuestion({ question, onAnswer }: TreasureChestQuest
 
     if (newCount >= TAPS_TO_OPEN) {
       setPhase('opened')
-      // Spawn gold particles
+      // Spawn gold particles (pre-compute random values to avoid Math.random during render)
       setParticles(
         Array.from({ length: 16 }, (_, i) => ({
           id: Date.now() + i,
           angle: (i / 16) * 360,
+          distance: 60 + Math.random() * 40,
         }))
       )
       if (navigator.vibrate) navigator.vibrate([50, 30, 100])
@@ -251,8 +252,8 @@ export function TreasureChestQuestion({ question, onAnswer }: TreasureChestQuest
                 className="absolute left-1/2 top-1/3 w-3 h-3 rounded-full bg-yellow-400"
                 initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
                 animate={{
-                  x: Math.cos((p.angle * Math.PI) / 180) * (60 + Math.random() * 40),
-                  y: Math.sin((p.angle * Math.PI) / 180) * (60 + Math.random() * 40),
+                  x: Math.cos((p.angle * Math.PI) / 180) * p.distance,
+                  y: Math.sin((p.angle * Math.PI) / 180) * p.distance,
                   opacity: 0,
                   scale: 0,
                 }}

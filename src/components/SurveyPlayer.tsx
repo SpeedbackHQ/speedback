@@ -34,11 +34,6 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   )
   const currentQuestion = questions[currentIndex]
 
-  // Debug: Log questions received and current state
-  console.log('[SurveyPlayer] Questions received:', survey.questions.length)
-  console.log('[SurveyPlayer] Questions:', questions.map(q => ({ type: q.type, text: q.text?.substring(0, 20), order: q.order_index })))
-  console.log('[SurveyPlayer] Current index:', currentIndex, 'Current question:', currentQuestion?.type, currentQuestion?.text?.substring(0, 20))
-
   // Start timer when playing begins
   useEffect(() => {
     if (gameState === 'playing' && !startTime) {
@@ -61,7 +56,7 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   }
 
   const handleAnswer = (value: AnswerValue) => {
-    console.log('[SurveyPlayer] Answer received for question', currentIndex, ':', value)
+    // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
     const now = Date.now()
     const newAnswer = { question_id: currentQuestion.id, value }
     const newAnswers = [...answers, newAnswer]
@@ -102,13 +97,12 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
     if (currentIndex < questions.length - 1) {
       // Next question - faster transition during streaks
       const transitionDelay = swipeStreak >= 2 && isNextSwipe ? 250 : 400
-      console.log('[SurveyPlayer] Moving to next question:', currentIndex + 1, 'of', questions.length)
       setTimeout(() => {
         setCurrentIndex(prev => prev + 1)
       }, transitionDelay)
     } else {
-      console.log('[SurveyPlayer] Survey complete - was at question', currentIndex, 'of', questions.length)
       // Complete - capture final elapsed time and save response
+      // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
       const finalElapsed = startTime ? Date.now() - startTime : 0
       setElapsedTime(finalElapsed)
       saveResponse(newAnswers, finalElapsed)
@@ -129,7 +123,6 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   }
 
   const renderQuestion = (question: Question) => {
-    console.log('[SurveyPlayer] Rendering question:', question.type, question.text?.substring(0, 20), 'config:', question.config)
     const props = { question, onAnswer: handleAnswer }
 
     // Check if next question is also a swipe (for rapid-fire mode)

@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable react-hooks/preserve-manual-memoization -- Complex animation callbacks with valid dependencies */
 
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -50,7 +51,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
     }
   })
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+  const handlePointerDown = useCallback(() => {
     if (isLaunched) return
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return

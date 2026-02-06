@@ -33,6 +33,15 @@ const getBubbleSize = (count: number) => {
   return 80
 }
 
+// Pre-generated background particle positions (stable across renders)
+const BACKGROUND_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: ((i * 9301 + 49297) % 233280) / 233280 * 100,
+  top: ((i * 7919 + 12345) % 233280) / 233280 * 100,
+  duration: 2 + ((i * 3571 + 67890) % 233280) / 233280 * 2,
+  delay: ((i * 5387 + 11111) % 233280) / 233280 * 2,
+}))
+
 export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps) {
   const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
   const options = rawOptions.slice(0, 4)  // Cap at 4 options max
@@ -70,6 +79,7 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
       }
     })
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initialization based on props is a valid pattern
     setBubbles(initialBubbles)
   }, [options])
 
@@ -79,7 +89,8 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
 
     const animate = () => {
       setBubbles(prev => prev.map(bubble => {
-        let { x, y, vx, vy, size } = bubble
+        const { size } = bubble
+        let { x, y, vx, vy } = bubble
         const sizePercent = { x: (size / 2) * 100 / 300, y: (size / 2) * 100 / 400 }
 
         x += vx
@@ -152,22 +163,22 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
       >
         {/* Water/bubble background effect */}
         <div className="absolute inset-0 opacity-30">
-          {[...Array(20)].map((_, i) => (
+          {BACKGROUND_PARTICLES.map((particle) => (
             <motion.div
-              key={i}
+              key={particle.id}
               className="absolute w-1 h-1 rounded-full bg-blue-300"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
               }}
               animate={{
                 y: [-10, 10, -10],
                 opacity: [0.3, 0.7, 0.3],
               }}
               transition={{
-                duration: 2 + Math.random() * 2,
+                duration: particle.duration,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: particle.delay,
               }}
             />
           ))}

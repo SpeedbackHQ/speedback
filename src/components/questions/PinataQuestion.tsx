@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface PinataQuestionProps {
@@ -29,7 +29,7 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [tapCount, setTapCount] = useState(0)
-  const [candyParticles, setCandyParticles] = useState<{ id: number; angle: number; color: string }[]>([])
+  const [candyParticles, setCandyParticles] = useState<{ id: number; angle: number; color: string; distance: number; rotation: number }[]>([])
 
   const progress = Math.min(100, (tapCount / TAPS_TO_BREAK) * 100)
   const colors = pinataColors[selectedIndex % pinataColors.length]
@@ -50,13 +50,15 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
 
     if (newCount >= TAPS_TO_BREAK) {
       setPhase('broken')
-      // Spawn candy particles
+      // Spawn candy particles (pre-compute random values to avoid Math.random during render)
       const c = pinataColors[selectedIndex % pinataColors.length]
       setCandyParticles(
         Array.from({ length: 24 }, (_, i) => ({
           id: Date.now() + i,
           angle: (i / 24) * 360 + (Math.random() - 0.5) * 30,
           color: c.candy[i % c.candy.length],
+          distance: 50 + Math.random() * 40,
+          rotation: Math.random() * 360,
         }))
       )
       if (navigator.vibrate) navigator.vibrate([50, 30, 100])
@@ -274,11 +276,11 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
                 className={`absolute left-1/2 top-1/2 w-3 h-3 rounded-full ${p.color}`}
                 initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
                 animate={{
-                  x: Math.cos((p.angle * Math.PI) / 180) * (50 + Math.random() * 40),
-                  y: Math.sin((p.angle * Math.PI) / 180) * (50 + Math.random() * 40) + 20,
+                  x: Math.cos((p.angle * Math.PI) / 180) * p.distance,
+                  y: Math.sin((p.angle * Math.PI) / 180) * p.distance + 20,
                   opacity: 0,
                   scale: 0,
-                  rotate: Math.random() * 360,
+                  rotate: p.rotation,
                 }}
                 transition={{ duration: 1, ease: 'easeOut' }}
               />

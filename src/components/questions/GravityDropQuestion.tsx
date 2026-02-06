@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable react-hooks/preserve-manual-memoization -- Complex animation callbacks with valid dependencies */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'

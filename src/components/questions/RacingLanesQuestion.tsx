@@ -92,6 +92,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
       const timer = setTimeout(() => setCountdown(countdown - 1), 700)
       return () => clearTimeout(timer)
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- State machine transition is valid in effect
       setGamePhase('racing')
     }
   }, [gamePhase, countdown])

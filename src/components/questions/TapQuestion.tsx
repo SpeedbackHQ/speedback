@@ -38,6 +38,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
   const handleTap = (option: string, event: React.MouseEvent<HTMLButtonElement>, colorIndex: number) => {
     const colors = optionColors[colorIndex % optionColors.length]
     const isCurrentlySelected = selected.includes(option)
+    // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
     const now = Date.now()
 
     // Haptic feedback
