@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Question } from '@/lib/types'
 
@@ -43,8 +43,12 @@ const BACKGROUND_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
 }))
 
 export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps) {
-  const { options: rawOptions = ['Option 1', 'Option 2', 'Option 3'] } = question.config as { options?: string[] }
-  const options = rawOptions.slice(0, 4)  // Cap at 4 options max
+  const { options: rawOptions } = question.config as { options?: string[] }
+  // Memoize options to prevent re-initialization on every render
+  const options = useMemo(
+    () => (rawOptions || ['Option 1', 'Option 2', 'Option 3']).slice(0, 4),
+    [rawOptions]
+  )
 
   const [bubbles, setBubbles] = useState<Bubble[]>([])
   const [poppedBubble, setPoppedBubble] = useState<string | null>(null)
