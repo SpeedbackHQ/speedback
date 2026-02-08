@@ -3,7 +3,9 @@
 // Standalone question type renderer for the Playground.
 // Keep in sync with SurveyPlayer.renderQuestion() when adding new question types.
 
+import { useState, useEffect, useCallback } from 'react'
 import { Question, AnswerValue } from '@/lib/types'
+import { GestureHint, getGestureType } from './GestureHint'
 import {
   SwipeQuestion,
   SliderQuestion,
@@ -47,78 +49,96 @@ interface MechanicRendererProps {
 }
 
 export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) {
+  const [showHint, setShowHint] = useState(() => !!getGestureType(question.type))
+  const dismissHint = useCallback(() => setShowHint(false), [])
+
+  // Reset hint when question changes
+  useEffect(() => {
+    setShowHint(!!getGestureType(question.type))
+  }, [question.type])
+
   const props = { question, onAnswer }
 
+  let content: React.ReactNode
   switch (question.type) {
     case 'swipe':
-      return <SwipeQuestion {...props} />
+      content = <SwipeQuestion {...props} />; break
     case 'slider':
-      return <SliderQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <SliderQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tap':
-      return <TapQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TapQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tap_meter':
-      return <TapMeterQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TapMeterQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'rolodex':
-      return <RolodexQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <RolodexQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'stars':
-      return <StarsQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <StarsQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'thermometer':
-      return <ThermometerQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <ThermometerQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'fanned':
-      return <FannedCardsQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <FannedCardsQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'fanned_swipe':
-      return <FannedSwipeQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <FannedSwipeQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'stacked':
-      return <StackedCardsQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <StackedCardsQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tilt_maze':
-      return <TiltMazeQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TiltMazeQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'racing_lanes':
-      return <RacingLanesQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <RacingLanesQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'gravity_drop':
-      return <GravityDropQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <GravityDropQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'bubble_pop':
-      return <BubblePopQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <BubblePopQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'bullseye':
-      return <BullseyeQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <BullseyeQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'slingshot':
-      return <SlingshotQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <SlingshotQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'scratch_card':
-      return <ScratchCardQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <ScratchCardQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'treasure_chest':
-      return <TreasureChestQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TreasureChestQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'pinata':
-      return <PinataQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <PinataQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'toggle_switch':
-      return <ToggleSwitchQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <ToggleSwitchQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'press_hold':
-      return <PressHoldQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <PressHoldQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'dial':
-      return <DialQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <DialQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'spin_stop':
-      return <SpinStopQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <SpinStopQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'countdown_tap':
-      return <CountdownTapQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <CountdownTapQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'door_choice':
-      return <DoorChoiceQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <DoorChoiceQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'whack_a_mole':
-      return <WhackAMoleQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <WhackAMoleQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tug_of_war':
-      return <TugOfWarQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TugOfWarQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tilt':
-      return <TiltQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <TiltQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'flick':
-      return <FlickQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <FlickQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'short_text':
-      return <ShortTextQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <ShortTextQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'mad_libs':
-      return <MadLibsQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <MadLibsQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'emoji_reaction':
-      return <EmojiReactionQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <EmojiReactionQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'word_cloud':
-      return <WordCloudQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <WordCloudQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'voice_note':
-      return <VoiceNoteQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+      content = <VoiceNoteQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     default:
-      return <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
+      content = <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
   }
+
+  return (
+    <div className="relative w-full h-full">
+      {content}
+      {showHint && (
+        <GestureHint questionType={question.type} onDismiss={dismissHint} />
+      )}
+    </div>
+  )
 }

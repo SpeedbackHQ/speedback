@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
+import { GestureHint, getGestureType } from './GestureHint'
 import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
@@ -27,12 +28,25 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   const [isSpeedBonus, setIsSpeedBonus] = useState(false)
   const lastAnswerTime = useRef<number>(0)
 
+  // Gesture hint overlay
+  const [showHint, setShowHint] = useState(true)
+  const dismissHint = useCallback(() => setShowHint(false), [])
+
   // Create a sorted copy to avoid mutating the original array
   const questions = useMemo(
     () => [...survey.questions].sort((a, b) => a.order_index - b.order_index),
     [survey.questions]
   )
   const currentQuestion = questions[currentIndex]
+
+  // Reset hint when question changes
+  useEffect(() => {
+    if (currentQuestion && getGestureType(currentQuestion.type)) {
+      setShowHint(true)
+    } else {
+      setShowHint(false)
+    }
+  }, [currentIndex, currentQuestion])
 
   // Start timer when playing begins
   useEffect(() => {
@@ -254,7 +268,7 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
           {currentQuestion && (
           <motion.div
             key={currentQuestion.id}
-            className="w-full h-full"
+            className="w-full h-full relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
@@ -265,6 +279,12 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
             }}
           >
             {renderQuestion(currentQuestion)}
+            {showHint && (
+              <GestureHint
+                questionType={currentQuestion.type}
+                onDismiss={dismissHint}
+              />
+            )}
           </motion.div>
           )}
         </AnimatePresence>
