@@ -18,7 +18,7 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
     max_label = 'High',
   } = question.config as { min_label?: string; max_label?: string }
 
-  const [phase, setPhase] = useState<'countdown' | 'tapping' | 'done'>('countdown')
+  const [phase, setPhase] = useState<'ready' | 'countdown' | 'tapping' | 'done'>('ready')
   const [countdownValue, setCountdownValue] = useState(3)
   const [tapCount, setTapCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState(TAP_DURATION)
@@ -120,10 +120,30 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
         {question.text}
       </motion.h2>
 
-      {phase === 'countdown' && (
+      {(phase === 'ready' || phase === 'countdown') && (
         <p className="text-gray-500 text-center mb-2 text-sm">
           Tap as fast as you can — more taps = higher score!
         </p>
+      )}
+
+      {/* Ready phase - wait for user to start */}
+      {phase === 'ready' && (
+        <motion.div
+          className="flex flex-col items-center justify-center h-64 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.button
+            onClick={() => setPhase('countdown')}
+            className="w-48 h-48 rounded-full bg-indigo-500 hover:bg-indigo-600 shadow-xl flex flex-col items-center justify-center transition-colors"
+            whileTap={{ scale: 0.95 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="text-4xl mb-1">⏱️</span>
+            <span className="text-white font-bold text-lg">Start!</span>
+          </motion.button>
+        </motion.div>
       )}
 
       {/* Countdown phase */}

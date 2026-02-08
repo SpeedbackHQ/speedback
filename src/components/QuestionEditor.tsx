@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { QuestionType } from '@/lib/types'
 
@@ -74,6 +75,16 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'tilt', label: 'Tilt Meter', emoji: '⚖️', description: 'Tilt to rate' },
     ],
   },
+  'Open Response': {
+    description: 'Free-form text, voice & emoji',
+    types: [
+      { type: 'short_text', label: 'Quick Text', emoji: '💬', description: 'Short text reply' },
+      { type: 'mad_libs', label: 'Fill in the Blank', emoji: '📝', description: 'Complete the sentence' },
+      { type: 'emoji_reaction', label: 'Emoji Reaction', emoji: '😍', description: 'React with emoji' },
+      { type: 'word_cloud', label: 'Word Cloud', emoji: '☁️', description: 'Pick describing words' },
+      { type: 'voice_note', label: 'Voice Note', emoji: '🎤', description: 'Record a voice clip' },
+    ],
+  },
 }
 
 // Flat lookup for question type info
@@ -124,6 +135,16 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'toggle_switch':
     case 'tug_of_war':
       return { left_label: 'No', right_label: 'Yes' }
+    case 'short_text':
+      return { max_length: 140, placeholder: 'Share your thought...' }
+    case 'mad_libs':
+      return { template: 'The best part was ___', max_length: 80 }
+    case 'emoji_reaction':
+      return { emojis: ['😍', '🙂', '😐', '🙁', '😡'], show_reason: true }
+    case 'word_cloud':
+      return { words: ['Creative', 'Fun', 'Boring', 'Innovative', 'Slow', 'Exciting', 'Confusing', 'Clear', 'Inspiring', 'Tedious'], max_selections: 5 }
+    case 'voice_note':
+      return { max_duration: 15 }
     default:
       return {}
   }
@@ -291,6 +312,191 @@ export function QuestionEditor({
           <p className="text-sm text-gray-400 italic">No additional settings for this question type.</p>
         )
 
+      case 'short_text':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Placeholder text</label>
+              <input
+                type="text"
+                value={(question.config.placeholder as string) || ''}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, placeholder: e.target.value }
+                })}
+                placeholder="Share your thought..."
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Max characters</label>
+              <input
+                type="number"
+                value={(question.config.max_length as number) || 140}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, max_length: Math.max(20, Math.min(500, Number(e.target.value))) }
+                })}
+                min={20}
+                max={500}
+                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+              />
+            </div>
+          </div>
+        )
+
+      case 'mad_libs':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Template (use ___ for the blank)</label>
+              <input
+                type="text"
+                value={(question.config.template as string) || ''}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, template: e.target.value }
+                })}
+                placeholder="The best part was ___"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Max characters for answer</label>
+              <input
+                type="number"
+                value={(question.config.max_length as number) || 80}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, max_length: Math.max(20, Math.min(200, Number(e.target.value))) }
+                })}
+                min={20}
+                max={200}
+                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+              />
+            </div>
+          </div>
+        )
+
+      case 'emoji_reaction':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Emojis (space-separated)</label>
+              <input
+                type="text"
+                value={((question.config.emojis as string[]) || []).join(' ')}
+                onChange={(e) => {
+                  const emojis = [...e.target.value].filter(c => c.trim() && !/[a-zA-Z0-9\s]/.test(c))
+                  if (emojis.length > 0) {
+                    onQuestionUpdate(question.id, {
+                      config: { ...question.config, emojis }
+                    })
+                  }
+                }}
+                placeholder="😍 🙂 😐 🙁 😡"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={(question.config.show_reason as boolean) ?? true}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, show_reason: e.target.checked }
+                })}
+                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              />
+              <span className="text-sm text-slate-600">
+                Ask &quot;Tell us why&quot; after emoji selection
+              </span>
+            </label>
+          </div>
+        )
+
+      case 'word_cloud':
+        return (
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500 font-medium">Words</label>
+            {((question.config.words as string[]) || []).map((word, wordIndex) => (
+              <div key={wordIndex} className="flex gap-2">
+                <input
+                  type="text"
+                  value={word}
+                  onChange={(e) => {
+                    const newWords = [...((question.config.words as string[]) || [])]
+                    newWords[wordIndex] = e.target.value
+                    onQuestionUpdate(question.id, {
+                      config: { ...question.config, words: newWords }
+                    })
+                  }}
+                  placeholder={`Word ${wordIndex + 1}`}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newWords = ((question.config.words as string[]) || []).filter((_, i) => i !== wordIndex)
+                    onQuestionUpdate(question.id, {
+                      config: { ...question.config, words: newWords }
+                    })
+                  }}
+                  className={`px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ${
+                    ((question.config.words as string[]) || []).length <= 3 ? 'opacity-30 cursor-not-allowed' : ''
+                  }`}
+                  disabled={((question.config.words as string[]) || []).length <= 3}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const currentWords = (question.config.words as string[]) || []
+                onQuestionUpdate(question.id, {
+                  config: { ...question.config, words: [...currentWords, `Word ${currentWords.length + 1}`] }
+                })
+              }}
+              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${
+                ((question.config.words as string[]) || []).length >= 20 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={((question.config.words as string[]) || []).length >= 20}
+            >
+              + Add word
+            </button>
+            {((question.config.words as string[]) || []).length >= 20 && (
+              <p className="text-xs text-gray-400 mt-1">Maximum 20 words</p>
+            )}
+            <div className="mt-2">
+              <label className="text-xs text-gray-500 font-medium">Max selections</label>
+              <input
+                type="number"
+                value={(question.config.max_selections as number) || 5}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, max_selections: Math.max(1, Math.min(10, Number(e.target.value))) }
+                })}
+                min={1}
+                max={10}
+                className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+              />
+            </div>
+          </div>
+        )
+
+      case 'voice_note':
+        return (
+          <div>
+            <label className="text-xs text-gray-500 font-medium">Max recording duration (seconds)</label>
+            <input
+              type="number"
+              value={(question.config.max_duration as number) || 15}
+              onChange={(e) => onQuestionUpdate(question.id, {
+                config: { ...question.config, max_duration: Math.max(5, Math.min(30, Number(e.target.value))) }
+              })}
+              min={5}
+              max={30}
+              className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+            />
+          </div>
+        )
+
       default:
         return null
     }
@@ -373,57 +579,116 @@ interface QuestionTypeSelectorProps {
   onCancel: () => void
 }
 
+// Emoji representing each category
+const categoryEmojis: Record<string, string> = {
+  'Yes/No': '👆',
+  'Single-Select': '🎯',
+  'Multi-Select': '💥',
+  'Scale/Rating': '⭐',
+  'Open Response': '💬',
+}
+
 export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelectorProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+
   return (
     <motion.div
       className="p-4 bg-indigo-50 rounded-xl max-h-[70vh] overflow-y-auto"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <p className="text-sm font-medium text-gray-700 mb-4">Choose question type:</p>
+      <AnimatePresence mode="wait">
+        {selectedCategory === null ? (
+          <motion.div
+            key="categories"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <p className="text-sm font-medium text-gray-700 mb-4">What type of question?</p>
 
-      {/* Question categories */}
-      {Object.entries(questionCategories).map(([category, { description, types }]) => (
-        <div key={category} className="mb-5">
-          <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1">
-            {category}
-          </h4>
-          <p className="text-xs text-gray-500 mb-2">{description}</p>
-
-          <div className="grid grid-cols-2 gap-2">
-            {types.map(({ type, label, emoji, description: typeDesc, tooltip }) => (
-              <div key={type} className="relative group">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {Object.entries(questionCategories).map(([category, { description, types }]) => (
                 <button
-                  onClick={() => onSelect(type)}
-                  className="w-full flex items-center gap-2 p-3 bg-white rounded-lg hover:bg-indigo-100 transition-colors text-left border border-transparent hover:border-indigo-200"
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-indigo-100 transition-all text-left border-2 border-transparent hover:border-indigo-200 hover:shadow-sm"
                 >
-                  <span className="text-xl">{emoji}</span>
-                  <div>
-                    <div className="font-medium text-gray-800 text-sm">{label}</div>
-                    <div className="text-xs text-gray-500">{typeDesc}</div>
+                  <span className="text-2xl">{categoryEmojis[category] || '📋'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800">{category}</div>
+                    <div className="text-xs text-gray-500">{description}</div>
                   </div>
+                  <span className="text-xs font-medium bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                    {types.length}
+                  </span>
                 </button>
-                {/* Tooltip for rapid-fire guidance */}
-                {tooltip && (
-                  <div className="absolute left-0 right-0 -bottom-1 translate-y-full z-10 hidden group-hover:block">
-                    <div className="bg-indigo-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg mx-1">
-                      {tooltip}
-                      <div className="absolute -top-1 left-4 w-2 h-2 bg-indigo-600 rotate-45" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+              ))}
+            </div>
 
-      <button
-        onClick={onCancel}
-        className="mt-2 text-sm text-gray-500 hover:text-gray-700"
-      >
-        Cancel
-      </button>
+            <button
+              onClick={onCancel}
+              className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="mechanics"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+              >
+                <span>←</span> Back
+              </button>
+              <span className="text-sm font-semibold text-gray-800">
+                {selectedCategory}
+              </span>
+              <span className="text-xs text-gray-400">
+                {questionCategories[selectedCategory]?.description}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {questionCategories[selectedCategory]?.types.map(({ type, label, emoji, description: typeDesc, tooltip }) => (
+                <div key={type} className="relative group">
+                  <button
+                    onClick={() => onSelect(type)}
+                    className="w-full flex items-center gap-2 p-3 bg-white rounded-lg hover:bg-indigo-100 transition-colors text-left border border-transparent hover:border-indigo-200"
+                  >
+                    <span className="text-xl">{emoji}</span>
+                    <div>
+                      <div className="font-medium text-gray-800 text-sm">{label}</div>
+                      <div className="text-xs text-gray-500">{typeDesc}</div>
+                    </div>
+                  </button>
+                  {tooltip && (
+                    <div className="absolute left-0 right-0 -bottom-1 translate-y-full z-10 hidden group-hover:block">
+                      <div className="bg-indigo-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg mx-1">
+                        {tooltip}
+                        <div className="absolute -top-1 left-4 w-2 h-2 bg-indigo-600 rotate-45" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={onCancel}
+              className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

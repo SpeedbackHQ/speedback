@@ -34,6 +34,12 @@ const demoQuestionTexts: Record<string, string> = {
   tug_of_war: 'Which side are you on?',
   tilt: 'How confident are you in this plan?',
   flick: 'Flick to your favorite!',
+  // Qualitative
+  short_text: 'What was the highlight of your day?',
+  mad_libs: 'The best part of the event was ___',
+  emoji_reaction: 'How did this session make you feel?',
+  word_cloud: 'Which words describe our culture?',
+  voice_note: 'Tell us what you really think!',
 }
 
 export function getDemoText(type: QuestionType): string {
@@ -53,6 +59,14 @@ export function createMockQuestion(type: QuestionType): Question {
 }
 
 export function formatAnswerDisplay(type: QuestionType, value: AnswerValue): string {
+  if (type === 'voice_note' && typeof value === 'string' && value.startsWith('data:audio')) {
+    return '🎤 Voice recorded'
+  }
+  if (type === 'emoji_reaction' && typeof value === 'string') {
+    const pipeIndex = value.indexOf('|')
+    if (pipeIndex > 0) return `${value.substring(0, pipeIndex)} "${value.substring(pipeIndex + 1)}"`
+    return value
+  }
   if (typeof value === 'string') return value
   if (typeof value === 'number') {
     if (type === 'stars') return `${value}%`

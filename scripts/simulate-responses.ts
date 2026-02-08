@@ -127,6 +127,57 @@ function generateAnswer(question: QuestionRow): unknown {
     case 'flick':
       return pickRandom(options)
 
+    // Qualitative / Open Response
+    case 'short_text': {
+      const phrases = [
+        'Really enjoyed the session!',
+        'Could use more interaction',
+        'The speaker was fantastic',
+        'A bit too long for my taste',
+        'Learned something new today',
+        'Would love to see more demos',
+        'Great energy in the room',
+        'The content was very relevant',
+        'Need more breaks next time',
+        'Absolutely loved it!',
+      ]
+      return pickRandom(phrases)
+    }
+
+    case 'mad_libs': {
+      const fills = [
+        'the energy', 'meeting new people', 'the food', 'the keynote',
+        'the Q&A session', 'learning new things', 'the networking',
+        'the live demos', 'the team spirit', 'the creative ideas',
+      ]
+      return pickRandom(fills)
+    }
+
+    case 'emoji_reaction': {
+      const emojis = (config.emojis as string[]) || ['😍', '🙂', '😐', '🙁', '😡']
+      const emoji = pickRandom(emojis)
+      const reasons = [
+        'It was so engaging', 'Could be better', 'Loved the format',
+        'A bit confusing', 'Very inspiring', 'Needs improvement',
+      ]
+      // 60% chance of including a reason
+      if (Math.random() > 0.4) {
+        return `${emoji}|${pickRandom(reasons)}`
+      }
+      return emoji
+    }
+
+    case 'word_cloud': {
+      const words = (config.words as string[]) || ['Creative', 'Fun', 'Boring', 'Innovative']
+      const maxSel = (config.max_selections as number) || 5
+      const count = 1 + Math.floor(Math.random() * Math.min(maxSel, words.length))
+      const shuffled = [...words].sort(() => Math.random() - 0.5)
+      return shuffled.slice(0, count)
+    }
+
+    case 'voice_note':
+      return 'audio-response-placeholder'
+
     default:
       console.warn(`  Unknown type "${type}", using random option`)
       return pickRandom(options)

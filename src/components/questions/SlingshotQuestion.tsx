@@ -103,33 +103,58 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
       navigator.vibrate(50)
     }
 
-    // Calculate trajectory (opposite of pullback)
+    // Calculate launch direction (opposite of pullback)
     const launchAngle = Math.atan2(-pullback.y, -pullback.x)
-    const launchPower = pullDistance * 2.5
+    const launchDirX = Math.cos(launchAngle)
+    const launchDirY = Math.sin(launchAngle)
 
-    // Animate projectile
-    const startX = launchOrigin.x
-    const startY = launchOrigin.y
-    let currentX = startX
-    let currentY = startY
-    const velocityX = Math.cos(launchAngle) * launchPower * 0.1
-    const velocityY = Math.sin(launchAngle) * launchPower * 0.1
+    // Find the best target along the launch trajectory
+    // Score each target by how close it is to the aim line
+    let bestTarget: typeof targets[0] | null = null
+    let bestScore = Infinity
+
+    for (const target of targets) {
+      const toTargetX = target.x - launchOrigin.x
+      const toTargetY = target.y - launchOrigin.y
+
+      // Dot product: how far along the launch direction is the target
+      const dot = toTargetX * launchDirX + toTargetY * launchDirY
+      if (dot <= 0) continue // target is behind the launch direction
+
+      // Perpendicular distance from the aim line
+      const perpDist = Math.abs(toTargetX * launchDirY - toTargetY * launchDirX)
+
+      // Must be within reasonable aim (hitRadius * 2 for generous aiming)
+      if (perpDist < hitRadius * 2 && perpDist < bestScore) {
+        bestScore = perpDist
+        bestTarget = target
+      }
+    }
+
+    // Animate projectile toward the target (or fly off if no hit)
+    const targetX = bestTarget ? bestTarget.x : launchOrigin.x + launchDirX * 120
+    const targetY = bestTarget ? bestTarget.y : launchOrigin.y + launchDirY * 120
+    const totalDist = Math.sqrt(
+      (targetX - launchOrigin.x) ** 2 + (targetY - launchOrigin.y) ** 2
+    )
+    const speed = 4 // units per frame (consistent regardless of pull strength)
+    const totalFrames = Math.max(8, Math.round(totalDist / speed))
+    let frame = 0
 
     const animateProjectile = () => {
-      currentX += velocityX
-      currentY += velocityY
+      frame++
+      const t = Math.min(1, frame / totalFrames)
+      // Ease out for satisfying deceleration
+      const eased = 1 - (1 - t) * (1 - t)
 
+      const currentX = launchOrigin.x + (targetX - launchOrigin.x) * eased
+      const currentY = launchOrigin.y + (targetY - launchOrigin.y) * eased
       setProjectilePos({ x: currentX, y: currentY })
 
-      // Check for target hits
-      for (const target of targets) {
-        const dx = currentX - target.x
-        const dy = currentY - target.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        if (distance < hitRadius) {
+      if (t >= 1) {
+        if (bestTarget) {
           // Hit!
-          setHitTarget(target.label)
+          setHitTarget(bestTarget.label)
           setShowResult(true)
 
           if (navigator.vibrate) {
@@ -137,20 +162,16 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
           }
 
           setTimeout(() => {
-            onAnswer(target.label)
+            onAnswer(bestTarget.label)
           }, 1200)
-          return
+        } else {
+          // Missed - reset
+          setTimeout(() => {
+            setIsLaunched(false)
+            setPullback({ x: 0, y: 0 })
+            setProjectilePos({ x: 50, y: 85 })
+          }, 300)
         }
-      }
-
-      // Check if out of bounds
-      if (currentY < -10 || currentX < -10 || currentX > 110) {
-        // Missed - reset
-        setTimeout(() => {
-          setIsLaunched(false)
-          setPullback({ x: 0, y: 0 })
-          setProjectilePos({ x: 50, y: 85 })
-        }, 300)
         return
       }
 

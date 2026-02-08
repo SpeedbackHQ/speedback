@@ -16,7 +16,7 @@ interface SurveyData extends Survey {
   responses: Response[]
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type SaveStatus = 'saving' | 'saved' | 'error'
 
 export default function SurveyEditorPage() {
   const params = useParams()
@@ -37,9 +37,8 @@ export default function SurveyEditorPage() {
   const [isAddingQuestion, setIsAddingQuestion] = useState(false)
 
   // Save status (Google Docs style)
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Delete state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -140,21 +139,13 @@ export default function SurveyEditorPage() {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
-    if (saveStatusTimeoutRef.current) {
-      clearTimeout(saveStatusTimeoutRef.current)
-    }
 
-    // Only show "Saving..." if it takes more than 300ms
-    const showSavingTimer = setTimeout(() => setSaveStatus('saving'), 300)
+    setSaveStatus('saving')
 
     try {
       await saveFn()
-      clearTimeout(showSavingTimer)
       setSaveStatus('saved')
-      // Hide "Saved" after 2 seconds
-      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000)
     } catch (error) {
-      clearTimeout(showSavingTimer)
       console.error('Save error:', error)
       setSaveStatus('error')
     }
@@ -421,6 +412,56 @@ export default function SurveyEditorPage() {
           total: answers.length,
           options: optionCounts,
         }
+      } else if (question.type === 'word_cloud') {
+        // Word cloud: multi-select word frequency (same as tap)
+        const wordCounts: Record<string, number> = {}
+        answers.forEach((a) => {
+          if (Array.isArray(a)) {
+            a.forEach((word: string) => {
+              wordCounts[word] = (wordCounts[word] || 0) + 1
+            })
+          }
+        })
+        stats[question.id] = {
+          type: 'tap',
+          total: answers.length,
+          options: wordCounts,
+        }
+      } else if (question.type === 'emoji_reaction') {
+        // Emoji reaction: parse emoji|reason format
+        const emojiCounts: Record<string, number> = {}
+        const reasons: string[] = []
+        answers.forEach((a) => {
+          if (typeof a === 'string') {
+            const pipeIndex = a.indexOf('|')
+            if (pipeIndex > 0) {
+              const emoji = a.substring(0, pipeIndex)
+              const reason = a.substring(pipeIndex + 1)
+              emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1
+              if (reason.trim()) reasons.push(`${emoji} ${reason}`)
+            } else {
+              emojiCounts[a] = (emojiCounts[a] || 0) + 1
+            }
+          }
+        })
+        stats[question.id] = {
+          type: 'emoji_reaction',
+          total: answers.length,
+          emojiCounts,
+          reasons,
+        }
+      } else if (['short_text', 'mad_libs', 'voice_note'].includes(question.type)) {
+        // Text/voice: collect as list
+        const textResponses: string[] = []
+        answers.forEach((a) => {
+          if (typeof a === 'string') textResponses.push(a)
+        })
+        stats[question.id] = {
+          type: 'text',
+          total: textResponses.length,
+          responses: textResponses,
+          isVoice: question.type === 'voice_note',
+        }
       }
     })
 
@@ -441,6 +482,10 @@ export default function SurveyEditorPage() {
         if (value === 'left') return config.left_label || 'No'
         if (value === 'up') return config.up_label || 'Meh'
         return String(value)
+      }
+      // Voice note: data URLs are too large for CSV
+      if (question.type === 'voice_note') {
+        return typeof value === 'string' && value.startsWith('data:audio') ? '[Audio response]' : String(value)
       }
       if (Array.isArray(value)) return value.join(', ')
       return String(value)
@@ -968,6 +1013,90 @@ export default function SurveyEditorPage() {
                                   </div>
                                 )
                               })}
+                            </div>
+                          )
+                        })()}
+
+                        {/* Text responses: scrollable list */}
+                        {questionStats?.type === 'text' && (() => {
+                          const responses = questionStats.responses as string[]
+                          const isVoice = questionStats.isVoice as boolean
+                          return (
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {responses.length === 0 && (
+                                <p className="text-sm text-slate-400 italic">No responses yet</p>
+                              )}
+                              {isVoice ? (
+                                responses.map((dataUrl, i) => (
+                                  <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                                    <span className="text-lg">🎤</span>
+                                    {typeof dataUrl === 'string' && dataUrl.startsWith('data:audio') ? (
+                                      <audio controls src={dataUrl} className="flex-1 h-8" />
+                                    ) : (
+                                      <span className="text-sm text-slate-400 italic">Audio response</span>
+                                    )}
+                                  </div>
+                                ))
+                              ) : (
+                                responses.map((text, i) => (
+                                  <motion.div
+                                    key={i}
+                                    className="p-3 bg-indigo-50 rounded-lg text-sm text-slate-700 border border-indigo-100"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.03 }}
+                                  >
+                                    &ldquo;{text}&rdquo;
+                                  </motion.div>
+                                ))
+                              )}
+                            </div>
+                          )
+                        })()}
+
+                        {/* Emoji reaction: distribution + reasons */}
+                        {questionStats?.type === 'emoji_reaction' && (() => {
+                          const emojiCounts = questionStats.emojiCounts as Record<string, number>
+                          const reasons = questionStats.reasons as string[]
+                          const emojiTotal = Number(questionStats.total)
+                          const sorted = Object.entries(emojiCounts).sort(([, a], [, b]) => b - a)
+                          const maxCount = Math.max(...Object.values(emojiCounts), 1)
+
+                          return (
+                            <div>
+                              <div className="space-y-2 mb-4">
+                                {sorted.map(([emoji, count], i) => {
+                                  const pct = emojiTotal > 0 ? Math.round((count / emojiTotal) * 100) : 0
+                                  return (
+                                    <div key={emoji}>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-2xl">{emoji}</span>
+                                        <span className="text-xs text-slate-400">{count} ({pct}%)</span>
+                                      </div>
+                                      <div className="h-5 bg-slate-50 rounded-lg overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-indigo-400 rounded-lg"
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${(count / maxCount) * 100}%` }}
+                                          transition={{ duration: 0.6, delay: i * 0.1 }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                              {reasons.length > 0 && (
+                                <div className="border-t border-slate-100 pt-3">
+                                  <p className="text-xs font-medium text-slate-500 mb-2">Reasons ({reasons.length})</p>
+                                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                    {reasons.map((reason, i) => (
+                                      <div key={i} className="text-sm text-slate-600 p-2 bg-slate-50 rounded">
+                                        {reason}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )
                         })()}

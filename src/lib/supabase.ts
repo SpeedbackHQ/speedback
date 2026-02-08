@@ -19,6 +19,8 @@ export type QuestionType =
   | 'dial' | 'press_hold' | 'toggle_switch' | 'spin_stop'
   | 'countdown_tap' | 'door_choice' | 'whack_a_mole'
   | 'tug_of_war' | 'tilt' | 'flick'
+  // Qualitative
+  | 'short_text' | 'mad_libs' | 'emoji_reaction' | 'word_cloud' | 'voice_note'
 
 export interface Organization {
   id: string

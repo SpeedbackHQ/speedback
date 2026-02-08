@@ -9,12 +9,32 @@ import { createMockQuestion, formatAnswerDisplay } from '@/lib/playground'
 import { MechanicRenderer } from '@/components/MechanicRenderer'
 import { PhoneFrame } from '@/components/PhoneFrame'
 
+// Resolve a question type to its category name
+function findCategoryForType(type: QuestionType): string | null {
+  for (const [categoryName, category] of Object.entries(questionCategories)) {
+    if (category.types.some(t => t.type === type)) return categoryName
+  }
+  return null
+}
+
+// Emoji representing each category
+const categoryEmojis: Record<string, string> = {
+  'Yes/No': '👆',
+  'Single-Select': '🎯',
+  'Multi-Select': '💥',
+  'Scale/Rating': '⭐',
+  'Open Response': '💬',
+}
+
 function PlaygroundContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialType = searchParams.get('type') as QuestionType | null
 
   const [selectedType, setSelectedType] = useState<QuestionType | null>(initialType)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    initialType ? findCategoryForType(initialType) : null
+  )
   const [previewKey, setPreviewKey] = useState(0)
   const [lastAnswer, setLastAnswer] = useState<string | null>(null)
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(!!initialType)
@@ -81,42 +101,82 @@ function PlaygroundContent() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left: Type selector grid */}
+        {/* Left: Type selector */}
         <div className="flex-1 min-w-0">
-          {Object.entries(questionCategories).map(([categoryName, category]) => (
-            <div key={categoryName} className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                {categoryName}
-                <span className="text-gray-300 ml-2 font-normal normal-case">
-                  {category.description}
-                </span>
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {category.types.map((entry) => {
-                  const isActive = selectedType === entry.type
-                  return (
+          <AnimatePresence mode="wait">
+            {selectedCategory === null ? (
+              <motion.div
+                key="categories"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(questionCategories).map(([categoryName, category]) => (
                     <button
-                      key={entry.type}
-                      onClick={() => handleSelectType(entry.type)}
-                      className={`
-                        text-left p-3 rounded-xl border-2 transition-all
-                        ${isActive
-                          ? 'border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100'
-                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
-                        }
-                      `}
+                      key={categoryName}
+                      onClick={() => setSelectedCategory(categoryName)}
+                      className="flex items-center gap-4 p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all text-left"
                     >
-                      <div className="text-xl mb-1">{entry.emoji}</div>
-                      <div className={`text-sm font-semibold ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
-                        {entry.label}
+                      <span className="text-3xl">{categoryEmojis[categoryName] || '📋'}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-gray-800 text-lg">{categoryName}</div>
+                        <div className="text-sm text-gray-500">{category.description}</div>
                       </div>
-                      <div className="text-xs text-gray-400 mt-0.5">{entry.description}</div>
+                      <span className="text-sm font-semibold bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-full">
+                        {category.types.length}
+                      </span>
                     </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mechanics"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                  >
+                    <span>←</span> All categories
+                  </button>
+                  <span className="text-lg">{categoryEmojis[selectedCategory]}</span>
+                  <h3 className="text-lg font-bold text-gray-800">{selectedCategory}</h3>
+                  <span className="text-sm text-gray-400">
+                    {questionCategories[selectedCategory]?.description}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {questionCategories[selectedCategory]?.types.map((entry) => {
+                    const isActive = selectedType === entry.type
+                    return (
+                      <button
+                        key={entry.type}
+                        onClick={() => handleSelectType(entry.type)}
+                        className={`
+                          text-left p-3 rounded-xl border-2 transition-all
+                          ${isActive
+                            ? 'border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100'
+                            : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                          }
+                        `}
+                      >
+                        <div className="text-xl mb-1">{entry.emoji}</div>
+                        <div className={`text-sm font-semibold ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
+                          {entry.label}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-0.5">{entry.description}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Right: Preview panel (desktop only) */}

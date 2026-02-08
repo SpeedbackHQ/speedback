@@ -35,7 +35,6 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
   const [holes, setHoles] = useState<(string | null)[]>(Array(HOLE_COUNT).fill(null))
   const [whackedHole, setWhackedHole] = useState<number | null>(null)
   const [whackedOption, setWhackedOption] = useState<string | null>(null)
-  const [showBonk, setShowBonk] = useState(false)
   const timeoutsRef = useRef<NodeJS.Timeout[]>([])
   const holesRef = useRef<(string | null)[]>(Array(HOLE_COUNT).fill(null))
 
@@ -153,7 +152,6 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
 
     setWhackedHole(holeIndex)
     setWhackedOption(option)
-    setShowBonk(true)
 
     // Stop all future moles
     timeoutsRef.current.forEach(t => clearTimeout(t))
@@ -162,11 +160,9 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
       navigator.vibrate([40, 20, 60])
     }
 
-    setTimeout(() => setShowBonk(false), 600)
-
     setTimeout(() => {
       onAnswer(option)
-    }, 800)
+    }, 1000)
   }, [whackedHole, onAnswer])
 
   return (
@@ -182,23 +178,6 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
       <p className="text-gray-500 text-center mb-4 text-sm">
         Tap a mole to bonk your pick!
       </p>
-
-      {/* BONK overlay */}
-      <AnimatePresence>
-        {showBonk && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.5 }}
-            transition={{ duration: 0.3 }}
-          >
-            <span className="text-6xl font-black text-red-500 drop-shadow-lg" style={{ WebkitTextStroke: '2px white' }}>
-              BONK!
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* 3x3 Mole grid */}
       <div className="grid grid-cols-3 gap-2">
@@ -270,15 +249,16 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
         })}
       </div>
 
-      {/* Result */}
+      {/* Result confirmation */}
       <AnimatePresence>
-        {whackedOption && !showBonk && (
+        {whackedOption && (
           <motion.div
             className="text-center mt-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium text-sm">
+            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-5 py-2.5 rounded-full font-bold text-base">
               🔨 {whackedOption}
             </span>
           </motion.div>

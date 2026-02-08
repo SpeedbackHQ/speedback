@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion } from './questions'
+import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
 
@@ -195,6 +195,16 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
         return <TiltQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'flick':
         return <FlickQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'short_text':
+        return <ShortTextQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'mad_libs':
+        return <MadLibsQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'emoji_reaction':
+        return <EmojiReactionQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'word_cloud':
+        return <WordCloudQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'voice_note':
+        return <VoiceNoteQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

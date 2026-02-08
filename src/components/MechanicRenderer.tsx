@@ -34,6 +34,11 @@ import {
   TugOfWarQuestion,
   TiltQuestion,
   FlickQuestion,
+  ShortTextQuestion,
+  MadLibsQuestion,
+  EmojiReactionQuestion,
+  WordCloudQuestion,
+  VoiceNoteQuestion,
 } from './questions'
 
 interface MechanicRendererProps {
@@ -103,6 +108,16 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
       return <TiltQuestion {...props} onAnswer={(v) => onAnswer(v)} />
     case 'flick':
       return <FlickQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'short_text':
+      return <ShortTextQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'mad_libs':
+      return <MadLibsQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'emoji_reaction':
+      return <EmojiReactionQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'word_cloud':
+      return <WordCloudQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'voice_note':
+      return <VoiceNoteQuestion {...props} onAnswer={(v) => onAnswer(v)} />
     default:
       return <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
   }

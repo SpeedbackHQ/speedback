@@ -77,11 +77,11 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
 
     ctx.globalCompositeOperation = 'destination-out'
     ctx.beginPath()
-    ctx.arc(x, y, 30, 0, Math.PI * 2)
+    ctx.arc(x, y, 20, 0, Math.PI * 2)
     ctx.fill()
 
     // Draw line from last position
-    ctx.lineWidth = 60
+    ctx.lineWidth = 40
     ctx.lineCap = 'round'
     ctx.beginPath()
     ctx.moveTo(lastPos.current.x, lastPos.current.y)
@@ -100,8 +100,8 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
     const progress = (transparent / (pixels.length / 4)) * 100
     setScratchProgress(progress)
 
-    // Auto-reveal at 50%
-    if (progress >= 50 && !isRevealed) {
+    // Auto-reveal at 70%
+    if (progress >= 70 && !isRevealed) {
       setIsRevealed(true)
       setShowResult(true)
 
@@ -270,12 +270,12 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-yellow-400 to-green-500"
-                  animate={{ width: `${Math.min(100, scratchProgress * 2)}%` }}
+                  animate={{ width: `${Math.min(100, (scratchProgress / 70) * 100)}%` }}
                   transition={{ type: 'spring', stiffness: 100, damping: 15 }}
                 />
               </div>
               <p className="text-center text-sm text-gray-500 mt-2">
-                {Math.min(100, Math.round(scratchProgress * 2))}% scratched
+                {Math.min(100, Math.round((scratchProgress / 70) * 100))}% scratched
               </p>
             </div>
           )}
