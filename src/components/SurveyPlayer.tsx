@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion } from './questions'
+import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
 
@@ -175,6 +175,26 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
         return <TreasureChestQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'pinata':
         return <PinataQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'toggle_switch':
+        return <ToggleSwitchQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'press_hold':
+        return <PressHoldQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'dial':
+        return <DialQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'spin_stop':
+        return <SpinStopQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'countdown_tap':
+        return <CountdownTapQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'door_choice':
+        return <DoorChoiceQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'whack_a_mole':
+        return <WhackAMoleQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'tug_of_war':
+        return <TugOfWarQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'tilt':
+        return <TiltQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'flick':
+        return <FlickQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

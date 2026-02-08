@@ -15,6 +15,10 @@ export type QuestionType =
   | 'tilt_maze' | 'racing_lanes' | 'gravity_drop'
   | 'bubble_pop' | 'bullseye' | 'slingshot' | 'scratch_card'
   | 'treasure_chest' | 'pinata'
+  // Phase B
+  | 'dial' | 'press_hold' | 'toggle_switch' | 'spin_stop'
+  | 'countdown_tap' | 'door_choice' | 'whack_a_mole'
+  | 'tug_of_war' | 'tilt' | 'flick'
 
 export interface Organization {
   id: string

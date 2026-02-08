@@ -197,7 +197,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
               style={{
                 left: `${target.x}%`,
                 top: `${target.y}%`,
-                transform: 'translate(-50%, -50%)',
+                transform: 'translateX(-50%)',
               }}
               initial={{ scale: 0 }}
               animate={{ scale: isHit ? 1.3 : 1 }}

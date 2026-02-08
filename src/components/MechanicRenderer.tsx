@@ -24,6 +24,16 @@ import {
   ScratchCardQuestion,
   TreasureChestQuestion,
   PinataQuestion,
+  ToggleSwitchQuestion,
+  PressHoldQuestion,
+  DialQuestion,
+  SpinStopQuestion,
+  CountdownTapQuestion,
+  DoorChoiceQuestion,
+  WhackAMoleQuestion,
+  TugOfWarQuestion,
+  TiltQuestion,
+  FlickQuestion,
 } from './questions'
 
 interface MechanicRendererProps {
@@ -73,6 +83,26 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
       return <TreasureChestQuestion {...props} onAnswer={(v) => onAnswer(v)} />
     case 'pinata':
       return <PinataQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'toggle_switch':
+      return <ToggleSwitchQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'press_hold':
+      return <PressHoldQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'dial':
+      return <DialQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'spin_stop':
+      return <SpinStopQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'countdown_tap':
+      return <CountdownTapQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'door_choice':
+      return <DoorChoiceQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'whack_a_mole':
+      return <WhackAMoleQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'tug_of_war':
+      return <TugOfWarQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'tilt':
+      return <TiltQuestion {...props} onAnswer={(v) => onAnswer(v)} />
+    case 'flick':
+      return <FlickQuestion {...props} onAnswer={(v) => onAnswer(v)} />
     default:
       return <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
   }

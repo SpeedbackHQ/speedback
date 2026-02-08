@@ -23,6 +23,17 @@ const demoQuestionTexts: Record<string, string> = {
   scratch_card: 'Scratch to reveal your pick',
   treasure_chest: 'Unlock your answer!',
   pinata: 'Smash to reveal!',
+  // Phase B
+  dial: 'How strongly do you feel?',
+  press_hold: 'How much energy do you have?',
+  toggle_switch: 'Are you a morning person?',
+  spin_stop: 'What should we focus on?',
+  countdown_tap: 'How pumped are you?',
+  door_choice: 'Pick a mystery door!',
+  whack_a_mole: 'Bonk your favorite!',
+  tug_of_war: 'Which side are you on?',
+  tilt: 'How confident are you in this plan?',
+  flick: 'Flick to your favorite!',
 }
 
 export function getDemoText(type: QuestionType): string {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useState, useCallback, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QuestionType } from '@/lib/types'
@@ -18,31 +18,50 @@ function PlaygroundContent() {
   const [previewKey, setPreviewKey] = useState(0)
   const [lastAnswer, setLastAnswer] = useState<string | null>(null)
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(!!initialType)
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current)
+    }
+  }, [])
+
+  const clearPendingReset = useCallback(() => {
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current)
+      resetTimeoutRef.current = null
+    }
+  }, [])
 
   const handleSelectType = useCallback((type: QuestionType) => {
+    clearPendingReset()
     setSelectedType(type)
     setPreviewKey(prev => prev + 1)
     setLastAnswer(null)
     setMobilePreviewOpen(true)
     router.push(`/admin/playground?type=${type}`, { scroll: false })
-  }, [router])
+  }, [router, clearPendingReset])
 
   const handleAnswer = useCallback((value: unknown) => {
     if (!selectedType) return
+    clearPendingReset()
     const display = formatAnswerDisplay(selectedType, value as never)
     setLastAnswer(display)
 
     // Auto-reset after 2s
-    setTimeout(() => {
+    resetTimeoutRef.current = setTimeout(() => {
       setPreviewKey(prev => prev + 1)
       setLastAnswer(null)
+      resetTimeoutRef.current = null
     }, 2000)
-  }, [selectedType])
+  }, [selectedType, clearPendingReset])
 
   const handleReset = useCallback(() => {
+    clearPendingReset()
     setPreviewKey(prev => prev + 1)
     setLastAnswer(null)
-  }, [])
+  }, [clearPendingReset])
 
   const typeInfo = selectedType ? questionTypeInfo[selectedType] : null
 

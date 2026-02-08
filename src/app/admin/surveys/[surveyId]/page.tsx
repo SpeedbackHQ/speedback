@@ -352,7 +352,19 @@ export default function SurveyEditorPage() {
         .map(r => r.answers.find((a: { question_id: string }) => a.question_id === question.id)?.value)
         .filter(Boolean)
 
-      if (question.type === 'swipe') {
+      // Binary types: answer is 'left' | 'right' (| 'up' for swipe)
+      const binaryTypes = ['swipe', 'toggle_switch', 'tug_of_war']
+      // Scale types: answer is a number 0-100
+      const scaleTypes = ['slider', 'thermometer', 'bullseye', 'stars', 'dial', 'press_hold', 'countdown_tap', 'tilt']
+      // Single-select types: answer is a string (one of the options)
+      const singleSelectTypes = [
+        'tap_meter', 'rolodex', 'fanned', 'fanned_swipe', 'stacked',
+        'tilt_maze', 'racing_lanes', 'gravity_drop', 'bubble_pop',
+        'slingshot', 'scratch_card', 'treasure_chest', 'pinata',
+        'spin_stop', 'door_choice', 'whack_a_mole', 'flick',
+      ]
+
+      if (binaryTypes.includes(question.type)) {
         const counts = { left: 0, right: 0, up: 0 }
         answers.forEach((a) => {
           if (a === 'left' || a === 'right' || a === 'up') counts[a]++
@@ -365,21 +377,43 @@ export default function SurveyEditorPage() {
           up: counts.up,
           labels: question.config,
         }
-      } else if (question.type === 'slider') {
+      } else if (scaleTypes.includes(question.type)) {
         const values = answers.filter((a): a is number => typeof a === 'number')
-        const avg = values.reduce((sum, v) => sum + v, 0) / values.length
+        const avg = values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0
         stats[question.id] = {
           type: 'slider',
           total: values.length,
           average: Math.round(avg),
+          distribution: [
+            values.filter(v => v <= 20).length,
+            values.filter(v => v > 20 && v <= 40).length,
+            values.filter(v => v > 40 && v <= 60).length,
+            values.filter(v => v > 60 && v <= 80).length,
+            values.filter(v => v > 80).length,
+          ],
+          labels: question.config,
         }
       } else if (question.type === 'tap') {
+        // Multi-select: answer is string[]
         const optionCounts: Record<string, number> = {}
         answers.forEach((a) => {
           if (Array.isArray(a)) {
             a.forEach((opt: string) => {
               optionCounts[opt] = (optionCounts[opt] || 0) + 1
             })
+          }
+        })
+        stats[question.id] = {
+          type: 'tap',
+          total: answers.length,
+          options: optionCounts,
+        }
+      } else if (singleSelectTypes.includes(question.type)) {
+        // Single-select: answer is a string
+        const optionCounts: Record<string, number> = {}
+        answers.forEach((a) => {
+          if (typeof a === 'string') {
+            optionCounts[a] = (optionCounts[a] || 0) + 1
           }
         })
         stats[question.id] = {
@@ -401,7 +435,7 @@ export default function SurveyEditorPage() {
 
     const formatAnswer = (question: { type: string; config: Record<string, unknown> }, value: unknown): string => {
       if (value == null) return ''
-      if (question.type === 'swipe') {
+      if (['swipe', 'toggle_switch', 'tug_of_war'].includes(question.type)) {
         const config = question.config as Record<string, string>
         if (value === 'right') return config.right_label || 'Yes'
         if (value === 'left') return config.left_label || 'No'
@@ -789,61 +823,154 @@ export default function SurveyEditorPage() {
                   {survey.questions.map((question) => {
                     const questionStats = stats?.[question.id] as Record<string, unknown> | undefined
                     const typeInfo = questionTypeInfo[question.type]
+                    const total = Number(questionStats?.total || 0)
 
                     return (
-                      <div key={question.id} className="border border-slate-100 rounded-xl p-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <span className="text-xl">{typeInfo?.emoji || '❓'}</span>
-                          <div>
-                            <p className="font-semibold text-slate-800">{question.text || 'Untitled question'}</p>
-                            <p className="text-xs text-slate-500">{typeInfo?.label || question.type}</p>
+                      <div key={question.id} className="border border-slate-100 rounded-xl p-5">
+                        {/* Question header with response count badge */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">{typeInfo?.emoji || '❓'}</span>
+                            <div>
+                              <p className="font-semibold text-slate-800">{question.text || 'Untitled question'}</p>
+                              <p className="text-xs text-slate-500">{typeInfo?.label || question.type}</p>
+                            </div>
                           </div>
+                          {total > 0 && (
+                            <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full whitespace-nowrap">
+                              {total} response{total !== 1 ? 's' : ''}
+                            </span>
+                          )}
                         </div>
 
-                        {questionStats?.type === 'swipe' && (
-                          <div className="flex gap-4 text-sm font-medium">
-                            <span className="text-emerald-600">
-                              ✓ {String(questionStats.right)} ({Math.round((Number(questionStats.right) / Number(questionStats.total)) * 100)}%)
-                            </span>
-                            <span className="text-red-500">
-                              ✗ {String(questionStats.left)} ({Math.round((Number(questionStats.left) / Number(questionStats.total)) * 100)}%)
-                            </span>
-                            {Number(questionStats.up) > 0 && (
-                              <span className="text-amber-500">
-                                ~ {String(questionStats.up)} ({Math.round((Number(questionStats.up) / Number(questionStats.total)) * 100)}%)
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {questionStats?.type === 'slider' && (
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${questionStats.average}%` }}
-                                transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-                              />
+                        {/* Swipe: Stacked segment bar */}
+                        {questionStats?.type === 'swipe' && (() => {
+                          const labels = questionStats.labels as Record<string, string> || {}
+                          const rightPct = total > 0 ? Math.round((Number(questionStats.right) / total) * 100) : 0
+                          const leftPct = total > 0 ? Math.round((Number(questionStats.left) / total) * 100) : 0
+                          const upPct = total > 0 ? Math.round((Number(questionStats.up) / total) * 100) : 0
+                          const segments = [
+                            { label: labels.right_label || 'Yes', count: Number(questionStats.right), pct: rightPct, color: 'bg-emerald-500', dot: 'bg-emerald-500' },
+                            { label: labels.left_label || 'No', count: Number(questionStats.left), pct: leftPct, color: 'bg-red-400', dot: 'bg-red-400' },
+                            ...(Number(questionStats.up) > 0 ? [{ label: labels.up_label || 'Meh', count: Number(questionStats.up), pct: upPct, color: 'bg-amber-400', dot: 'bg-amber-400' }] : []),
+                          ]
+                          return (
+                            <div>
+                              {/* Stacked bar */}
+                              <div className="h-8 rounded-lg overflow-hidden flex">
+                                {segments.map((seg, i) => (
+                                  <motion.div
+                                    key={seg.label}
+                                    className={`${seg.color} flex items-center justify-center text-white text-xs font-bold`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${seg.pct}%` }}
+                                    transition={{ duration: 0.6, delay: i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                                  >
+                                    {seg.pct >= 15 ? `${seg.pct}%` : ''}
+                                  </motion.div>
+                                ))}
+                              </div>
+                              {/* Legend */}
+                              <div className="flex gap-4 mt-3">
+                                {segments.map(seg => (
+                                  <div key={seg.label} className="flex items-center gap-1.5 text-sm">
+                                    <div className={`w-2.5 h-2.5 rounded-full ${seg.dot}`} />
+                                    <span className="text-slate-600 font-medium">{seg.label}</span>
+                                    <span className="text-slate-400">{seg.count}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            <span className="text-sm font-bold text-slate-600 min-w-[3rem]">
-                              {String(questionStats.average)}%
-                            </span>
-                          </div>
-                        )}
+                          )
+                        })()}
 
-                        {questionStats?.type === 'tap' && (
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(questionStats.options as Record<string, number>).map(([opt, count]) => (
-                              <span
-                                key={opt}
-                                className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium"
-                              >
-                                {opt}: {count}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {/* Scale: Average bar + distribution histogram */}
+                        {questionStats?.type === 'slider' && (() => {
+                          const avg = Number(questionStats.average)
+                          const distribution = (questionStats.distribution as number[]) || [0, 0, 0, 0, 0]
+                          const maxBucket = Math.max(...distribution, 1)
+                          const labels = questionStats.labels as Record<string, string> || {}
+                          const bucketLabels = ['0–20', '21–40', '41–60', '61–80', '81–100']
+                          const avgColor = avg >= 70 ? 'text-emerald-600' : avg >= 40 ? 'text-amber-600' : 'text-red-500'
+
+                          return (
+                            <div>
+                              {/* Average score */}
+                              <div className="flex items-center gap-4 mb-3">
+                                <span className={`text-3xl font-bold ${avgColor}`}>{avg}%</span>
+                                <div className="flex-1">
+                                  <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
+                                    <motion.div
+                                      className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400 rounded-full"
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${avg}%` }}
+                                      transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+                                    />
+                                  </div>
+                                  {(labels.min_label || labels.max_label) && (
+                                    <div className="flex justify-between mt-1">
+                                      <span className="text-[10px] text-slate-400">{labels.min_label}</span>
+                                      <span className="text-[10px] text-slate-400">{labels.max_label}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Distribution histogram */}
+                              {distribution.some(v => v > 0) && (
+                                <div className="space-y-1.5 mt-4">
+                                  <p className="text-xs font-medium text-slate-500 mb-2">Distribution</p>
+                                  {bucketLabels.map((label, i) => (
+                                    <div key={label} className="flex items-center gap-2">
+                                      <span className="text-xs text-slate-400 w-12 text-right font-mono">{label}</span>
+                                      <div className="flex-1 h-5 bg-slate-50 rounded overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-indigo-400/70 rounded"
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${(distribution[i] / maxBucket) * 100}%` }}
+                                          transition={{ duration: 0.5, delay: i * 0.08 }}
+                                        />
+                                      </div>
+                                      <span className="text-xs text-slate-500 w-6 font-medium">{distribution[i]}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })()}
+
+                        {/* Options: Horizontal bar chart */}
+                        {questionStats?.type === 'tap' && (() => {
+                          const options = questionStats.options as Record<string, number>
+                          const sorted = Object.entries(options).sort(([, a], [, b]) => b - a)
+                          const maxCount = Math.max(...Object.values(options), 1)
+                          const barColors = ['bg-indigo-500', 'bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500']
+
+                          return (
+                            <div className="space-y-2.5">
+                              {sorted.map(([opt, count], i) => {
+                                const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                                return (
+                                  <div key={opt}>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-sm font-medium text-slate-700">{opt}</span>
+                                      <span className="text-xs text-slate-400">{count} ({pct}%)</span>
+                                    </div>
+                                    <div className="h-6 bg-slate-50 rounded-lg overflow-hidden">
+                                      <motion.div
+                                        className={`h-full ${barColors[i % barColors.length]} rounded-lg`}
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${(count / maxCount) * 100}%` }}
+                                        transition={{ duration: 0.6, delay: i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )
+                        })()}
 
                         {!questionStats && (
                           <p className="text-sm text-slate-400 italic">No responses for this question yet</p>

@@ -26,6 +26,8 @@ export const questionCategories: Record<string, { description: string; types: Qu
     description: 'Binary choice questions',
     types: [
       { type: 'swipe', label: 'Swipe Cards', emoji: '👆', description: 'Swipe left/right', tooltip: '💡 Group multiple Yes/No questions together for rapid-fire streaks!' },
+      { type: 'toggle_switch', label: 'Toggle Switch', emoji: '🔘', description: 'Flick to choose' },
+      { type: 'tug_of_war', label: 'Tug of War', emoji: '🪢', description: 'Drag to your side' },
     ],
   },
   'Single-Select': {
@@ -45,6 +47,11 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'scratch_card', label: 'Scratch Card', emoji: '🎫', description: 'Scratch to reveal' },
       { type: 'treasure_chest', label: 'Treasure Chest', emoji: '🏴‍☠️', description: 'Tap to crack open' },
       { type: 'pinata', label: 'Pinata', emoji: '🪅', description: 'Smash to reveal' },
+      // Phase B
+      { type: 'spin_stop', label: 'Spin & Stop', emoji: '🎰', description: 'Tap to stop the reel' },
+      { type: 'door_choice', label: 'Door Choice', emoji: '🚪', description: 'Open a door' },
+      { type: 'whack_a_mole', label: 'Whack-a-Mole', emoji: '🔨', description: 'Bonk your pick' },
+      { type: 'flick', label: 'Flick Cards', emoji: '📲', description: 'Flick through & pick' },
     ],
   },
   'Multi-Select': {
@@ -60,6 +67,11 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'stars', label: 'Star Rating', emoji: '⭐', description: '1-5 stars' },
       { type: 'thermometer', label: 'Thermometer', emoji: '🌡️', description: 'Hot or cold?' },
       { type: 'bullseye', label: 'Bullseye', emoji: '🎯', description: 'Hit the target' },
+      // Phase B
+      { type: 'dial', label: 'Dial', emoji: '🎛️', description: 'Turn the knob' },
+      { type: 'press_hold', label: 'Press & Hold', emoji: '👇', description: 'Hold to fill' },
+      { type: 'countdown_tap', label: 'Countdown Tap', emoji: '⏱️', description: 'Tap fast!' },
+      { type: 'tilt', label: 'Tilt Meter', emoji: '⚖️', description: 'Tilt to rate' },
     ],
   },
 }
@@ -97,9 +109,21 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'scratch_card':
     case 'treasure_chest':
     case 'pinata':
+    case 'spin_stop':
+    case 'door_choice':
+    case 'whack_a_mole':
+    case 'flick':
       return { options: ['Option 1', 'Option 2', 'Option 3'] }
     case 'bullseye':
       return { min_label: 'Disagree', max_label: 'Agree' }
+    case 'dial':
+    case 'press_hold':
+    case 'countdown_tap':
+    case 'tilt':
+      return { min_label: 'Low', max_label: 'High' }
+    case 'toggle_switch':
+    case 'tug_of_war':
+      return { left_label: 'No', right_label: 'Yes' }
     default:
       return {}
   }
@@ -152,6 +176,10 @@ export function QuestionEditor({
       case 'scratch_card':
       case 'treasure_chest':
       case 'pinata':
+      case 'spin_stop':
+      case 'door_choice':
+      case 'whack_a_mole':
+      case 'flick':
         return (
           <div className="space-y-2">
             <label className="text-xs text-gray-500 font-medium">Options</label>
@@ -223,10 +251,42 @@ export function QuestionEditor({
           </div>
         )
 
+      case 'toggle_switch':
+      case 'tug_of_war':
+        return (
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500 font-medium">Labels</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={(question.config.left_label as string) || ''}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, left_label: e.target.value }
+                })}
+                placeholder="Left label"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+              <input
+                type="text"
+                value={(question.config.right_label as string) || ''}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, right_label: e.target.value }
+                })}
+                placeholder="Right label"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
+          </div>
+        )
+
       case 'slider':
       case 'stars':
       case 'thermometer':
       case 'bullseye':
+      case 'dial':
+      case 'press_hold':
+      case 'countdown_tap':
+      case 'tilt':
         return (
           <p className="text-sm text-gray-400 italic">No additional settings for this question type.</p>
         )

@@ -170,14 +170,6 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-300/50" />
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300/50" />
 
-        {/* Labels - positioned further from circle */}
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
-          {max_label}
-        </div>
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
-          {min_label}
-        </div>
-
         {/* Marker */}
         <motion.div
           className={`absolute w-8 h-8 -ml-4 -mt-4 rounded-full ${
@@ -217,12 +209,18 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
         </AnimatePresence>
       </motion.div>
 
+      {/* Scale legend */}
+      <div className="mt-6 mb-2 flex justify-between text-xs text-gray-500">
+        <span>Edge = {min_label}</span>
+        <span>Center = {max_label}</span>
+      </div>
+
       {/* Submit button */}
       <motion.button
         onClick={handleSubmit}
         disabled={isSubmitted}
         className={`
-          w-full mt-8 py-4 rounded-xl font-bold text-lg shadow-lg
+          w-full py-4 rounded-xl font-bold text-lg shadow-lg
           ${isSubmitted
             ? 'bg-green-500 text-white'
             : 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -234,12 +232,6 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
       >
         {isSubmitted ? 'Locked in!' : 'Confirm'}
       </motion.button>
-
-      {/* Scale legend */}
-      <div className="mt-4 flex justify-between text-xs text-gray-500">
-        <span>Edge = {min_label}</span>
-        <span>Center = {max_label}</span>
-      </div>
     </div>
   )
 }
