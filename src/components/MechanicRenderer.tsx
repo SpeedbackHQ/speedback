@@ -41,6 +41,14 @@ import {
   EmojiReactionQuestion,
   WordCloudQuestion,
   VoiceNoteQuestion,
+  PaintSplatterQuestion,
+  BingoCardQuestion,
+  ShoppingCartQuestion,
+  StickerBoardQuestion,
+  JarFillQuestion,
+  ConveyorBeltQuestion,
+  MagnetBoardQuestion,
+  ClawMachineQuestion,
 } from './questions'
 
 interface MechanicRendererProps {
@@ -129,6 +137,22 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
       content = <WordCloudQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'voice_note':
       content = <VoiceNoteQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'paint_splatter':
+      content = <PaintSplatterQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'bingo_card':
+      content = <BingoCardQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'shopping_cart':
+      content = <ShoppingCartQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'sticker_board':
+      content = <StickerBoardQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'jar_fill':
+      content = <JarFillQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'conveyor_belt':
+      content = <ConveyorBeltQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'magnet_board':
+      content = <MagnetBoardQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'claw_machine':
+      content = <ClawMachineQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     default:
       content = <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
   }

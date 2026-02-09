@@ -19,6 +19,9 @@ export type QuestionType =
   | 'dial' | 'press_hold' | 'toggle_switch' | 'spin_stop'
   | 'countdown_tap' | 'door_choice' | 'whack_a_mole'
   | 'tug_of_war' | 'tilt' | 'flick'
+  // Multi-select games
+  | 'paint_splatter' | 'bingo_card' | 'shopping_cart' | 'sticker_board'
+  | 'jar_fill' | 'conveyor_belt' | 'magnet_board' | 'claw_machine'
   // Qualitative
   | 'short_text' | 'mad_libs' | 'emoji_reaction' | 'word_cloud' | 'voice_note'
 

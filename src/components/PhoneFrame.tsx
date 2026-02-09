@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 interface PhoneFrameProps {
   children: React.ReactNode
@@ -10,36 +10,28 @@ const PHONE_WIDTH = 375 + 24
 const PHONE_HEIGHT = 812 + 24
 
 export function PhoneFrame({ children }: PhoneFrameProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
 
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
     const updateScale = () => {
-      // Measure available height from viewport minus the container's top offset
-      const rect = container.getBoundingClientRect()
-      const availableHeight = window.innerHeight - rect.top - 24 // 24px bottom margin
+      // Use viewport height minus a fixed top allowance (header + info) and bottom margin
+      const availableHeight = window.innerHeight - 200 // ~200px for header/info above
       const newScale = Math.min(1, availableHeight / PHONE_HEIGHT)
-      setScale(Math.max(0.4, newScale)) // Don't go below 40%
+      setScale(Math.max(0.4, newScale))
     }
 
     updateScale()
 
-    const observer = new ResizeObserver(updateScale)
-    observer.observe(document.body)
-    window.addEventListener('scroll', updateScale, { passive: true })
+    // Only recalculate on window resize, not on scroll
+    window.addEventListener('resize', updateScale)
 
     return () => {
-      observer.disconnect()
-      window.removeEventListener('scroll', updateScale)
+      window.removeEventListener('resize', updateScale)
     }
   }, [])
 
   return (
     <div
-      ref={containerRef}
       className="flex justify-center"
       style={{ height: PHONE_HEIGHT * scale, width: PHONE_WIDTH * scale }}
     >
@@ -60,8 +52,8 @@ export function PhoneFrame({ children }: PhoneFrameProps) {
         <div
           className="relative w-[375px] h-[812px] rounded-[2.2rem] overflow-hidden bg-slate-50"
         >
-          {/* Screen content */}
-          <div className="w-full h-full overflow-y-auto overflow-x-hidden">
+          {/* Screen content — pt-12 clears the dynamic island */}
+          <div className="w-full h-full overflow-y-auto overflow-x-hidden pt-12">
             {children}
           </div>
         </div>

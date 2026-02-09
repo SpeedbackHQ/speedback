@@ -34,6 +34,15 @@ const demoQuestionTexts: Record<string, string> = {
   tug_of_war: 'Which side are you on?',
   tilt: 'How confident are you in this plan?',
   flick: 'Flick to your favorite!',
+  // Multi-select games
+  paint_splatter: 'Which skills do you value most?',
+  bingo_card: 'What topics interest you?',
+  shopping_cart: 'Which perks would you pick?',
+  sticker_board: 'Which values resonate with you?',
+  jar_fill: 'What ingredients make a great team?',
+  conveyor_belt: 'Grab the features you want!',
+  magnet_board: 'What attracts you to this role?',
+  claw_machine: 'Win your favorite benefits!',
   // Qualitative
   short_text: 'What was the highlight of your day?',
   mad_libs: 'The best part of the event was ___',

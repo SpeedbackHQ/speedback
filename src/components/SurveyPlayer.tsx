@@ -6,7 +6,7 @@ import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
 import { GestureHint, getGestureType } from './GestureHint'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion } from './questions'
+import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
 
@@ -219,6 +219,22 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
         return <WordCloudQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'voice_note':
         return <VoiceNoteQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'paint_splatter':
+        return <PaintSplatterQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'bingo_card':
+        return <BingoCardQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'shopping_cart':
+        return <ShoppingCartQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'sticker_board':
+        return <StickerBoardQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'jar_fill':
+        return <JarFillQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'conveyor_belt':
+        return <ConveyorBeltQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'magnet_board':
+        return <MagnetBoardQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'claw_machine':
+        return <ClawMachineQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

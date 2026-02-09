@@ -22,6 +22,7 @@ const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   flick: 'swipe-browse',
   press_hold: 'hold',
   scratch_card: 'scratch',
+  claw_machine: 'drag-side',
 }
 
 const gestureConfig: Record<GestureType, { text: string }> = {

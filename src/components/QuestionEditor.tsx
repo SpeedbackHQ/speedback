@@ -59,6 +59,14 @@ export const questionCategories: Record<string, { description: string; types: Qu
     description: 'Choose multiple options',
     types: [
       { type: 'tap', label: 'Tap to Select', emoji: '💥', description: 'Tap all that apply' },
+      { type: 'paint_splatter', label: 'Paint Splatter', emoji: '🎨', description: 'Splash your picks' },
+      { type: 'bingo_card', label: 'Bingo Card', emoji: '🎰', description: 'Stamp your picks' },
+      { type: 'shopping_cart', label: 'Shopping Cart', emoji: '🛒', description: 'Add to cart' },
+      { type: 'sticker_board', label: 'Sticker Board', emoji: '🏷️', description: 'Peel & place' },
+      { type: 'jar_fill', label: 'Jar Fill', emoji: '🫙', description: 'Fill the jar' },
+      { type: 'conveyor_belt', label: 'Conveyor Belt', emoji: '🏭', description: 'Grab from belt' },
+      { type: 'magnet_board', label: 'Magnet Board', emoji: '🧲', description: 'Magnetize picks' },
+      { type: 'claw_machine', label: 'Claw Machine', emoji: '🕹️', description: 'Grab prizes' },
     ],
   },
   'Scale/Rating': {
@@ -107,6 +115,15 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
       return { min_label: 'Poor', max_label: 'Excellent' }
     case 'tap':
       return { options: ['Option 1', 'Option 2', 'Option 3'], multi_select: true }
+    case 'paint_splatter':
+    case 'bingo_card':
+    case 'shopping_cart':
+    case 'sticker_board':
+    case 'jar_fill':
+    case 'conveyor_belt':
+    case 'magnet_board':
+    case 'claw_machine':
+      return { options: ['Option 1', 'Option 2', 'Option 3'] }
     case 'tap_meter':
     case 'rolodex':
     case 'fanned':
@@ -184,6 +201,14 @@ export function QuestionEditor({
         )
 
       case 'tap':
+      case 'paint_splatter':
+      case 'bingo_card':
+      case 'shopping_cart':
+      case 'sticker_board':
+      case 'jar_fill':
+      case 'conveyor_belt':
+      case 'magnet_board':
+      case 'claw_machine':
       case 'tap_meter':
       case 'rolodex':
       case 'fanned':
