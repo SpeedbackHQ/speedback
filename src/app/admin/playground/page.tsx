@@ -192,13 +192,11 @@ function PlaygroundContent() {
 
               {/* Phone frame */}
               <PhoneFrame>
-                <div className="h-full flex items-center justify-center">
-                  <MechanicRenderer
-                    key={previewKey}
-                    question={createMockQuestion(selectedType)}
-                    onAnswer={handleAnswer}
-                  />
-                </div>
+                <MechanicRenderer
+                  key={previewKey}
+                  question={createMockQuestion(selectedType)}
+                  onAnswer={handleAnswer}
+                />
               </PhoneFrame>
 
               {/* Answer toast */}

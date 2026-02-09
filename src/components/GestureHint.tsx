@@ -23,6 +23,8 @@ const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   press_hold: 'hold',
   scratch_card: 'scratch',
   claw_machine: 'drag-side',
+  sticker_board: 'drag-to-target',
+  jar_fill: 'drag-to-target',
 }
 
 const gestureConfig: Record<GestureType, { text: string }> = {

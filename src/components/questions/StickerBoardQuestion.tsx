@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback, useMemo, useRef } from 'react'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface StickerBoardQuestionProps {
@@ -21,6 +21,9 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
   const options = (rawOptions as string[]).slice(0, 4)
 
   const [placed, setPlaced] = useState<string[]>([])
+  const [draggingOption, setDraggingOption] = useState<string | null>(null)
+  const [isOverBoard, setIsOverBoard] = useState(false)
+  const boardRef = useRef<HTMLDivElement>(null)
 
   // Stable random rotations per option
   const rotations = useMemo(
@@ -28,14 +31,38 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
     [options]
   )
 
-  const handlePeel = useCallback((option: string) => {
-    if (navigator.vibrate) navigator.vibrate(30)
-
-    setPlaced(prev =>
-      prev.includes(option)
-        ? prev.filter(o => o !== option)
-        : [...prev, option]
+  const checkOverZone = useCallback((ref: React.RefObject<HTMLDivElement | null>, info: PanInfo) => {
+    if (!ref.current) return false
+    const rect = ref.current.getBoundingClientRect()
+    return (
+      info.point.x >= rect.left &&
+      info.point.x <= rect.right &&
+      info.point.y >= rect.top &&
+      info.point.y <= rect.bottom
     )
+  }, [])
+
+  const handleDragStart = useCallback((option: string) => {
+    setDraggingOption(option)
+    if (navigator.vibrate) navigator.vibrate(20)
+  }, [])
+
+  const handleDrag = useCallback((_option: string, info: PanInfo) => {
+    setIsOverBoard(checkOverZone(boardRef, info))
+  }, [checkOverZone])
+
+  const handleDragEnd = useCallback((option: string, info: PanInfo) => {
+    if (checkOverZone(boardRef, info)) {
+      setPlaced(prev => [...prev, option])
+      if (navigator.vibrate) navigator.vibrate(30)
+    }
+    setDraggingOption(null)
+    setIsOverBoard(false)
+  }, [checkOverZone])
+
+  const handleRemove = useCallback((option: string) => {
+    if (navigator.vibrate) navigator.vibrate(20)
+    setPlaced(prev => prev.filter(o => o !== option))
   }, [])
 
   const handleSubmit = useCallback(() => {
@@ -55,17 +82,24 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-4 text-sm">
-        Peel &amp; place your picks!
+        Drag stickers to the board!
       </p>
 
-      {/* Board area where placed stickers appear */}
+      {/* Board area — drop target */}
       <motion.div
-        className="relative bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl min-h-[100px] mb-4 p-3 flex flex-wrap gap-2 items-center justify-center"
+        ref={boardRef}
+        className={`relative rounded-2xl min-h-[100px] mb-4 p-3 flex flex-wrap gap-2 items-center justify-center border-2 transition-all duration-200 ${
+          isOverBoard
+            ? 'border-amber-500 bg-amber-100 shadow-lg shadow-amber-200/50 scale-[1.02]'
+            : 'border-dashed border-amber-300 bg-amber-50'
+        }`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
         {placed.length === 0 ? (
-          <span className="text-amber-400 text-sm">Stickers go here</span>
+          <span className={`text-sm ${isOverBoard ? 'text-amber-600 font-medium' : 'text-amber-400'}`}>
+            {isOverBoard ? 'Drop here!' : draggingOption ? '↓ Drop sticker here ↓' : 'Drag stickers here'}
+          </span>
         ) : (
           <AnimatePresence>
             {placed.map((option) => {
@@ -76,14 +110,17 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
               return (
                 <motion.div
                   key={option}
-                  className={`${style.bg} text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-md`}
+                  className={`${style.bg} text-white px-3 py-1.5 rounded-lg font-bold text-sm shadow-md cursor-pointer hover:shadow-lg`}
                   style={{ transform: `rotate(${rotation}deg)` }}
                   initial={{ scale: 0, y: 40, opacity: 0 }}
                   animate={{ scale: 1, y: 0, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  onClick={() => handleRemove(option)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
-                  {style.emoji} {option}
+                  {style.emoji} {option} ✕
                 </motion.div>
               )
             })}
@@ -91,21 +128,28 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
         )}
       </motion.div>
 
-      {/* Sticker sheet */}
+      {/* Sticker sheet — drag source */}
       <div className="space-y-2.5">
         {options.map((option, index) => {
           const isPlaced = placed.includes(option)
           const style = stickerStyles[index % stickerStyles.length]
+          const isDragging = draggingOption === option
 
           return (
-            <motion.button
+            <motion.div
               key={option}
-              onClick={() => handlePeel(option)}
-              className={`w-full rounded-xl p-3.5 font-semibold text-left transition-all border-2 ${
+              className={`w-full rounded-xl p-3.5 font-semibold text-left border-2 touch-none select-none ${
                 isPlaced
                   ? 'bg-gray-100 border-gray-200 text-gray-400'
-                  : `bg-white border-gray-200 text-gray-700 hover:border-gray-400`
-              }`}
+                  : `bg-white border-gray-200 text-gray-700 cursor-grab active:cursor-grabbing hover:border-gray-400`
+              } ${isDragging ? 'z-50' : ''}`}
+              drag={!isPlaced}
+              dragSnapToOrigin
+              dragElastic={0.1}
+              onDragStart={() => !isPlaced && handleDragStart(option)}
+              onDrag={(_, info) => !isPlaced && handleDrag(option, info)}
+              onDragEnd={(_, info) => !isPlaced && handleDragEnd(option, info)}
+              whileDrag={{ scale: 1.05, zIndex: 50, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
               initial={{ opacity: 0, x: -15 }}
               animate={{
                 opacity: 1,
@@ -113,7 +157,6 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
                 scale: isPlaced ? 0.97 : 1,
               }}
               transition={{ delay: index * 0.06 }}
-              whileTap={{ scale: 0.95 }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -121,10 +164,10 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
                   <span className={isPlaced ? 'line-through' : ''}>{option}</span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  {isPlaced ? 'placed ✓' : 'peel →'}
+                  {isPlaced ? 'placed ✓' : 'drag to board ↑'}
                 </span>
               </div>
-            </motion.button>
+            </motion.div>
           )
         })}
       </div>
@@ -140,7 +183,7 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
         }`}
         whileTap={placed.length > 0 ? { scale: 0.98 } : {}}
       >
-        {placed.length > 0 ? `🏷️ Done! (${placed.length})` : 'Peel stickers to select'}
+        {placed.length > 0 ? `🏷️ Done! (${placed.length})` : 'Drag stickers to select'}
       </motion.button>
     </div>
   )
