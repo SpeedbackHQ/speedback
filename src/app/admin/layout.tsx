@@ -21,6 +21,12 @@ export default function AdminLayout({
               Dashboard
             </Link>
             <Link
+              href="/admin/templates"
+              className="text-slate-600 hover:text-indigo-600 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-indigo-50"
+            >
+              Templates
+            </Link>
+            <Link
               href="/admin/playground"
               className="text-slate-600 hover:text-indigo-600 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-indigo-50"
             >
