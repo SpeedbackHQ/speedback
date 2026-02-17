@@ -143,7 +143,7 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
       {/* Machine */}
       <div
         ref={containerRef}
-        className="relative h-56 bg-gradient-to-b from-indigo-900 to-indigo-950 rounded-2xl overflow-hidden border-4 border-indigo-700 touch-none"
+        className="relative h-56 bg-gradient-to-b from-violet-800 to-indigo-950 rounded-2xl overflow-hidden border-4 border-violet-600 touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -193,7 +193,7 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
         </motion.div>
 
         {/* Prizes in pit */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-indigo-800/50 rounded-t-xl">
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-violet-700/50 rounded-t-xl">
           {options.map((option, index) => {
             if (prizes.includes(option)) return null
             if (grabbedItem === option) return null
@@ -238,7 +238,7 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
         disabled={prizes.length === 0}
         className={`w-full mt-2 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           prizes.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={prizes.length > 0 ? { scale: 0.98 } : {}}

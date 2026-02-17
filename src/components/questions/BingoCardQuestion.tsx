@@ -60,13 +60,13 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
 
       {/* Bingo card container */}
       <motion.div
-        className="bg-white rounded-2xl border-4 border-indigo-200 p-3 shadow-lg"
+        className="bg-white rounded-2xl border-4 border-violet-200 p-3 shadow-lg"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
         {/* Header */}
         <div className="text-center mb-3">
-          <span className="text-xs font-bold tracking-widest text-indigo-400 uppercase">Pick your answers</span>
+          <span className="text-xs font-bold tracking-widest text-violet-400 uppercase">Pick your answers</span>
         </div>
 
         <div className={`grid ${gridCols} gap-3`}>
@@ -133,7 +133,7 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <span className="font-bold text-indigo-600">{selected.length}</span> stamped
+          <span className="font-bold text-violet-500">{selected.length}</span> stamped
         </motion.p>
       )}
 
@@ -143,7 +143,7 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
         disabled={selected.length === 0}
         className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           selected.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={selected.length > 0 ? { scale: 0.98 } : {}}

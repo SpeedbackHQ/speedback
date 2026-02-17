@@ -28,7 +28,7 @@ export default async function AdminDashboard() {
         </div>
         {surveys.length > 0 && (
           <CreateSurveyButton
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
+            className="bg-violet-500 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-violet-600 transition-all shadow-md shadow-violet-200"
           >
             + New Survey
           </CreateSurveyButton>
@@ -41,7 +41,7 @@ export default async function AdminDashboard() {
           <h2 className="text-xl font-bold text-slate-800 mb-2">No surveys yet</h2>
           <p className="text-slate-500 mb-6 font-medium">Create your first gamified feedback survey!</p>
           <CreateSurveyButton
-            className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover-lift hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
+            className="inline-block bg-violet-500 text-white px-6 py-3 rounded-xl font-semibold hover-lift hover:bg-violet-600 transition-all shadow-md shadow-violet-200"
           >
             Create Survey
           </CreateSurveyButton>
@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                  <h2 className="text-xl font-bold text-slate-800 group-hover:text-violet-500 transition-colors">
                     {survey.title}
                   </h2>
                   <p className="text-slate-500 text-sm font-medium mt-1">
@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-indigo-600">{responseCount}</div>
+                    <div className="text-2xl font-bold text-violet-500">{responseCount}</div>
                     <div className="text-slate-500 text-sm font-medium">responses</div>
                   </div>
                   <div
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
                   >
                     {survey.is_active ? 'Active' : 'Paused'}
                   </div>
-                  <div className="text-slate-300 text-xl group-hover:text-indigo-400 group-hover:translate-x-1 transition-all">
+                  <div className="text-slate-300 text-xl group-hover:text-violet-400 group-hover:translate-x-1 transition-all">
                     →
                   </div>
                 </div>
@@ -100,7 +100,7 @@ export default async function AdminDashboard() {
       {surveys.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">
-            <div className="text-3xl font-bold text-indigo-600">{surveys.length}</div>
+            <div className="text-3xl font-bold text-violet-500">{surveys.length}</div>
             <div className="text-slate-500 font-medium mt-1">Total Surveys</div>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">

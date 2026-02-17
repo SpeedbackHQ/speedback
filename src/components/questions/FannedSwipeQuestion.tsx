@@ -20,7 +20,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
 
   // Card colors
   const cardColors = [
-    'from-indigo-500 to-purple-600',
+    'from-violet-500 to-purple-600',
     'from-pink-500 to-rose-500',
     'from-amber-500 to-orange-500',
     'from-emerald-500 to-teal-500',
@@ -238,7 +238,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
             }}
             className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
               i === currentIndex
-                ? 'bg-indigo-500 scale-125'
+                ? 'bg-violet-500 scale-125'
                 : 'bg-gray-300 hover:bg-gray-400'
             }`}
             whileHover={{ scale: 1.3 }}
@@ -258,7 +258,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
           key={currentIndex}
           initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
-          className="inline-block font-bold text-indigo-600"
+          className="inline-block font-bold text-violet-500"
         >
           {currentIndex + 1}
         </motion.span>
@@ -274,7 +274,7 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
           transition-all duration-200
           ${isSubmitting
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
         `}
         whileHover={!isSubmitting ? { scale: 1.02 } : {}}

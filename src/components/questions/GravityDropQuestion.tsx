@@ -299,7 +299,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                   </motion.button>
                   <motion.button
                     onClick={handleConfirm}
-                    className="flex-1 py-2 px-4 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700"
+                    className="flex-1 py-2 px-4 rounded-lg bg-violet-500 text-white font-medium text-sm hover:bg-violet-600"
                     whileTap={{ scale: 0.95 }}
                   >
                     Confirm

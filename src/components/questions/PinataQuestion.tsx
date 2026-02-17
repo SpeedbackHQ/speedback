@@ -13,7 +13,7 @@ const TAPS_TO_BREAK = 10
 
 const pinataColors = [
   { body: 'from-pink-400 to-rose-500', stripe: 'bg-yellow-300', candy: ['bg-pink-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-400'] },
-  { body: 'from-blue-400 to-indigo-500', stripe: 'bg-green-300', candy: ['bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-orange-400'] },
+  { body: 'from-blue-400 to-violet-500', stripe: 'bg-green-300', candy: ['bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-orange-400'] },
   { body: 'from-green-400 to-emerald-500', stripe: 'bg-orange-300', candy: ['bg-green-400', 'bg-orange-400', 'bg-red-400', 'bg-yellow-400'] },
   { body: 'from-purple-400 to-violet-500', stripe: 'bg-pink-300', candy: ['bg-purple-400', 'bg-pink-400', 'bg-cyan-400', 'bg-amber-400'] },
   { body: 'from-orange-400 to-amber-500', stripe: 'bg-red-300', candy: ['bg-orange-400', 'bg-red-400', 'bg-yellow-400', 'bg-pink-400'] },

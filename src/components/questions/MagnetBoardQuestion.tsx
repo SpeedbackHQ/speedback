@@ -155,9 +155,9 @@ export function MagnetBoardQuestion({ question, onAnswer }: MagnetBoardQuestionP
 
         {/* Magnetic field lines (decorative) */}
         <div className="absolute inset-0 pointer-events-none opacity-10">
-          <div className="absolute top-0 left-1/4 w-px h-8 bg-indigo-400" />
-          <div className="absolute top-0 left-1/2 w-px h-12 bg-indigo-400" />
-          <div className="absolute top-0 left-3/4 w-px h-6 bg-indigo-400" />
+          <div className="absolute top-0 left-1/4 w-px h-8 bg-violet-400" />
+          <div className="absolute top-0 left-1/2 w-px h-12 bg-violet-400" />
+          <div className="absolute top-0 left-3/4 w-px h-6 bg-violet-400" />
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export function MagnetBoardQuestion({ question, onAnswer }: MagnetBoardQuestionP
         disabled={magnetized.length === 0}
         className={`w-full py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           magnetized.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={magnetized.length > 0 ? { scale: 0.98 } : {}}

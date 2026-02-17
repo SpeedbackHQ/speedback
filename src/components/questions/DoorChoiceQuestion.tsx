@@ -10,7 +10,7 @@ interface DoorChoiceQuestionProps {
 }
 
 const doorColors = [
-  { frame: 'bg-indigo-600', panel: 'bg-indigo-500', knob: 'bg-amber-400' },
+  { frame: 'bg-violet-500', panel: 'bg-violet-500', knob: 'bg-amber-400' },
   { frame: 'bg-rose-600', panel: 'bg-rose-500', knob: 'bg-amber-400' },
   { frame: 'bg-emerald-600', panel: 'bg-emerald-500', knob: 'bg-amber-400' },
   { frame: 'bg-amber-600', panel: 'bg-amber-500', knob: 'bg-amber-700' },
@@ -161,7 +161,7 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium text-sm">
+            <span className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full font-medium text-sm">
               🚪 {options[chosenDoor]}
             </span>
           </motion.div>

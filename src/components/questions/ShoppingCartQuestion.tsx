@@ -68,7 +68,7 @@ export function ShoppingCartQuestion({ question, onAnswer }: ShoppingCartQuestio
         <AnimatePresence mode="wait">
           <motion.span
             key={cart.length}
-            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white text-sm font-bold"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-violet-500 text-white text-sm font-bold"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.5, opacity: 0 }}
@@ -133,7 +133,7 @@ export function ShoppingCartQuestion({ question, onAnswer }: ShoppingCartQuestio
         disabled={cart.length === 0}
         className={`w-full mt-5 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           cart.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={cart.length > 0 ? { scale: 0.98 } : {}}

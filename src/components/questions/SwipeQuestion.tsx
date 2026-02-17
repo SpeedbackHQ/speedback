@@ -108,7 +108,7 @@ export function SwipeQuestion({
       <div className="flex items-center justify-center w-full relative">
         <motion.div
           className={`w-[92vw] max-w-md h-[70vh] max-h-[520px] bg-white rounded-3xl shadow-2xl flex flex-col cursor-grab active:cursor-grabbing overflow-hidden ${
-            isInStreak ? 'ring-2 ring-indigo-400/50' : ''
+            isInStreak ? 'ring-2 ring-violet-400/50' : ''
           } ${isSpeedBonus ? 'ring-orange-400/60' : ''}`}
           style={{ x, y, rotate, background, boxShadow: streakGlow }}
           drag

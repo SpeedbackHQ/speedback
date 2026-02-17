@@ -135,7 +135,7 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
         >
           <motion.button
             onClick={() => setPhase('countdown')}
-            className="w-48 h-48 rounded-full bg-indigo-500 hover:bg-indigo-600 shadow-xl flex flex-col items-center justify-center transition-colors"
+            className="w-48 h-48 rounded-full bg-violet-500 hover:bg-violet-500 shadow-xl flex flex-col items-center justify-center transition-colors"
             whileTap={{ scale: 0.95 }}
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -175,7 +175,7 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
           {/* Timer bar */}
           <div className="h-3 bg-gray-200 rounded-full mb-3 overflow-hidden">
             <motion.div
-              className="h-full bg-indigo-500 rounded-full"
+              className="h-full bg-violet-500 rounded-full"
               style={{ width: `${timerProgress * 100}%` }}
               transition={{ duration: 0.05 }}
             />
@@ -208,7 +208,7 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
             <span className="text-xs text-gray-400">{min_label}</span>
             <div className="flex-1 mx-3 h-2 bg-gray-200 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-indigo-400 rounded-full"
+                className="h-full bg-violet-400 rounded-full"
                 animate={{ width: `${Math.min(100, (tapCount / MAX_TAPS) * 100)}%` }}
                 transition={{ duration: 0.1 }}
               />
@@ -226,7 +226,7 @@ export function CountdownTapQuestion({ question, onAnswer }: CountdownTapQuestio
           animate={{ opacity: 1, scale: 1 }}
         >
           <motion.span
-            className="text-6xl font-black text-indigo-600"
+            className="text-6xl font-black text-violet-500"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 15 }}

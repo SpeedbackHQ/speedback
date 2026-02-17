@@ -126,7 +126,7 @@ export function TiltQuestion({ question, onAnswer }: TiltQuestionProps) {
             className={`absolute -top-4 w-12 h-12 -ml-6 rounded-full shadow-lg flex items-center justify-center ${
               isSubmitted
                 ? 'bg-green-500 shadow-green-500/30'
-                : 'bg-indigo-500 shadow-indigo-500/30'
+                : 'bg-violet-500 shadow-violet-500/30'
             } cursor-grab active:cursor-grabbing`}
             style={{ left: `${value}%` }}
             animate={{
@@ -153,7 +153,7 @@ export function TiltQuestion({ question, onAnswer }: TiltQuestionProps) {
           w-full py-4 rounded-xl font-bold text-lg shadow-lg
           ${isSubmitted
             ? 'bg-green-500 text-white'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
           transition-colors
         `}

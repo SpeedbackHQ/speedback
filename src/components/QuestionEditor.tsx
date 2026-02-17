@@ -192,7 +192,7 @@ export function QuestionEditor({
               onChange={(e) => onQuestionUpdate(question.id, {
                 config: { ...question.config, show_meh: e.target.checked }
               })}
-              className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-violet-500 border-slate-300 rounded focus:ring-violet-500"
             />
             <span className="text-sm text-slate-600">
               Include &quot;Meh&quot; (neutral) option
@@ -242,7 +242,7 @@ export function QuestionEditor({
                     })
                   }}
                   placeholder={`Option ${optIndex + 1}`}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -269,7 +269,7 @@ export function QuestionEditor({
                   config: { ...question.config, options: [...currentOptions, `Option ${currentOptions.length + 1}`] }
                 })
               }}
-              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${
+              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-violet-400 hover:text-violet-500 transition-colors text-sm ${
                 ((question.config.options as string[]) || []).length >= 4 ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={((question.config.options as string[]) || []).length >= 4}
@@ -287,7 +287,7 @@ export function QuestionEditor({
                   onChange={(e) => onQuestionUpdate(question.id, {
                     config: { ...question.config, multi_select: e.target.checked }
                   })}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                  className="w-4 h-4 text-violet-500 border-slate-300 rounded focus:ring-violet-500"
                 />
                 <span className="text-sm text-slate-600">
                   Allow multiple selections
@@ -310,7 +310,7 @@ export function QuestionEditor({
                   config: { ...question.config, left_label: e.target.value }
                 })}
                 placeholder="Left label"
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
               />
               <input
                 type="text"
@@ -319,7 +319,7 @@ export function QuestionEditor({
                   config: { ...question.config, right_label: e.target.value }
                 })}
                 placeholder="Right label"
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ export function QuestionEditor({
                   config: { ...question.config, placeholder: e.target.value }
                 })}
                 placeholder="Share your thought..."
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
             <div>
@@ -362,7 +362,7 @@ export function QuestionEditor({
                 })}
                 min={20}
                 max={500}
-                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900"
               />
             </div>
           </div>
@@ -380,7 +380,7 @@ export function QuestionEditor({
                   config: { ...question.config, template: e.target.value }
                 })}
                 placeholder="The best part was ___"
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
             <div>
@@ -393,7 +393,7 @@ export function QuestionEditor({
                 })}
                 min={20}
                 max={200}
-                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                className="w-24 mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900"
               />
             </div>
           </div>
@@ -416,7 +416,7 @@ export function QuestionEditor({
                   }
                 }}
                 placeholder="😍 🙂 😐 🙁 😡"
-                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -426,7 +426,7 @@ export function QuestionEditor({
                 onChange={(e) => onQuestionUpdate(question.id, {
                   config: { ...question.config, show_reason: e.target.checked }
                 })}
-                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                className="w-4 h-4 text-violet-500 border-slate-300 rounded focus:ring-violet-500"
               />
               <span className="text-sm text-slate-600">
                 Ask &quot;Tell us why&quot; after emoji selection
@@ -452,7 +452,7 @@ export function QuestionEditor({
                     })
                   }}
                   placeholder={`Word ${wordIndex + 1}`}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -479,7 +479,7 @@ export function QuestionEditor({
                   config: { ...question.config, words: [...currentWords, `Word ${currentWords.length + 1}`] }
                 })
               }}
-              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors text-sm ${
+              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-violet-400 hover:text-violet-500 transition-colors text-sm ${
                 ((question.config.words as string[]) || []).length >= 20 ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={((question.config.words as string[]) || []).length >= 20}
@@ -499,7 +499,7 @@ export function QuestionEditor({
                 })}
                 min={1}
                 max={10}
-                className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900"
               />
             </div>
           </div>
@@ -517,7 +517,7 @@ export function QuestionEditor({
               })}
               min={5}
               max={30}
-              className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+              className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900"
             />
           </div>
         )
@@ -561,7 +561,7 @@ export function QuestionEditor({
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded">
+                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
                     {questionTypeInfo[question.type]?.label || question.type}
                   </span>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
@@ -573,7 +573,7 @@ export function QuestionEditor({
                   value={question.text}
                   onChange={(e) => onQuestionUpdate(question.id, { text: e.target.value })}
                   placeholder="Enter your question..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
                 />
 
                 {/* Config section - always visible */}
@@ -618,7 +618,7 @@ export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelecto
 
   return (
     <motion.div
-      className="p-4 bg-indigo-50 rounded-xl max-h-[70vh] overflow-y-auto"
+      className="p-4 bg-violet-50 rounded-xl max-h-[70vh] overflow-y-auto"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -637,14 +637,14 @@ export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelecto
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-indigo-100 transition-all text-left border-2 border-transparent hover:border-indigo-200 hover:shadow-sm"
+                  className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-violet-100 transition-all text-left border-2 border-transparent hover:border-violet-200 hover:shadow-sm"
                 >
                   <span className="text-2xl">{categoryEmojis[category] || '📋'}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-gray-800">{category}</div>
                     <div className="text-xs text-gray-500">{description}</div>
                   </div>
-                  <span className="text-xs font-medium bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium bg-violet-100 text-violet-500 px-2 py-1 rounded-full">
                     {types.length}
                   </span>
                 </button>
@@ -668,7 +668,7 @@ export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelecto
             <div className="flex items-center gap-2 mb-4">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                className="text-sm text-violet-500 hover:text-violet-700 font-medium flex items-center gap-1"
               >
                 <span>←</span> Back
               </button>
@@ -685,7 +685,7 @@ export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelecto
                 <div key={type} className="relative group">
                   <button
                     onClick={() => onSelect(type)}
-                    className="w-full flex items-center gap-2 p-3 bg-white rounded-lg hover:bg-indigo-100 transition-colors text-left border border-transparent hover:border-indigo-200"
+                    className="w-full flex items-center gap-2 p-3 bg-white rounded-lg hover:bg-violet-100 transition-colors text-left border border-transparent hover:border-violet-200"
                   >
                     <span className="text-xl">{emoji}</span>
                     <div>
@@ -695,9 +695,9 @@ export function QuestionTypeSelector({ onSelect, onCancel }: QuestionTypeSelecto
                   </button>
                   {tooltip && (
                     <div className="absolute left-0 right-0 -bottom-1 translate-y-full z-10 hidden group-hover:block">
-                      <div className="bg-indigo-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg mx-1">
+                      <div className="bg-violet-500 text-white text-xs rounded-lg px-3 py-2 shadow-lg mx-1">
                         {tooltip}
-                        <div className="absolute -top-1 left-4 w-2 h-2 bg-indigo-600 rotate-45" />
+                        <div className="absolute -top-1 left-4 w-2 h-2 bg-violet-500 rotate-45" />
                       </div>
                     </div>
                   )}

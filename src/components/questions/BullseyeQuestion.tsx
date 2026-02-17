@@ -175,7 +175,7 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
           className={`absolute w-8 h-8 -ml-4 -mt-4 rounded-full ${
             isSubmitted
               ? 'bg-green-500 shadow-lg shadow-green-500/50'
-              : 'bg-indigo-500 shadow-lg shadow-indigo-500/50'
+              : 'bg-violet-500 shadow-lg shadow-violet-500/50'
           } flex items-center justify-center cursor-grab active:cursor-grabbing`}
           style={{
             left: `${markerPosition.x}%`,
@@ -223,7 +223,7 @@ export function BullseyeQuestion({ question, onAnswer }: BullseyeQuestionProps) 
           w-full py-4 rounded-xl font-bold text-lg shadow-lg
           ${isSubmitted
             ? 'bg-green-500 text-white'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
           transition-colors
         `}

@@ -14,7 +14,7 @@ const SHOW_DURATION = 1600
 const HIDE_GAP = 400 // time after hide before hole can be reused
 
 const moleColors = [
-  'bg-indigo-400',
+  'bg-violet-400',
   'bg-rose-400',
   'bg-emerald-400',
   'bg-amber-400',
@@ -258,7 +258,7 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-5 py-2.5 rounded-full font-bold text-base">
+            <span className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-5 py-2.5 rounded-full font-bold text-base">
               🔨 {whackedOption}
             </span>
           </motion.div>

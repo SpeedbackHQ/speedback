@@ -167,13 +167,13 @@ export function SpinStopQuestion({ question, onAnswer }: SpinStopQuestionProps) 
 
         {/* Center highlight bar */}
         <div
-          className="absolute left-0 right-0 border-y-2 border-indigo-400 bg-indigo-50/30 pointer-events-none"
+          className="absolute left-0 right-0 border-y-2 border-violet-400 bg-violet-50/30 pointer-events-none"
           style={{ top: ITEM_HEIGHT, height: ITEM_HEIGHT }}
         />
 
         {/* Side arrows */}
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-indigo-400 text-lg pointer-events-none">▶</div>
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400 text-lg pointer-events-none">◀</div>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-violet-400 text-lg pointer-events-none">▶</div>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-violet-400 text-lg pointer-events-none">◀</div>
 
         {/* Gradient overlays for depth */}
         <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent pointer-events-none" />
@@ -188,7 +188,7 @@ export function SpinStopQuestion({ question, onAnswer }: SpinStopQuestionProps) 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium text-sm">
+            <span className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full font-medium text-sm">
               🎰 {selectedOption}
             </span>
           </motion.div>
@@ -232,7 +232,7 @@ export function SpinStopQuestion({ question, onAnswer }: SpinStopQuestionProps) 
             onClick={handleConfirm}
             disabled={confirmed}
             className={`flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition-colors ${
-              confirmed ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+              confirmed ? 'bg-green-500 text-white' : 'bg-violet-500 text-white hover:bg-violet-600'
             }`}
             whileTap={{ scale: 0.98 }}
           >

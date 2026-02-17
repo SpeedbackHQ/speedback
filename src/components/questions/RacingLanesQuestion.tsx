@@ -223,7 +223,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
           <div
             key={lane.option}
             className={`relative h-14 rounded-lg overflow-hidden ${
-              lane.isUser ? 'bg-indigo-900/50 ring-2 ring-indigo-400' : 'bg-gray-700'
+              lane.isUser ? 'bg-violet-800/50 ring-2 ring-violet-400' : 'bg-gray-700'
             }`}
           >
             <motion.div
@@ -248,7 +248,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             </motion.div>
 
             {lane.isUser && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-300">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-violet-300">
                 YOU
               </div>
             )}
@@ -372,7 +372,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
                   onClick={() => handleSelectCar(index)}
                   className={`py-6 px-4 rounded-xl border-2 transition-all ${
                     selectedCar === index
-                      ? 'border-indigo-500 bg-indigo-50'
+                      ? 'border-violet-500 bg-violet-50'
                       : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                   whileHover={{ scale: 1.05 }}
@@ -407,7 +407,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
                 <motion.button
                   key={option}
                   onClick={() => handleSelectAnswer(option)}
-                  className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-indigo-400 hover:bg-indigo-50 transition-all"
+                  className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-violet-400 hover:bg-violet-50 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, x: -20 }}
@@ -430,7 +430,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             exit={{ opacity: 0, y: -20 }}
           >
             <div className="text-center mb-4">
-              <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+              <span className="bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm font-medium">
                 Racing for: {selectedOption}
               </span>
             </div>
@@ -465,7 +465,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             exit={{ opacity: 0 }}
           >
             <div className="text-center mb-4">
-              <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+              <span className="bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm font-medium">
                 Racing for: {selectedOption}
               </span>
             </div>
@@ -482,7 +482,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             animate={{ opacity: 1 }}
           >
             <div className="text-center mb-4">
-              <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+              <span className="bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm font-medium">
                 Racing for: {selectedOption}
               </span>
             </div>
@@ -493,7 +493,7 @@ export function RacingLanesQuestion({ question, onAnswer }: RacingLanesQuestionP
             {gamePhase === 'lost' && (
               <motion.button
                 onClick={handleRetry}
-                className="w-full mt-4 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 transition-colors"
+                className="w-full mt-4 py-4 bg-violet-500 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-violet-600 transition-colors"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ scale: 1.02 }}

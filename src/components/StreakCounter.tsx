@@ -23,7 +23,7 @@ export function StreakCounter({ streak, isSpeedBonus }: StreakCounterProps) {
             px-4 py-2 rounded-full font-bold text-white shadow-lg
             ${isSpeedBonus
               ? 'bg-gradient-to-r from-orange-500 to-red-500'
-              : 'bg-gradient-to-r from-indigo-500 to-purple-500'}
+              : 'bg-gradient-to-r from-violet-500 to-purple-500'}
           `}
           animate={isSpeedBonus ? {
             scale: [1, 1.15, 1],

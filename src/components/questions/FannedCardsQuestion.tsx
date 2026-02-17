@@ -18,7 +18,7 @@ export function FannedCardsQuestion({ question, onAnswer }: FannedCardsQuestionP
 
   // Card colors
   const cardColors = [
-    { bg: 'from-indigo-500 to-purple-600', shadow: 'shadow-indigo-200' },
+    { bg: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-200' },
     { bg: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-200' },
     { bg: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-200' },
     { bg: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-200' },
@@ -147,7 +147,7 @@ export function FannedCardsQuestion({ question, onAnswer }: FannedCardsQuestionP
           className="text-center mt-4"
         >
           <p className="text-sm text-gray-500">Selected:</p>
-          <p className="text-xl font-bold text-indigo-600">{optionsArray[selectedIndex]}</p>
+          <p className="text-xl font-bold text-violet-500">{optionsArray[selectedIndex]}</p>
         </motion.div>
       )}
 
@@ -159,7 +159,7 @@ export function FannedCardsQuestion({ question, onAnswer }: FannedCardsQuestionP
           w-full mt-6 py-4 rounded-xl font-bold text-lg shadow-lg
           transition-all duration-200
           ${selectedIndex !== null && !isSubmitting
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }
         `}

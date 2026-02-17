@@ -51,7 +51,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
   const confetti = useMemo(() => CONFETTI_DATA, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-400 overflow-hidden">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-violet-500 via-purple-500 to-amber-400 overflow-hidden">
       {/* Confetti */}
       {confetti.map((piece) => (
         <motion.div
@@ -140,7 +140,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
         {onComplete && (
           <motion.button
             onClick={onComplete}
-            className="px-8 py-3 bg-white text-indigo-600 font-bold rounded-full shadow-lg"
+            className="px-8 py-3 bg-white text-violet-500 font-bold rounded-full shadow-lg"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.9 }}

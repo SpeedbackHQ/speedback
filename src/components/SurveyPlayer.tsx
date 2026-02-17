@@ -254,7 +254,7 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
     return <Celebration message={survey.thank_you_message} elapsedTime={elapsedTime} />
   }
 
-  const primaryColor = survey.branding_config?.primary_color || '#6366F1'
+  const primaryColor = survey.branding_config?.primary_color || '#8B5CF6'
 
   return (
     <div className="h-screen h-[100dvh] bg-slate-50 flex flex-col overflow-hidden">
@@ -268,9 +268,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
             key={i}
             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
               i < currentIndex
-                ? 'bg-indigo-500'
+                ? 'bg-violet-500'
                 : i === currentIndex
-                ? 'bg-indigo-300'
+                ? 'bg-violet-300'
                 : 'bg-slate-200'
             }`}
             style={i < currentIndex ? { backgroundColor: primaryColor } : i === currentIndex ? { backgroundColor: `${primaryColor}66` } : {}}

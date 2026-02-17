@@ -55,11 +55,11 @@ const keyframesCSS = `
   50% { transform: translateX(30px); }
 }
 @keyframes gestureDragToTarget {
-  0%, 10% { transform: translateY(40px) scale(1); opacity: 0.9; }
-  15% { transform: translateY(40px) scale(0.85); }
-  60% { transform: translateY(-30px) scale(0.85); }
-  70% { transform: translateY(-30px) scale(1); opacity: 0.9; }
-  100% { transform: translateY(-30px) scale(1); opacity: 0.5; }
+  0%, 10% { transform: translateY(-30px) scale(1); opacity: 0.9; }
+  15% { transform: translateY(-30px) scale(0.85); }
+  60% { transform: translateY(40px) scale(0.85); }
+  70% { transform: translateY(40px) scale(1); opacity: 0.9; }
+  100% { transform: translateY(40px) scale(1); opacity: 0.5; }
 }
 @keyframes gesturePullRelease {
   0%, 10% { transform: translateY(0); }

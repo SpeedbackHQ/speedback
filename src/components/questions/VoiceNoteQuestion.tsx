@@ -281,7 +281,7 @@ export function VoiceNoteQuestion({ question, onAnswer }: VoiceNoteQuestionProps
               <motion.button
                 onClick={togglePlayback}
                 disabled={state === 'submitting'}
-                className="w-20 h-20 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg hover:bg-indigo-600 transition-colors"
+                className="w-20 h-20 rounded-full bg-violet-500 flex items-center justify-center shadow-lg hover:bg-violet-500 transition-colors"
                 whileTap={{ scale: 0.92 }}
               >
                 <span className="text-3xl text-white">{isPlaying ? '⏸' : '▶'}</span>
@@ -305,7 +305,7 @@ export function VoiceNoteQuestion({ question, onAnswer }: VoiceNoteQuestionProps
                   onClick={handleSend}
                   disabled={state === 'submitting'}
                   className={`flex-1 py-3 rounded-xl font-bold text-base shadow-lg transition-colors ${
-                    state === 'submitting' ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    state === 'submitting' ? 'bg-emerald-500 text-white' : 'bg-violet-500 text-white hover:bg-violet-600'
                   }`}
                   whileTap={{ scale: 0.97 }}
                 >

@@ -130,7 +130,7 @@ export function EmojiReactionQuestion({ question, onAnswer }: EmojiReactionQuest
                 onChange={(e) => setReasonText(e.target.value.slice(0, 140))}
                 maxLength={140}
                 placeholder="Tell us why... (optional)"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 text-base outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-colors placeholder-gray-400"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 text-base outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-colors placeholder-gray-400"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
@@ -148,7 +148,7 @@ export function EmojiReactionQuestion({ question, onAnswer }: EmojiReactionQuest
                 </motion.button>
                 <motion.button
                   onClick={handleSend}
-                  className="flex-1 py-3 rounded-xl font-bold text-base bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-lg"
+                  className="flex-1 py-3 rounded-xl font-bold text-base bg-violet-500 text-white hover:bg-violet-600 transition-colors shadow-lg"
                   whileTap={{ scale: 0.97 }}
                 >
                   Send
@@ -167,7 +167,7 @@ export function EmojiReactionQuestion({ question, onAnswer }: EmojiReactionQuest
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium text-sm">
+            <span className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full font-medium text-sm">
               {selectedEmoji} {reasonText.trim() ? `"${reasonText.trim()}"` : 'Submitted!'}
             </span>
           </motion.div>

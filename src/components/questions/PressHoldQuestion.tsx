@@ -138,7 +138,7 @@ export function PressHoldQuestion({ question, onAnswer }: PressHoldQuestionProps
             className={`absolute inset-4 rounded-full ${
               isLocked
                 ? color.bg
-                : 'bg-indigo-500'
+                : 'bg-violet-500'
             } shadow-lg flex flex-col items-center justify-center touch-none select-none`}
             onPointerDown={(e) => { e.preventDefault(); startFilling() }}
             onPointerUp={stopFilling}
@@ -200,7 +200,7 @@ export function PressHoldQuestion({ question, onAnswer }: PressHoldQuestionProps
             </motion.button>
             <motion.button
               onClick={handleSubmit}
-              className="flex-1 py-4 rounded-xl font-bold text-lg shadow-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className="flex-1 py-4 rounded-xl font-bold text-lg shadow-lg bg-violet-500 text-white hover:bg-violet-600 transition-colors"
               whileTap={{ scale: 0.98 }}
             >
               Confirm

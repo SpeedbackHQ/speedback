@@ -43,3 +43,25 @@ export type RankAnswer = string[] // ordered items
 export type CounterAnswer = number // tap count
 
 export type AnswerValue = SwipeAnswer | SliderAnswer | TapAnswer | RadioAnswer | RankAnswer | CounterAnswer
+
+// Poster and QR types
+export type PosterTemplate = 'gradient-hero' | 'minimalist' | 'playful' | 'event-poster'
+
+export interface PosterSize {
+  width: number
+  height: number
+  label: string
+}
+
+export const POSTER_SIZES: Record<string, PosterSize> = {
+  print: { width: 1200, height: 1600, label: 'Print (1200×1600)' },
+  social: { width: 1080, height: 1920, label: 'Social (1080×1920)' },
+  card: { width: 600, height: 900, label: 'Card (600×900)' },
+}
+
+export interface PosterConfig {
+  template: PosterTemplate
+  headline: string
+  size: PosterSize
+  showTimeEstimate: boolean
+}

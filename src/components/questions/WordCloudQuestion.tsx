@@ -10,7 +10,7 @@ interface WordCloudQuestionProps {
 }
 
 const chipColors = [
-  { selected: 'bg-indigo-500 text-white border-indigo-500', unselected: 'bg-white text-gray-700 border-gray-200' },
+  { selected: 'bg-violet-500 text-white border-violet-500', unselected: 'bg-white text-gray-700 border-gray-200' },
   { selected: 'bg-violet-500 text-white border-violet-500', unselected: 'bg-white text-gray-700 border-gray-200' },
   { selected: 'bg-sky-500 text-white border-sky-500', unselected: 'bg-white text-gray-700 border-gray-200' },
   { selected: 'bg-emerald-500 text-white border-emerald-500', unselected: 'bg-white text-gray-700 border-gray-200' },
@@ -116,7 +116,7 @@ export function WordCloudQuestion({ question, onAnswer }: WordCloudQuestionProps
       <div className="text-center mb-4">
         <motion.span
           key={selected.length}
-          className={`text-sm font-medium ${selected.length > 0 ? 'text-indigo-600' : 'text-gray-400'}`}
+          className={`text-sm font-medium ${selected.length > 0 ? 'text-violet-500' : 'text-gray-400'}`}
           initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
         >
@@ -130,7 +130,7 @@ export function WordCloudQuestion({ question, onAnswer }: WordCloudQuestionProps
         disabled={selected.length === 0 || isSubmitted}
         className={`w-full py-3 rounded-xl font-bold text-lg shadow-lg transition-all ${
           selected.length > 0 && !isSubmitted
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : isSubmitted
             ? 'bg-emerald-500 text-white'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -150,7 +150,7 @@ export function WordCloudQuestion({ question, onAnswer }: WordCloudQuestionProps
           >
             <div className="flex flex-wrap justify-center gap-1.5">
               {selected.map((word) => (
-                <span key={word} className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                <span key={word} className="inline-block bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm font-medium">
                   {word}
                 </span>
               ))}

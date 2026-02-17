@@ -71,7 +71,7 @@ export function ShortTextQuestion({ question, onAnswer }: ShortTextQuestionProps
                 placeholder={placeholder}
                 maxLength={max_length}
                 rows={3}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 text-base resize-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-colors placeholder-gray-400"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 text-base resize-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 outline-none transition-colors placeholder-gray-400"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
@@ -93,7 +93,7 @@ export function ShortTextQuestion({ question, onAnswer }: ShortTextQuestionProps
                 disabled={!text.trim()}
                 className={`w-full mt-4 py-3 rounded-xl font-bold text-lg shadow-lg transition-all ${
                   text.trim()
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    ? 'bg-violet-500 text-white hover:bg-violet-600'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
                 whileTap={text.trim() ? { scale: 0.97 } : {}}

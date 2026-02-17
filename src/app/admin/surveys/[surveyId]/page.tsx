@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import QRCode from 'qrcode'
+import QRCodeStyling from 'qr-code-styling'
 import { supabase } from '@/lib/supabase'
 import { Survey, Question, Response, QuestionType } from '@/lib/types'
 import Link from 'next/link'
 import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
+import { getDisplayQRConfig, getDownloadQRConfig } from '@/components/qr/qrConfig'
+import { PosterModal } from '@/components/poster/PosterModal'
 
 type TabType = 'questions' | 'share' | 'responses'
 
@@ -50,6 +52,9 @@ export default function SurveyEditorPage() {
 
   // Warning banner dismissed
   const [warningDismissed, setWarningDismissed] = useState(false)
+
+  // Poster modal state
+  const [posterModalOpen, setPosterModalOpen] = useState(false)
 
   // Prevent useEffect from resetting questions/title after initial load
   const hasInitializedRef = useRef(false)
@@ -105,26 +110,27 @@ export default function SurveyEditorPage() {
 
   const generateQRCode = async () => {
     const playUrl = `${window.location.origin}/play/${surveyId}`
-    const url = await QRCode.toDataURL(playUrl, {
-      width: 300,
-      margin: 2,
-      color: { dark: '#6366F1', light: '#FFFFFF' },
-    })
-    setQrCodeUrl(url)
+    const brandColor = survey?.branding_config?.primary_color
+    const config = getDisplayQRConfig(playUrl, brandColor)
+
+    const qrCode = new QRCodeStyling(config)
+    const data = await qrCode.getRawData('png')
+    if (data && data instanceof Blob) {
+      const url = URL.createObjectURL(data)
+      setQrCodeUrl(url)
+    }
   }
 
   const downloadQRCode = async () => {
     const playUrl = `${window.location.origin}/play/${surveyId}`
-    const url = await QRCode.toDataURL(playUrl, {
-      width: 600,
-      margin: 2,
-      color: { dark: '#6366F1', light: '#FFFFFF' },
-    })
+    const brandColor = survey?.branding_config?.primary_color
+    const config = getDownloadQRConfig(playUrl, brandColor)
 
-    const link = document.createElement('a')
-    link.download = `${survey?.title || 'survey'}-qr.png`
-    link.href = url
-    link.click()
+    const qrCode = new QRCodeStyling(config)
+    await qrCode.download({
+      name: `${survey?.title || 'survey'}-qr`,
+      extension: 'png',
+    })
   }
 
   const copyLink = () => {
@@ -524,7 +530,7 @@ export default function SurveyEditorPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500" />
       </div>
     )
   }
@@ -534,7 +540,7 @@ export default function SurveyEditorPage() {
       <div className="text-center py-12">
         <div className="text-6xl mb-4">🔍</div>
         <h2 className="text-xl font-bold text-slate-800 mb-2">Survey not found</h2>
-        <Link href="/admin" className="text-indigo-600 hover:underline">
+        <Link href="/admin" className="text-violet-500 hover:underline">
           Back to dashboard
         </Link>
       </div>
@@ -552,7 +558,7 @@ export default function SurveyEditorPage() {
         <div className="flex-1">
           <Link
             href="/admin"
-            className="text-indigo-600 hover:text-indigo-700 mb-2 inline-flex items-center gap-1 font-medium transition-colors"
+            className="text-violet-500 hover:text-violet-600 mb-2 inline-flex items-center gap-1 font-medium transition-colors"
           >
             ← Back to surveys
           </Link>
@@ -564,7 +570,7 @@ export default function SurveyEditorPage() {
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Survey title..."
-              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-1 transition-colors"
+              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors"
             />
             {/* Save status indicator */}
             <div className="text-sm font-medium">
@@ -691,7 +697,7 @@ export default function SurveyEditorPage() {
                 <p className="text-slate-500 mb-4">Add your first question to get started!</p>
                 <button
                   onClick={() => setIsAddingQuestion(true)}
-                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+                  className="bg-violet-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-violet-600 transition-colors"
                 >
                   + Add Question
                 </button>
@@ -709,7 +715,7 @@ export default function SurveyEditorPage() {
                 {!isAddingQuestion ? (
                   <button
                     onClick={() => setIsAddingQuestion(true)}
-                    className="w-full mt-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors"
+                    className="w-full mt-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-violet-500 hover:text-violet-500 transition-colors"
                   >
                     + Add Question
                   </button>
@@ -746,9 +752,18 @@ export default function SurveyEditorPage() {
                 )}
                 <button
                   onClick={downloadQRCode}
-                  className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-semibold"
+                  className="w-full py-3 bg-violet-500 text-white rounded-xl hover:bg-violet-600 transition-colors font-semibold"
                 >
                   Download QR Code
+                </button>
+                <p className="text-xs text-slate-500 mt-2 mb-3">
+                  Make scanning feel like starting a game
+                </p>
+                <button
+                  onClick={() => setPosterModalOpen(true)}
+                  className="w-full py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-semibold"
+                >
+                  🎨 Create Poster
                 </button>
               </div>
 
@@ -777,7 +792,7 @@ export default function SurveyEditorPage() {
                   <Link
                     href={`/play/${surveyId}`}
                     target="_blank"
-                    className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+                    className="inline-flex items-center gap-2 text-violet-500 hover:text-violet-600 font-medium"
                   >
                     Open survey in new tab →
                   </Link>
@@ -806,6 +821,18 @@ export default function SurveyEditorPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Poster Modal */}
+        <AnimatePresence>
+          {posterModalOpen && survey && (
+            <PosterModal
+              survey={survey}
+              qrUrl={qrCodeUrl}
+              playUrl={playUrl}
+              onClose={() => setPosterModalOpen(false)}
+            />
+          )}
+        </AnimatePresence>
 
         {currentTab === 'responses' && (
           <motion.div
@@ -841,7 +868,7 @@ export default function SurveyEditorPage() {
                 {/* Summary stats */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-slate-50 rounded-xl p-4 text-center">
-                    <div className="text-3xl font-bold text-indigo-600">{survey.responses.length}</div>
+                    <div className="text-3xl font-bold text-violet-500">{survey.responses.length}</div>
                     <div className="text-sm text-slate-500 font-medium">Total Responses</div>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4 text-center">
@@ -970,7 +997,7 @@ export default function SurveyEditorPage() {
                                       <span className="text-xs text-slate-400 w-12 text-right font-mono">{label}</span>
                                       <div className="flex-1 h-5 bg-slate-50 rounded overflow-hidden">
                                         <motion.div
-                                          className="h-full bg-indigo-400/70 rounded"
+                                          className="h-full bg-violet-400/70 rounded"
                                           initial={{ width: 0 }}
                                           animate={{ width: `${(distribution[i] / maxBucket) * 100}%` }}
                                           transition={{ duration: 0.5, delay: i * 0.08 }}
@@ -990,7 +1017,7 @@ export default function SurveyEditorPage() {
                           const options = questionStats.options as Record<string, number>
                           const sorted = Object.entries(options).sort(([, a], [, b]) => b - a)
                           const maxCount = Math.max(...Object.values(options), 1)
-                          const barColors = ['bg-indigo-500', 'bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500']
+                          const barColors = ['bg-violet-500', 'bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500']
 
                           return (
                             <div className="space-y-2.5">
@@ -1041,7 +1068,7 @@ export default function SurveyEditorPage() {
                                 responses.map((text, i) => (
                                   <motion.div
                                     key={i}
-                                    className="p-3 bg-indigo-50 rounded-lg text-sm text-slate-700 border border-indigo-100"
+                                    className="p-3 bg-violet-50 rounded-lg text-sm text-slate-700 border border-violet-100"
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.03 }}
@@ -1075,7 +1102,7 @@ export default function SurveyEditorPage() {
                                       </div>
                                       <div className="h-5 bg-slate-50 rounded-lg overflow-hidden">
                                         <motion.div
-                                          className="h-full bg-indigo-400 rounded-lg"
+                                          className="h-full bg-violet-400 rounded-lg"
                                           initial={{ width: 0 }}
                                           animate={{ width: `${(count / maxCount) * 100}%` }}
                                           transition={{ duration: 0.6, delay: i * 0.1 }}

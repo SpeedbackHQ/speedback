@@ -76,7 +76,7 @@ export function MadLibsQuestion({ question, onAnswer }: MadLibsQuestionProps) {
                     onChange={(e) => setFillText(e.target.value.slice(0, max_length))}
                     maxLength={max_length}
                     placeholder="your answer"
-                    className="border-b-2 border-indigo-400 bg-indigo-50/50 px-2 py-0.5 text-indigo-700 font-semibold outline-none min-w-[120px] text-lg placeholder-indigo-300"
+                    className="border-b-2 border-violet-400 bg-violet-50/50 px-2 py-0.5 text-violet-600 font-semibold outline-none min-w-[120px] text-lg placeholder-violet-300"
                     style={{ width: Math.max(120, fillText.length * 11) }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -87,7 +87,7 @@ export function MadLibsQuestion({ question, onAnswer }: MadLibsQuestionProps) {
                   />
                   {!fillText && (
                     <motion.div
-                      className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-400"
+                      className="absolute bottom-0 left-2 right-2 h-0.5 bg-violet-400"
                       animate={{ opacity: [1, 0.3, 1] }}
                       transition={{ duration: 1.2, repeat: Infinity }}
                     />
@@ -107,7 +107,7 @@ export function MadLibsQuestion({ question, onAnswer }: MadLibsQuestionProps) {
                 disabled={!fillText.trim()}
                 className={`w-full py-3 rounded-xl font-bold text-lg shadow-lg transition-all ${
                   fillText.trim()
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    ? 'bg-violet-500 text-white hover:bg-violet-600'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
                 whileTap={fillText.trim() ? { scale: 0.97 } : {}}
@@ -133,7 +133,7 @@ export function MadLibsQuestion({ question, onAnswer }: MadLibsQuestionProps) {
               </motion.span>
               <p className="text-lg text-gray-800 leading-relaxed">
                 {before}
-                <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">{fillText.trim()}</span>
+                <span className="font-bold text-violet-500 bg-violet-50 px-1 rounded">{fillText.trim()}</span>
                 {after}
               </p>
             </motion.div>

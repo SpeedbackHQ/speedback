@@ -93,8 +93,8 @@ export default function TemplatesPage() {
             onClick={() => setActiveCategory(cat)}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
               activeCategory === cat
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                ? 'bg-violet-500 text-white shadow-md shadow-violet-200'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-violet-300 hover:text-violet-500'
             }`}
           >
             {cat}

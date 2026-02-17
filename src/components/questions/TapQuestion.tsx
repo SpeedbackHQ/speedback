@@ -264,7 +264,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
             initial={{ scale: 1.5 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-            className="inline-block font-bold text-indigo-600"
+            className="inline-block font-bold text-violet-500"
           >
             {selected.length}
           </motion.span>
@@ -280,7 +280,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
           w-full mt-6 py-4 font-bold text-lg rounded-xl shadow-lg
           transition-colors duration-200
           ${selected.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }
         `}

@@ -178,7 +178,7 @@ export function StickerBoardQuestion({ question, onAnswer }: StickerBoardQuestio
         disabled={placed.length === 0}
         className={`w-full mt-5 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           placed.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={placed.length > 0 ? { scale: 0.98 } : {}}

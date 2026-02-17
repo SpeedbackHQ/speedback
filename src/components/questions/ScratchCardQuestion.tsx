@@ -10,7 +10,7 @@ interface ScratchCardQuestionProps {
 }
 
 const cardColors = [
-  { bg: 'from-purple-500 to-indigo-600', text: 'text-white' },
+  { bg: 'from-purple-500 to-violet-500', text: 'text-white' },
   { bg: 'from-pink-500 to-rose-600', text: 'text-white' },
   { bg: 'from-cyan-500 to-blue-600', text: 'text-white' },
   { bg: 'from-amber-500 to-orange-600', text: 'text-white' },
@@ -220,7 +220,7 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
         >
           {/* Selected option badge */}
           <div className="text-center mb-4">
-            <span className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-medium">
+            <span className="bg-violet-100 text-violet-600 px-4 py-2 rounded-full font-medium">
               Your choice: {selectedOption}
             </span>
           </div>

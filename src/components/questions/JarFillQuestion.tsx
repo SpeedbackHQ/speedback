@@ -98,12 +98,12 @@ export function JarFillQuestion({ question, onAnswer }: JarFillQuestionProps) {
         {/* Jar body */}
         <div className={`absolute bottom-0 left-4 right-4 h-44 rounded-b-3xl rounded-t-lg border-4 backdrop-blur-sm transition-all duration-200 ${
           isOverJar
-            ? 'border-indigo-500 bg-white/80 shadow-lg shadow-indigo-200/50'
+            ? 'border-violet-500 bg-white/80 shadow-lg shadow-violet-200/50'
             : 'border-gray-300 bg-white/60'
         }`}>
           {/* Fill level */}
           <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-indigo-100 to-indigo-50 rounded-b-3xl"
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-100 to-violet-50 rounded-b-3xl"
             animate={{ height: `${(inJar.length / options.length) * 80 + 10}%` }}
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
           />
@@ -111,7 +111,7 @@ export function JarFillQuestion({ question, onAnswer }: JarFillQuestionProps) {
           {/* Drop hint when dragging */}
           {draggingOption && !inJar.includes(draggingOption) && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
-              <span className={`text-sm font-medium ${isOverJar ? 'text-indigo-600' : 'text-gray-400'}`}>
+              <span className={`text-sm font-medium ${isOverJar ? 'text-violet-500' : 'text-gray-400'}`}>
                 {isOverJar ? 'Drop!' : '↓'}
               </span>
             </div>
@@ -210,7 +210,7 @@ export function JarFillQuestion({ question, onAnswer }: JarFillQuestionProps) {
         disabled={inJar.length === 0}
         className={`w-full mt-5 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           inJar.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={inJar.length > 0 ? { scale: 0.98 } : {}}

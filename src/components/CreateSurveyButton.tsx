@@ -40,7 +40,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         .insert({
           org_id: org!.id,
           title: 'Untitled Survey',
-          branding_config: { primary_color: '#6366F1', mascot_enabled: true },
+          branding_config: { primary_color: '#8B5CF6', mascot_enabled: true },
         })
         .select()
         .single()

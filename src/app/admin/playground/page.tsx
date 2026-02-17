@@ -116,14 +116,14 @@ function PlaygroundContent() {
                     <button
                       key={categoryName}
                       onClick={() => setSelectedCategory(categoryName)}
-                      className="flex items-center gap-4 p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all text-left"
+                      className="flex items-center gap-4 p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-violet-300 hover:shadow-md transition-all text-left"
                     >
                       <span className="text-3xl">{categoryEmojis[categoryName] || '📋'}</span>
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-gray-800 text-lg">{categoryName}</div>
                         <div className="text-sm text-gray-500">{category.description}</div>
                       </div>
-                      <span className="text-sm font-semibold bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-full">
+                      <span className="text-sm font-semibold bg-violet-100 text-violet-500 px-2.5 py-1 rounded-full">
                         {category.types.length}
                       </span>
                     </button>
@@ -140,7 +140,7 @@ function PlaygroundContent() {
                 <div className="flex items-center gap-3 mb-4">
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                    className="text-sm text-violet-500 hover:text-violet-700 font-medium flex items-center gap-1"
                   >
                     <span>←</span> All categories
                   </button>
@@ -160,13 +160,13 @@ function PlaygroundContent() {
                         className={`
                           text-left p-3 rounded-xl border-2 transition-all
                           ${isActive
-                            ? 'border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100'
+                            ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100'
                             : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                           }
                         `}
                       >
                         <div className="text-xl mb-1">{entry.emoji}</div>
-                        <div className={`text-sm font-semibold ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
+                        <div className={`text-sm font-semibold ${isActive ? 'text-violet-600' : 'text-gray-700'}`}>
                           {entry.label}
                         </div>
                         <div className="text-xs text-gray-400 mt-0.5">{entry.description}</div>
@@ -261,7 +261,7 @@ function PlaygroundContent() {
               </div>
               <button
                 onClick={handleReset}
-                className="text-indigo-600 hover:text-indigo-800 font-medium text-sm"
+                className="text-violet-500 hover:text-violet-700 font-medium text-sm"
               >
                 Reset
               </button>

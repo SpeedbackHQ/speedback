@@ -28,7 +28,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
 
   // Card colors that cycle
   const cardColors = [
-    'from-indigo-500 to-purple-600',
+    'from-violet-500 to-purple-600',
     'from-pink-500 to-rose-500',
     'from-amber-500 to-orange-500',
     'from-emerald-500 to-teal-500',
@@ -172,7 +172,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
           <>
             <motion.button
               onClick={goToPrevious}
-              className="absolute left-0 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-indigo-500"
+              className="absolute left-0 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-violet-500"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -180,7 +180,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
             </motion.button>
             <motion.button
               onClick={goToNext}
-              className="absolute right-0 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-indigo-500"
+              className="absolute right-0 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-violet-500"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -202,7 +202,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
             }}
             className={`w-3 h-3 rounded-full transition-colors ${
               i === currentIndex
-                ? 'bg-indigo-500'
+                ? 'bg-violet-500'
                 : 'bg-gray-300 hover:bg-gray-400'
             }`}
             animate={{ scale: i === currentIndex ? 1.25 : 1 }}
@@ -219,7 +219,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <span className="font-bold text-indigo-600">{currentIndex + 1}</span> of {totalOptions}
+        <span className="font-bold text-violet-500">{currentIndex + 1}</span> of {totalOptions}
       </motion.p>
 
       {/* Submit button */}
@@ -231,7 +231,7 @@ export function RolodexQuestion({ question, onAnswer }: RolodexQuestionProps) {
           transition-all duration-200
           ${isSubmitting
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
         `}
         whileHover={!isSubmitting ? { scale: 1.02 } : {}}

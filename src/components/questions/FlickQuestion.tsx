@@ -10,7 +10,7 @@ interface FlickQuestionProps {
 }
 
 const cardColors = [
-  'from-indigo-400 to-indigo-600',
+  'from-violet-400 to-violet-500',
   'from-rose-400 to-rose-600',
   'from-amber-400 to-amber-600',
   'from-emerald-400 to-emerald-600',
@@ -126,7 +126,7 @@ export function FlickQuestion({ question, onAnswer }: FlickQuestionProps) {
           <motion.div
             key={i}
             className={`w-2.5 h-2.5 rounded-full transition-colors ${
-              i === currentIndex ? 'bg-indigo-500' : 'bg-gray-300'
+              i === currentIndex ? 'bg-violet-500' : 'bg-gray-300'
             }`}
             animate={{ scale: i === currentIndex ? 1.2 : 1 }}
           />
@@ -141,7 +141,7 @@ export function FlickQuestion({ question, onAnswer }: FlickQuestionProps) {
           w-full py-4 rounded-xl font-bold text-lg shadow-lg
           ${isSubmitting
             ? 'bg-green-500 text-white'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
           transition-colors
         `}

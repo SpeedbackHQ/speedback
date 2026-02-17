@@ -146,7 +146,7 @@ export function TapMeterQuestion({ question, onAnswer }: TapMeterQuestionProps) 
                 {/* Meter fill background */}
                 {!isSelected && meterValue > 0 && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200"
+                    className="absolute inset-0 bg-gradient-to-r from-violet-200 via-purple-200 to-pink-200"
                     style={{
                       width: `${meterValue}%`,
                       transformOrigin: 'left'
@@ -173,7 +173,7 @@ export function TapMeterQuestion({ question, onAnswer }: TapMeterQuestionProps) 
                     <motion.span
                       className={`
                         text-sm font-bold min-w-[3rem] text-right
-                        ${meterValue > 80 ? 'text-orange-600' : meterValue > 50 ? 'text-purple-600' : 'text-indigo-600'}
+                        ${meterValue > 80 ? 'text-orange-600' : meterValue > 50 ? 'text-purple-600' : 'text-violet-500'}
                       `}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}

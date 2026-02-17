@@ -142,7 +142,7 @@ export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuest
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <span className="font-bold text-indigo-600">{selected.length}</span> splashed
+          <span className="font-bold text-violet-500">{selected.length}</span> splashed
         </motion.p>
       )}
 
@@ -152,7 +152,7 @@ export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuest
         disabled={selected.length === 0}
         className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           selected.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={selected.length > 0 ? { scale: 0.98 } : {}}

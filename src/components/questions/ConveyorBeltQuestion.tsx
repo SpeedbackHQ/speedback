@@ -189,7 +189,7 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
         disabled={grabbed.length === 0}
         className={`w-full py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
           grabbed.length > 0
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            ? 'bg-violet-500 text-white hover:bg-violet-600'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
         whileTap={grabbed.length > 0 ? { scale: 0.98 } : {}}

@@ -222,7 +222,7 @@ export function DialQuestion({ question, onAnswer }: DialQuestionProps) {
         {/* Knob indicator */}
         <motion.div
           className={`absolute w-14 h-14 rounded-full shadow-lg flex items-center justify-center ${
-            isSubmitted ? 'bg-green-500' : 'bg-indigo-500'
+            isSubmitted ? 'bg-green-500' : 'bg-violet-500'
           }`}
           style={{
             left: knobPos.x - 28,
@@ -243,7 +243,7 @@ export function DialQuestion({ question, onAnswer }: DialQuestionProps) {
           w-full py-4 rounded-xl font-bold text-lg shadow-lg mt-2
           ${isSubmitted
             ? 'bg-green-500 text-white'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-violet-500 text-white hover:bg-violet-600'
           }
           transition-colors
         `}

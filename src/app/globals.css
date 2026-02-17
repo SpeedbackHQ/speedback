@@ -1,22 +1,48 @@
+/* Brand fonts */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Montserrat:wght@800&display=swap');
+
+@font-face {
+  font-family: 'Chunko';
+  src: url('/assets/Chunko Bold Demo.otf') format('opentype'),
+       url('/assets/Chunko Bold Demo.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('/assets/Outfit-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Brand colors */
-  --primary: #6366F1;
-  --primary-light: #818CF8;
-  --primary-dark: #4F46E5;
+  /* Brand colors - New branding */
+  --primary: #8B5CF6; /* Purple */
+  --primary-light: #A78BFA;
+  --primary-dark: #7C3AED;
+  --secondary: #06B6D4; /* Cyan */
+  --secondary-light: #22D3EE;
+  --secondary-dark: #0891B2;
   --accent: #F59E0B;
   --accent-light: #FBBF24;
-  --success: #10B981;
-  --success-light: #34D399;
+  --success: #22D3EE; /* Success Cyan */
+  --success-light: #67E8F9;
 
-  /* Gradient */
-  --gradient-start: #6366F1;
-  --gradient-mid: #A855F7;
-  --gradient-end: #F59E0B;
+  /* Gradient - Subtle purple to cyan */
+  --gradient-start: #F3E8FF; /* Purple light */
+  --gradient-end: #ECFEFF; /* Cyan light */
+
+  /* Text colors */
+  --text-dark: #0F172A;
+  --text-gray: #64748B;
 }
 
 @theme inline {
@@ -39,7 +65,28 @@
 html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-plus-jakarta), system-ui, sans-serif;
+  font-family: 'Manrope', var(--font-plus-jakarta), system-ui, sans-serif;
+}
+
+/* Font families */
+.font-chonko {
+  font-family: 'Chunko', 'Montserrat', var(--font-plus-jakarta), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.font-manrope {
+  font-family: 'Manrope', system-ui, sans-serif;
 }
 
 /* Mobile viewport fix - handle browser chrome */
@@ -209,4 +256,67 @@ body {
   bottom: 30%;
   right: -30px;
   animation: speed-lines 2.5s ease-in-out infinite 0.3s;
+}
+
+/* Brand button styles */
+.btn-primary {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 24px;
+  min-height: 44px;
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: white;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 24px;
+  min-height: 44px;
+  border-radius: 8px;
+  background-color: var(--secondary);
+  color: white;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Global UI typography - applies Outfit to all buttons and form controls */
+button, input[type="submit"], input[type="button"], input[type="reset"] {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Subtle landing page gradient */
+.landing-gradient-bg {
+  background: linear-gradient(120deg, #F3E8FF 0%, #ECFEFF 100%);
 }
