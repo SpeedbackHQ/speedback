@@ -32,8 +32,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   // Per-question timing for analytics
   const questionStartTime = useRef<number>(Date.now())
 
-  // Gesture hint overlay
-  const [showHint, setShowHint] = useState(true)
+  // Gesture hint overlay — track which gesture types have already been shown this session
+  const seenGestureTypes = useRef<Set<string>>(new Set())
+  const [showHint, setShowHint] = useState(false)
   const dismissHint = useCallback(() => setShowHint(false), [])
 
   // Conditional follow-up state
@@ -60,7 +61,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   // Reset hint and question timer when question changes
   useEffect(() => {
     questionStartTime.current = Date.now()
-    if (currentQuestion && getGestureType(currentQuestion.type)) {
+    const gestureType = currentQuestion && getGestureType(currentQuestion.type)
+    if (gestureType && !seenGestureTypes.current.has(gestureType)) {
+      seenGestureTypes.current.add(gestureType)
       setShowHint(true)
     } else {
       setShowHint(false)
@@ -71,7 +74,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   useEffect(() => {
     if (pendingFollowUp) {
       questionStartTime.current = Date.now()
-      if (getGestureType(pendingFollowUp.question.type)) {
+      const gestureType = getGestureType(pendingFollowUp.question.type)
+      if (gestureType && !seenGestureTypes.current.has(gestureType)) {
+        seenGestureTypes.current.add(gestureType)
         setShowHint(true)
       } else {
         setShowHint(false)
