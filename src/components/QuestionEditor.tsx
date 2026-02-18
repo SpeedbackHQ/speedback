@@ -796,24 +796,28 @@ export function QuestionEditor({
                 </svg>
               </div>
 
-              {/* Question type emoji — click to change mechanic */}
-              <button
-                type="button"
-                onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
-                className="text-2xl mt-0.5 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-violet-100 transition-colors flex-shrink-0"
-                title="Change mechanic"
-              >
+              {/* Question type emoji */}
+              <div className="text-2xl mt-0.5 flex-shrink-0">
                 {questionTypeInfo[question.type]?.emoji || '❓'}
-              </button>
+              </div>
 
               {/* Question content */}
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded flex items-center gap-1">
-                    <span>{questionTypeInfo[question.type]?.emoji}</span>
+                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
                     {questionTypeInfo[question.type]?.label || question.type}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
+                    className="text-gray-400 hover:text-violet-500 transition-colors"
+                    title="Change mechanic"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </button>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
                 </div>
 
