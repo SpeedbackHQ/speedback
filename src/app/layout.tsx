@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ClarityInit } from "@/components/ClarityInit";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -23,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${plusJakarta.variable} antialiased`}>
         <ClarityInit />
-        {children}
+        <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
   );

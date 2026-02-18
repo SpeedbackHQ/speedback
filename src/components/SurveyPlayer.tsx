@@ -9,6 +9,7 @@ import { GestureHint, getGestureType } from './GestureHint'
 import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
+import { track } from '@/lib/analytics'
 
 interface SurveyPlayerProps {
   survey: SurveyWithQuestions
@@ -28,6 +29,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   const [isSpeedBonus, setIsSpeedBonus] = useState(false)
   const lastAnswerTime = useRef<number>(0)
 
+  // Per-question timing for analytics
+  const questionStartTime = useRef<number>(Date.now())
+
   // Gesture hint overlay
   const [showHint, setShowHint] = useState(true)
   const dismissHint = useCallback(() => setShowHint(false), [])
@@ -39,14 +43,31 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   )
   const currentQuestion = questions[currentIndex]
 
-  // Reset hint when question changes
+  // Reset hint and question timer when question changes
   useEffect(() => {
+    questionStartTime.current = Date.now()
     if (currentQuestion && getGestureType(currentQuestion.type)) {
       setShowHint(true)
     } else {
       setShowHint(false)
     }
   }, [currentIndex, currentQuestion])
+
+  // Track survey_abandoned when user leaves mid-survey
+  useEffect(() => {
+    if (gameState !== 'playing') return
+    const handleBeforeUnload = () => {
+      track('survey_abandoned', {
+        survey_id: survey.id,
+        last_question_index: currentIndex,
+        last_question_type: currentQuestion?.type,
+        questions_completed: answers.length,
+        questions_total: questions.length,
+      })
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [gameState, currentIndex, answers.length, survey.id, currentQuestion?.type, questions.length])
 
   // Start timer when playing begins
   useEffect(() => {
@@ -66,12 +87,25 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   }, [gameState, startTime])
 
   const handleStart = () => {
+    track('survey_started', {
+      survey_id: survey.id,
+      question_count: questions.length,
+    })
+    questionStartTime.current = Date.now()
     setGameState('playing')
   }
 
   const handleAnswer = (value: AnswerValue) => {
     // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
     const now = Date.now()
+    const timeOnQuestion = now - questionStartTime.current
+    track('question_answered', {
+      survey_id: survey.id,
+      question_index: currentIndex,
+      question_type: currentQuestion.type,
+      time_spent_ms: timeOnQuestion,
+      questions_total: questions.length,
+    })
     const newAnswer = { question_id: currentQuestion.id, value }
     const newAnswers = [...answers, newAnswer]
     setAnswers(newAnswers)
@@ -119,6 +153,11 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
       // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
       const finalElapsed = startTime ? Date.now() - startTime : 0
       setElapsedTime(finalElapsed)
+      track('survey_completed', {
+        survey_id: survey.id,
+        question_count: questions.length,
+        total_time_ms: finalElapsed,
+      })
       saveResponse(newAnswers, finalElapsed)
       setGameState('complete')
     }
