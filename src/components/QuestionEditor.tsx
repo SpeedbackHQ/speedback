@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
-import { QuestionType } from '@/lib/types'
+import { QuestionType, InlineFollowUp } from '@/lib/types'
 
 export interface QuestionDraft {
   id: string
@@ -527,6 +527,246 @@ export function QuestionEditor({
     }
   }
 
+  const renderFollowUpSection = (question: QuestionDraft) => {
+    const supportedTypes = ['slider', 'thermometer', 'stars', 'dial', 'swipe', 'toggle_switch', 'bubble_pop', 'door_choice', 'tap_meter']
+    if (!supportedTypes.includes(question.type)) return null
+
+    const followUp = question.config.follow_up as InlineFollowUp | undefined
+    const conditionKind = ['slider', 'thermometer', 'stars', 'dial'].includes(question.type)
+      ? 'scale'
+      : ['swipe', 'toggle_switch'].includes(question.type)
+      ? 'binary'
+      : 'choice'
+
+    const addFollowUp = () => {
+      let defaultCondition: InlineFollowUp['condition']
+      if (conditionKind === 'scale') {
+        defaultCondition = { type: 'above_threshold', threshold: 75 }
+      } else if (conditionKind === 'binary') {
+        defaultCondition = { type: 'equals', value: 'right' }
+      } else {
+        const firstOption = ((question.config.options as string[]) || [])[0] || 'Option 1'
+        defaultCondition = { type: 'equals', value: firstOption }
+      }
+      onQuestionUpdate(question.id, {
+        config: {
+          ...question.config,
+          follow_up: {
+            condition: defaultCondition,
+            question: { type: 'bubble_pop', text: '', config: { options: ['Option A', 'Option B'] } },
+          },
+        },
+      })
+    }
+
+    const removeFollowUp = () => {
+      const newConfig = { ...question.config }
+      delete newConfig.follow_up
+      onQuestionUpdate(question.id, { config: newConfig })
+    }
+
+    const updateFollowUp = (updates: Partial<InlineFollowUp>) => {
+      onQuestionUpdate(question.id, {
+        config: {
+          ...question.config,
+          follow_up: { ...followUp!, ...updates },
+        },
+      })
+    }
+
+    if (!followUp) {
+      return (
+        <button
+          type="button"
+          onClick={addFollowUp}
+          className="text-xs text-violet-500 hover:text-violet-700 flex items-center gap-1 mt-1"
+        >
+          + Add follow-up question
+        </button>
+      )
+    }
+
+    const conditionOptions = conditionKind === 'binary'
+      ? question.type === 'swipe'
+        ? [
+            { label: 'Yes (→ right)', value: 'right' },
+            { label: 'No (← left)', value: 'left' },
+            { label: 'Skip (↑ up)', value: 'up' },
+          ]
+        : [
+            { label: (question.config.right_label as string) || 'Right', value: 'right' },
+            { label: (question.config.left_label as string) || 'Left', value: 'left' },
+          ]
+      : conditionKind === 'choice'
+      ? ((question.config.options as string[]) || []).map(o => ({ label: o, value: o }))
+      : []
+
+    const followUpTypes = [
+      { type: 'bubble_pop', label: 'Bubble Pop', emoji: '🫧' },
+      { type: 'short_text', label: 'Short Text', emoji: '💬' },
+      { type: 'slider', label: 'Slider', emoji: '😊' },
+      { type: 'swipe', label: 'Swipe', emoji: '👆' },
+    ] as const
+
+    return (
+      <div className="mt-3 pt-3 border-t border-violet-100 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-violet-600">↳ Follow-up question</span>
+          <button type="button" onClick={removeFollowUp} className="text-xs text-gray-400 hover:text-red-500">
+            Remove
+          </button>
+        </div>
+
+        {/* Condition control */}
+        {conditionKind === 'scale' ? (
+          <div>
+            <label className="text-xs text-gray-500">Show follow-up when score is above</label>
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={followUp.condition.threshold ?? 75}
+                onChange={(e) => updateFollowUp({
+                  condition: { ...followUp.condition, threshold: Number(e.target.value) },
+                })}
+                className="flex-1 accent-violet-500"
+              />
+              <span className="text-sm font-medium text-violet-600 w-9 text-right">
+                {followUp.condition.threshold ?? 75}%
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className="text-xs text-gray-500">Show follow-up when answer is</label>
+            <select
+              value={followUp.condition.value ?? ''}
+              onChange={(e) => updateFollowUp({
+                condition: { type: 'equals', value: e.target.value },
+              })}
+              className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 outline-none text-gray-900"
+            >
+              {conditionOptions.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Follow-up question text */}
+        <div>
+          <label className="text-xs text-gray-500">Follow-up question text</label>
+          <input
+            type="text"
+            value={followUp.question.text}
+            onChange={(e) => updateFollowUp({ question: { ...followUp.question, text: e.target.value } })}
+            placeholder="Ask them something..."
+            className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+          />
+        </div>
+
+        {/* Follow-up mechanic picker */}
+        <div>
+          <label className="text-xs text-gray-500">Follow-up mechanic</label>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {followUpTypes.map(ft => (
+              <button
+                key={ft.type}
+                type="button"
+                onClick={() => {
+                  const newConfig = ft.type === 'bubble_pop'
+                    ? { options: (followUp.question.config.options as string[] | undefined) || ['Option A', 'Option B'] }
+                    : ft.type === 'short_text'
+                    ? { placeholder: 'Share your thought...' }
+                    : ft.type === 'slider'
+                    ? { min_label: 'Not at all', max_label: 'Absolutely' }
+                    : { left_label: 'No', right_label: 'Yes' }
+                  updateFollowUp({ question: { ...followUp.question, type: ft.type, config: newConfig } })
+                }}
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs border transition-colors ${
+                  followUp.question.type === ft.type
+                    ? 'bg-violet-100 border-violet-300 text-violet-700 font-medium'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-violet-200'
+                }`}
+              >
+                <span>{ft.emoji}</span> {ft.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Options — only for bubble_pop follow-up */}
+        {followUp.question.type === 'bubble_pop' && (
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500">Options</label>
+            {((followUp.question.config.options as string[]) || []).map((opt, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="text"
+                  value={opt}
+                  onChange={(e) => {
+                    const newOpts = [...((followUp.question.config.options as string[]) || [])]
+                    newOpts[i] = e.target.value
+                    updateFollowUp({ question: { ...followUp.question, config: { ...followUp.question.config, options: newOpts } } })
+                  }}
+                  placeholder={`Option ${i + 1}`}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newOpts = ((followUp.question.config.options as string[]) || []).filter((_, j) => j !== i)
+                    updateFollowUp({ question: { ...followUp.question, config: { ...followUp.question.config, options: newOpts } } })
+                  }}
+                  disabled={((followUp.question.config.options as string[]) || []).length <= 2}
+                  className={`px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ${
+                    ((followUp.question.config.options as string[]) || []).length <= 2 ? 'opacity-30 cursor-not-allowed' : ''
+                  }`}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const currentOpts = (followUp.question.config.options as string[]) || []
+                updateFollowUp({ question: { ...followUp.question, config: { ...followUp.question.config, options: [...currentOpts, `Option ${currentOpts.length + 1}`] } } })
+              }}
+              disabled={((followUp.question.config.options as string[]) || []).length >= 4}
+              className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-violet-400 hover:text-violet-500 transition-colors text-sm ${
+                ((followUp.question.config.options as string[]) || []).length >= 4 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              + Add option
+            </button>
+          </div>
+        )}
+
+        {/* Labels — only for swipe follow-up */}
+        {followUp.question.type === 'swipe' && (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={(followUp.question.config.left_label as string) || ''}
+              onChange={(e) => updateFollowUp({ question: { ...followUp.question, config: { ...followUp.question.config, left_label: e.target.value } } })}
+              placeholder="Left (No)"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+            />
+            <input
+              type="text"
+              value={(followUp.question.config.right_label as string) || ''}
+              onChange={(e) => updateFollowUp({ question: { ...followUp.question, config: { ...followUp.question.config, right_label: e.target.value } } })}
+              placeholder="Right (Yes)"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <Reorder.Group
       axis="y"
@@ -579,6 +819,7 @@ export function QuestionEditor({
                 {/* Config section - always visible */}
                 <div className="mt-3 pt-3 border-t border-gray-200">
                   {renderQuestionConfig(question)}
+                  {renderFollowUpSection(question)}
                 </div>
               </div>
 

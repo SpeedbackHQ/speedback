@@ -2,8 +2,6 @@
 
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { BunnyMascot } from './BunnyMascot'
-
 interface CelebrationProps {
   message?: string
   elapsedTime?: number // in milliseconds
@@ -86,8 +84,15 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.3 }}
       >
-        {/* Bunny Mascot */}
-        <BunnyMascot state="celebrating" size="lg" className="mb-6" />
+        {/* Lightning bolt */}
+        <motion.div
+          className="text-7xl mb-6"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: [0, 1.3, 1], rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.3 }}
+        >
+          ⚡
+        </motion.div>
 
         {/* Message */}
         <motion.h1

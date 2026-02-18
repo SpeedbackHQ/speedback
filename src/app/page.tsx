@@ -40,13 +40,13 @@ export default function Home() {
             href="/admin/surveys/new"
             className="btn-primary text-lg px-8 py-4"
           >
-            Create Your First Survey
+            Try Free
           </Link>
           <Link
-            href="/admin/templates"
+            href="/pricing"
             className="btn-secondary text-lg px-8 py-4"
           >
-            Browse Templates
+            See Pricing
           </Link>
         </div>
 
@@ -121,6 +121,11 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="relative text-center py-8 bg-white border-t" style={{ borderColor: 'rgba(100, 116, 139, 0.1)' }}>
+        <p className="font-manrope text-sm" style={{ color: '#94A3B8' }}>
+          Questions? Email <a href="mailto:hello@speedback.app" className="underline hover:text-slate-600">hello@speedback.app</a>
+          <span className="mx-2">·</span>
+          <Link href="/pricing" className="underline hover:text-slate-600">Pricing</Link>
+        </p>
       </footer>
     </div>
   )

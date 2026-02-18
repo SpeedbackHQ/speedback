@@ -8,7 +8,7 @@ import { StreakCounter } from './StreakCounter'
 import { GestureHint, getGestureType } from './GestureHint'
 import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
-import { Question, AnswerValue, SurveyWithQuestions } from '@/lib/types'
+import { Question, AnswerValue, SurveyWithQuestions, InlineFollowUp, QuestionConfig } from '@/lib/types'
 import { track } from '@/lib/analytics'
 
 interface SurveyPlayerProps {
@@ -36,6 +36,20 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   const [showHint, setShowHint] = useState(true)
   const dismissHint = useCallback(() => setShowHint(false), [])
 
+  // Conditional follow-up state
+  const [pendingFollowUp, setPendingFollowUp] = useState<InlineFollowUp | null>(null)
+  const pendingFollowUpParentId = useRef<string>('')
+
+  function shouldShowFollowUp(config: QuestionConfig, value: AnswerValue): boolean {
+    const fu = config.follow_up
+    if (!fu) return false
+    const { type, threshold, value: condValue } = fu.condition
+    if (type === 'above_threshold') return (value as number) >= (threshold ?? 75)
+    if (type === 'below_threshold') return (value as number) < (threshold ?? 25)
+    if (type === 'equals') return value === condValue
+    return false
+  }
+
   // Create a sorted copy to avoid mutating the original array
   const questions = useMemo(
     () => [...survey.questions].sort((a, b) => a.order_index - b.order_index),
@@ -52,6 +66,18 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
       setShowHint(false)
     }
   }, [currentIndex, currentQuestion])
+
+  // Reset hint and question timer when follow-up appears
+  useEffect(() => {
+    if (pendingFollowUp) {
+      questionStartTime.current = Date.now()
+      if (getGestureType(pendingFollowUp.question.type)) {
+        setShowHint(true)
+      } else {
+        setShowHint(false)
+      }
+    }
+  }, [pendingFollowUp])
 
   // Track survey_abandoned when user leaves mid-survey
   useEffect(() => {
@@ -99,6 +125,47 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
     // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
     const now = Date.now()
     const timeOnQuestion = now - questionStartTime.current
+
+    // --- Answering an inline follow-up question ---
+    if (pendingFollowUp) {
+      track('question_answered', {
+        survey_id: survey.id,
+        question_index: currentIndex,
+        question_type: pendingFollowUp.question.type,
+        time_spent_ms: timeOnQuestion,
+        questions_total: questions.length,
+        is_follow_up: true,
+      })
+      // Attach the follow-up value to the parent answer (Option A: no orphan question_ids)
+      const newAnswers = answers.map(a =>
+        a.question_id === pendingFollowUpParentId.current
+          ? { ...a, follow_up_value: value }
+          : a
+      )
+      setAnswers(newAnswers)
+      setSwipeStreak(0)
+      setIsSpeedBonus(false)
+      lastAnswerTime.current = now
+      setPendingFollowUp(null)
+
+      if (currentIndex < questions.length - 1) {
+        setTimeout(() => setCurrentIndex(prev => prev + 1), 400)
+      } else {
+        // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
+        const finalElapsed = startTime ? Date.now() - startTime : 0
+        setElapsedTime(finalElapsed)
+        track('survey_completed', {
+          survey_id: survey.id,
+          question_count: questions.length,
+          total_time_ms: finalElapsed,
+        })
+        saveResponse(newAnswers, finalElapsed)
+        setGameState('complete')
+      }
+      return
+    }
+
+    // --- Regular question answer ---
     track('question_answered', {
       survey_id: survey.id,
       question_index: currentIndex,
@@ -141,6 +208,14 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
     }
 
     lastAnswerTime.current = now
+
+    // Check for conditional follow-up
+    const qConfig = currentQuestion.config as QuestionConfig
+    if (qConfig?.follow_up && shouldShowFollowUp(qConfig, value)) {
+      pendingFollowUpParentId.current = currentQuestion.id
+      setTimeout(() => setPendingFollowUp(qConfig.follow_up!), 400)
+      return
+    }
 
     if (currentIndex < questions.length - 1) {
       // Next question - faster transition during streaks
@@ -295,6 +370,22 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
 
   const primaryColor = survey.branding_config?.primary_color || '#8B5CF6'
 
+  // When a follow-up is pending, synthesize a Question object from its config
+  const followUpQuestion: Question | null = pendingFollowUp
+    ? {
+        id: `${pendingFollowUpParentId.current}_follow_up`,
+        survey_id: survey.id,
+        type: pendingFollowUp.question.type as Question['type'],
+        text: pendingFollowUp.question.text,
+        config: pendingFollowUp.question.config,
+        order_index: -1,
+        created_at: '',
+      }
+    : null
+
+  const displayQuestion = followUpQuestion ?? currentQuestion
+  const displayKey = followUpQuestion ? `${currentQuestion?.id}_follow_up` : currentQuestion?.id
+
   return (
     <div className="h-screen h-[100dvh] bg-slate-50 flex flex-col overflow-hidden">
       {/* Streak counter */}
@@ -320,9 +411,9 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
       {/* Question area - full height */}
       <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
         <AnimatePresence mode="wait">
-          {currentQuestion && (
+          {displayQuestion && (
           <motion.div
-            key={currentQuestion.id}
+            key={displayKey}
             className="w-full h-full relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -333,10 +424,10 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
               damping: swipeStreak >= 2 ? 35 : 30,
             }}
           >
-            {renderQuestion(currentQuestion)}
+            {renderQuestion(displayQuestion)}
             {showHint && (
               <GestureHint
-                questionType={currentQuestion.type}
+                questionType={displayQuestion.type}
                 onDismiss={dismissHint}
               />
             )}

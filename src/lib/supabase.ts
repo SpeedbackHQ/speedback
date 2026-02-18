@@ -43,6 +43,7 @@ export interface Survey {
   }
   thank_you_message: string
   is_active: boolean
+  max_responses?: number | null // null = unlimited (paid); default 25 (free)
   created_at: string
 }
 
@@ -75,6 +76,7 @@ export interface Response {
   answers: Array<{
     question_id: string
     value: unknown // varies by question type
+    follow_up_value?: unknown
   }>
   completed_at: string
   duration_ms: number | null

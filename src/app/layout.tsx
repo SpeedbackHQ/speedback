@@ -11,8 +11,21 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SpeedBack - Feedback that feels like play",
-  description: "Transform boring surveys into 2-minute game-like experiences. Swipe, tap, and slide your way through fun feedback forms.",
+  metadataBase: new URL('https://speedback.app'),
+  title: "SpeedBack ⚡ — Feedback that feels like play",
+  description: "Feedback forms that feel like games. Swipe, tap, and drag through questions — way faster than a boring form.",
+  openGraph: {
+    title: 'SpeedBack ⚡',
+    description: 'Feedback forms that feel like games. Get 3x more responses.',
+    url: 'https://speedback.app',
+    siteName: 'SpeedBack',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'SpeedBack ⚡',
+    description: 'Feedback forms that feel like games. Get 3x more responses.',
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ colorScheme: 'light' }}>
       <body className={`${plusJakarta.variable} antialiased`}>
         <ClarityInit />
         <PostHogProvider>{children}</PostHogProvider>

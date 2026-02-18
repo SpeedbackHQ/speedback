@@ -21,6 +21,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light only;
   --background: #ffffff;
   --foreground: #171717;
 
@@ -55,14 +56,10 @@
   --font-sans: var(--font-plus-jakarta), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* SpeedBack does not support dark mode — always use light theme */
 
 html, body {
+  color-scheme: light;
   background: var(--background);
   color: var(--foreground);
   font-family: 'Manrope', var(--font-plus-jakarta), system-ui, sans-serif;

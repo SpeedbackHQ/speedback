@@ -40,11 +40,17 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
     <motion.div
       className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
       style={{
-        background: `linear-gradient(135deg, ${primaryColor}22 0%, ${primaryColor}44 100%)`,
+        background: `linear-gradient(135deg, #F8F7FF 0%, #F3EEFF 50%, #EFF6FF 100%)`,
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      {/* Subtle brand tint overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${primaryColor}08 0%, ${primaryColor}18 100%)` }}
+      />
+
       {/* Logo */}
       {survey.branding_config?.logo_url && (
         <motion.img
@@ -58,7 +64,8 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
 
       {/* Title */}
       <motion.h1
-        className="text-2xl font-bold text-gray-800 text-center mb-2 relative z-10"
+        className="text-2xl font-bold text-center mb-2 relative z-10"
+        style={{ color: '#0F172A' }}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -67,7 +74,8 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
       </motion.h1>
 
       <motion.p
-        className="text-gray-500 text-center mb-8 relative z-10"
+        className="text-center mb-8 relative z-10"
+        style={{ color: '#64748B' }}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}

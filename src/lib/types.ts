@@ -15,8 +15,32 @@ export interface SurveyWithQuestions {
   }
   thank_you_message: string
   is_active: boolean
+  max_responses?: number | null
   created_at: string
   questions: Question[]
+}
+
+export interface FollowUpCondition {
+  type: 'above_threshold' | 'below_threshold' | 'equals'
+  threshold?: number  // 0-100 for scale types (slider, thermometer, stars, dial)
+  value?: string      // exact string for discrete types (swipe, toggle_switch, bubble_pop, etc.)
+}
+
+export interface InlineFollowUp {
+  condition: FollowUpCondition
+  question: {
+    type: 'bubble_pop' | 'short_text' | 'slider' | 'swipe'
+    text: string
+    config: {
+      options?: string[]
+      placeholder?: string
+      left_label?: string
+      right_label?: string
+      up_label?: string
+      min_label?: string
+      max_label?: string
+    }
+  }
 }
 
 export interface QuestionConfig {
@@ -32,6 +56,8 @@ export interface QuestionConfig {
   multi_select?: boolean
   // Rank
   items?: string[]
+  // Conditional follow-up
+  follow_up?: InlineFollowUp
 }
 
 // Answer types
