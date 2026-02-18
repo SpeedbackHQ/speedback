@@ -5,17 +5,25 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCodeStyling from 'qr-code-styling'
 import { supabase } from '@/lib/supabase'
-import { Survey, Question, Response, QuestionType } from '@/lib/types'
+import { Survey, Question, Response, QuestionType, QuestionConfig } from '@/lib/types'
 import Link from 'next/link'
 import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
 import { getDisplayQRConfig, getDownloadQRConfig } from '@/components/qr/qrConfig'
 import { PosterModal } from '@/components/poster/PosterModal'
 
-type TabType = 'questions' | 'share' | 'responses'
+type TabType = 'questions' | 'share' | 'responses' | 'analytics'
 
 interface SurveyData extends Survey {
   questions: Question[]
   responses: Response[]
+}
+
+interface AnalyticsData {
+  started: number
+  completed: number
+  completionRate: number | null
+  avgTimeSec: number | null
+  dropoff: number[]
 }
 
 type SaveStatus = 'saving' | 'saved' | 'error'
@@ -53,8 +61,15 @@ export default function SurveyEditorPage() {
   // Warning banner dismissed
   const [warningDismissed, setWarningDismissed] = useState(false)
 
+  // Copy link state
+  const [copied, setCopied] = useState(false)
+
   // Poster modal state
   const [posterModalOpen, setPosterModalOpen] = useState(false)
+
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
   // Prevent useEffect from resetting questions/title after initial load
   const hasInitializedRef = useRef(false)
@@ -62,6 +77,18 @@ export default function SurveyEditorPage() {
   useEffect(() => {
     loadSurvey()
   }, [surveyId])
+
+  // Fetch PostHog analytics when Analytics tab is opened
+  useEffect(() => {
+    if (currentTab === 'analytics' && survey && !analyticsData && !analyticsLoading) {
+      setAnalyticsLoading(true)
+      fetch(`/api/analytics/${surveyId}?questions=${survey.questions.length}`)
+        .then(r => r.json())
+        .then(data => setAnalyticsData(data))
+        .catch(() => setAnalyticsData(null))
+        .finally(() => setAnalyticsLoading(false))
+    }
+  }, [currentTab, survey, surveyId, analyticsData, analyticsLoading])
 
   useEffect(() => {
     if (survey) {
@@ -136,7 +163,8 @@ export default function SurveyEditorPage() {
   const copyLink = () => {
     const playUrl = `${window.location.origin}/play/${surveyId}`
     navigator.clipboard.writeText(playUrl)
-    alert('Link copied to clipboard!')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   // Auto-save with debounce
@@ -390,7 +418,7 @@ export default function SurveyEditorPage() {
           ],
           labels: question.config,
         }
-      } else if (question.type === 'tap') {
+      } else if (['tap', 'sticker_board', 'conveyor_belt', 'magnet_board', 'bingo_card', 'shopping_cart', 'jar_fill', 'paint_splatter', 'claw_machine'].includes(question.type)) {
         // Multi-select: answer is string[]
         const optionCounts: Record<string, number> = {}
         answers.forEach((a) => {
@@ -469,6 +497,46 @@ export default function SurveyEditorPage() {
           isVoice: question.type === 'voice_note',
         }
       }
+
+      // If this question has a follow-up config, aggregate follow_up_value from each answer
+      const followUpConfig = (question.config as QuestionConfig).follow_up
+      if (followUpConfig) {
+        const followUpValues = survey.responses
+          .map(r => (r.answers.find((a: { question_id: string; follow_up_value?: unknown }) => a.question_id === question.id) as { follow_up_value?: unknown } | undefined)?.follow_up_value)
+          .filter(v => v !== undefined && v !== null)
+
+        if (followUpValues.length > 0) {
+          const fuType = followUpConfig.question.type
+          if (fuType === 'bubble_pop' || fuType === 'swipe') {
+            const optionCounts: Record<string, number> = {}
+            followUpValues.forEach(v => {
+              if (typeof v === 'string') optionCounts[v] = (optionCounts[v] || 0) + 1
+            })
+            stats[`${question.id}_follow_up`] = {
+              type: 'follow_up_tap',
+              total: followUpValues.length,
+              options: optionCounts,
+              question: followUpConfig.question,
+            }
+          } else if (fuType === 'slider') {
+            const nums = followUpValues.filter((v): v is number => typeof v === 'number')
+            const avg = nums.length > 0 ? Math.round(nums.reduce((s, v) => s + v, 0) / nums.length) : 0
+            stats[`${question.id}_follow_up`] = {
+              type: 'follow_up_scale',
+              total: nums.length,
+              average: avg,
+              question: followUpConfig.question,
+            }
+          } else if (fuType === 'short_text') {
+            stats[`${question.id}_follow_up`] = {
+              type: 'follow_up_text',
+              total: followUpValues.length,
+              responses: followUpValues.filter((v): v is string => typeof v === 'string'),
+              question: followUpConfig.question,
+            }
+          }
+        }
+      }
     })
 
     return stats
@@ -478,7 +546,15 @@ export default function SurveyEditorPage() {
     if (!survey) return
     const sortedQuestions = [...survey.questions].sort((a, b) => a.order_index - b.order_index)
 
-    const headers = ['Response #', 'Completed At', 'Duration (s)', ...sortedQuestions.map(q => q.text || 'Untitled')]
+    // Build headers: each question gets a column; questions with follow-ups get an extra column
+    const headers: string[] = ['Response #', 'Completed At', 'Duration (s)']
+    sortedQuestions.forEach(q => {
+      headers.push(q.text || 'Untitled')
+      const followUpConfig = (q.config as QuestionConfig).follow_up
+      if (followUpConfig) {
+        headers.push(`${q.text || 'Untitled'} → Follow-up: ${followUpConfig.question.text || 'Follow-up'}`)
+      }
+    })
 
     const formatAnswer = (question: { type: string; config: Record<string, unknown> }, value: unknown): string => {
       if (value == null) return ''
@@ -500,11 +576,17 @@ export default function SurveyEditorPage() {
     const rows = survey.responses.map((response, i) => {
       const duration = response.duration_ms ? (response.duration_ms / 1000).toFixed(1) : ''
       const completedAt = new Date(response.completed_at).toLocaleString()
-      const answers = sortedQuestions.map(q => {
-        const answer = response.answers.find((a: { question_id: string }) => a.question_id === q.id)
-        return formatAnswer(q, answer?.value)
+      const answerCells: string[] = []
+      sortedQuestions.forEach(q => {
+        const answer = response.answers.find((a: { question_id: string; follow_up_value?: unknown }) => a.question_id === q.id)
+        answerCells.push(formatAnswer(q, answer?.value))
+        const followUpConfig = (q.config as QuestionConfig).follow_up
+        if (followUpConfig) {
+          const fuValue = answer?.follow_up_value
+          answerCells.push(fuValue != null ? String(fuValue) : '')
+        }
       })
-      return [String(i + 1), completedAt, duration, ...answers]
+      return [String(i + 1), completedAt, duration, ...answerCells]
     })
 
     const escapeCsvField = (field: string) => {
@@ -663,7 +745,7 @@ export default function SurveyEditorPage() {
 
       {/* Tab navigation */}
       <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl">
-        {(['questions', 'share', 'responses'] as TabType[]).map((tab) => (
+        {(['questions', 'share', 'responses', 'analytics'] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setTab(tab)}
@@ -676,6 +758,7 @@ export default function SurveyEditorPage() {
             {tab === 'questions' && '📝 Questions'}
             {tab === 'share' && '🔗 Share'}
             {tab === 'responses' && `📊 Responses ${hasResponses ? `(${survey.responses.length})` : ''}`}
+            {tab === 'analytics' && '⚡ Analytics'}
           </button>
         ))}
       </div>
@@ -780,9 +863,13 @@ export default function SurveyEditorPage() {
                     />
                     <button
                       onClick={copyLink}
-                      className="px-4 py-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors font-medium text-slate-600"
+                      className={`px-4 py-2 rounded-xl transition-all font-medium ${
+                        copied
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                      }`}
                     >
-                      Copy
+                      {copied ? 'Copied! ✓' : 'Copy'}
                     </button>
                   </div>
                 </div>
@@ -857,6 +944,34 @@ export default function SurveyEditorPage() {
               )}
             </div>
 
+            {/* Response limit banner (free tier) */}
+            {survey.max_responses != null && (() => {
+              const limit = survey.max_responses as number
+              const used = survey.responses.length
+              const isFull = used >= limit
+              const isNearFull = used >= limit * 0.8
+              return (
+                <div className={`flex items-center justify-between rounded-xl px-4 py-3 mb-4 text-sm font-medium ${
+                  isFull
+                    ? 'bg-red-50 border border-red-200 text-red-700'
+                    : isNearFull
+                    ? 'bg-amber-50 border border-amber-200 text-amber-700'
+                    : 'bg-violet-50 border border-violet-100 text-violet-700'
+                }`}>
+                  <span>
+                    <strong>{used} / {limit}</strong> responses used
+                    {isFull && ' — survey is full'}
+                  </span>
+                  <a
+                    href="/pricing"
+                    className="underline underline-offset-2 hover:opacity-80 font-semibold"
+                  >
+                    Upgrade to remove limit →
+                  </a>
+                </div>
+              )
+            })()}
+
             {survey.responses.length === 0 ? (
               <div className="text-center py-12 text-slate-500">
                 <div className="text-5xl mb-4">📊</div>
@@ -897,8 +1012,11 @@ export default function SurveyEditorPage() {
                     const typeInfo = questionTypeInfo[question.type]
                     const total = Number(questionStats?.total || 0)
 
+                    const followUpStats = stats?.[`${question.id}_follow_up`] as Record<string, unknown> | undefined
+
                     return (
-                      <div key={question.id} className="border border-slate-100 rounded-xl p-5">
+                      <div key={question.id}>
+                      <div className="border border-slate-100 rounded-xl p-5">
                         {/* Question header with response count badge */}
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-start gap-3">
@@ -1132,6 +1250,89 @@ export default function SurveyEditorPage() {
                           <p className="text-sm text-slate-400 italic">No responses for this question yet</p>
                         )}
                       </div>
+
+                      {/* Follow-up sub-card */}
+                      {followUpStats && (() => {
+                        const fuQ = followUpStats.question as { text: string; type: string; config: Record<string, unknown> }
+                        const fuTotal = Number(followUpStats.total)
+                        return (
+                          <div className="ml-6 mt-1 border border-violet-100 bg-violet-50/40 rounded-xl p-4">
+                            <div className="flex items-start gap-2 mb-3">
+                              <span className="text-xs text-violet-400 font-medium mt-0.5">↳</span>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-700">{fuQ.text || 'Follow-up question'}</p>
+                                <p className="text-xs text-violet-400">{fuTotal} of {total} respondents answered this follow-up</p>
+                              </div>
+                            </div>
+
+                            {/* Options (bubble_pop / swipe follow-up) */}
+                            {followUpStats.type === 'follow_up_tap' && (() => {
+                              const options = followUpStats.options as Record<string, number>
+                              const sorted = Object.entries(options).sort(([, a], [, b]) => b - a)
+                              const maxCount = Math.max(...Object.values(options), 1)
+                              return (
+                                <div className="space-y-2">
+                                  {sorted.map(([opt, count], i) => {
+                                    const pct = fuTotal > 0 ? Math.round((count / fuTotal) * 100) : 0
+                                    return (
+                                      <div key={opt}>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="text-sm font-medium text-slate-700">{opt}</span>
+                                          <span className="text-xs text-slate-400">{count} ({pct}%)</span>
+                                        </div>
+                                        <div className="h-5 bg-white rounded-lg overflow-hidden border border-violet-100">
+                                          <motion.div
+                                            className="h-full bg-violet-400 rounded-lg"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(count / maxCount) * 100}%` }}
+                                            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                                          />
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )
+                            })()}
+
+                            {/* Scale (slider follow-up) */}
+                            {followUpStats.type === 'follow_up_scale' && (() => {
+                              const avg = Number(followUpStats.average)
+                              const avgColor = avg >= 70 ? 'text-emerald-600' : avg >= 40 ? 'text-amber-600' : 'text-red-500'
+                              return (
+                                <div className="flex items-center gap-4">
+                                  <span className={`text-2xl font-bold ${avgColor}`}>{avg}%</span>
+                                  <div className="flex-1">
+                                    <div className="h-3 bg-white rounded-full overflow-hidden border border-violet-100">
+                                      <motion.div
+                                        className="h-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400 rounded-full"
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${avg}%` }}
+                                        transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })()}
+
+                            {/* Text (short_text follow-up) */}
+                            {followUpStats.type === 'follow_up_text' && (() => {
+                              const responses = followUpStats.responses as string[]
+                              return (
+                                <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                                  {responses.map((text, i) => (
+                                    <div key={i} className="p-2.5 bg-white rounded-lg text-sm text-slate-700 border border-violet-100">
+                                      {text}
+                                    </div>
+                                  ))}
+                                </div>
+                              )
+                            })()}
+                          </div>
+                        )
+                      })()}
+                      </div>
                     )
                   })}
                 </div>
@@ -1139,6 +1340,101 @@ export default function SurveyEditorPage() {
             )}
           </motion.div>
         )}
+
+        {currentTab === 'analytics' && (
+        <motion.div
+          key="analytics"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+        >
+          <h2 className="text-lg font-bold text-slate-800 mb-6">Completion Analytics</h2>
+
+          {analyticsLoading && (
+            <div className="text-center py-12 text-slate-400">
+              <div className="text-4xl mb-3">⏳</div>
+              <p className="font-medium">Loading analytics…</p>
+            </div>
+          )}
+
+          {!analyticsLoading && analyticsData === null && (
+            <div className="text-center py-12 text-slate-400">
+              <div className="text-4xl mb-3">📡</div>
+              <p className="font-medium mb-2">Couldn&apos;t load analytics</p>
+              <p className="text-sm">Make sure <code className="bg-slate-100 px-1 rounded">POSTHOG_PERSONAL_API_KEY</code> is set and the survey has received traffic.</p>
+            </div>
+          )}
+
+          {!analyticsLoading && analyticsData && (
+            <div className="space-y-6">
+              {/* Hero metric */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-violet-50 rounded-2xl p-6 text-center">
+                  <div className="text-5xl font-bold mb-1" style={{ color: '#8B5CF6' }}>
+                    {analyticsData.completionRate !== null ? `${analyticsData.completionRate}%` : '—'}
+                  </div>
+                  <div className="text-sm font-semibold text-violet-700">Completion rate</div>
+                  <div className="text-xs text-slate-400 mt-1">Industry avg: ~15%</div>
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-6 text-center">
+                  <div className="text-5xl font-bold text-slate-700 mb-1">
+                    {analyticsData.started}
+                  </div>
+                  <div className="text-sm font-semibold text-slate-500">Started</div>
+                  <div className="text-xs text-slate-400 mt-1">{analyticsData.completed} completed</div>
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-6 text-center">
+                  <div className="text-5xl font-bold text-slate-700 mb-1">
+                    {analyticsData.avgTimeSec !== null
+                      ? analyticsData.avgTimeSec >= 60
+                        ? `${Math.floor(analyticsData.avgTimeSec / 60)}m ${analyticsData.avgTimeSec % 60}s`
+                        : `${analyticsData.avgTimeSec}s`
+                      : '—'}
+                  </div>
+                  <div className="text-sm font-semibold text-slate-500">Avg. time</div>
+                  <div className="text-xs text-slate-400 mt-1">to complete</div>
+                </div>
+              </div>
+
+              {/* Drop-off by question */}
+              {analyticsData.dropoff.length > 0 && analyticsData.started > 0 && (
+                <div>
+                  <h3 className="font-semibold text-slate-700 mb-3">Answers by question</h3>
+                  <div className="space-y-2">
+                    {analyticsData.dropoff.map((count, i) => {
+                      const pct = Math.round((count / analyticsData.started) * 100)
+                      const q = survey.questions[i]
+                      return (
+                        <div key={i} className="flex items-center gap-3">
+                          <div className="w-6 text-right text-xs font-medium text-slate-400">Q{i + 1}</div>
+                          <div className="flex-1 bg-slate-100 rounded-full h-5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${pct}%`, backgroundColor: '#8B5CF6' }}
+                            />
+                          </div>
+                          <div className="w-10 text-xs font-semibold text-slate-500">{pct}%</div>
+                          <div className="w-48 text-xs text-slate-400 truncate">{q?.text || ''}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {analyticsData.started === 0 && (
+                <div className="text-center py-6 text-slate-400">
+                  <p className="font-medium">No data yet</p>
+                  <p className="text-sm">Analytics will appear once respondents start this survey.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      )}
       </AnimatePresence>
 
       {/* Delete Confirmation Modal */}

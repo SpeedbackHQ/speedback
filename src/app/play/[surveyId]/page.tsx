@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { SurveyPlayer } from '@/components/SurveyPlayer'
+import { SurveyFull } from '@/components/SurveyFull'
+import { SurveyClosed } from '@/components/SurveyClosed'
 import { notFound } from 'next/navigation'
 
 // Force dynamic rendering to avoid caching issues
@@ -14,7 +16,6 @@ async function getSurvey(surveyId: string) {
     .from('surveys')
     .select('*')
     .eq('id', surveyId)
-    .eq('is_active', true)
     .single()
 
   if (surveyError || !survey) {
@@ -27,16 +28,19 @@ async function getSurvey(surveyId: string) {
     .eq('survey_id', surveyId)
     .order('order_index')
 
-  // Debug: Log fetched questions
-  console.log('[getSurvey] Fetched questions for survey', surveyId, ':', questions?.length, 'questions')
-  console.log('[getSurvey] Questions:', questions?.map(q => ({ id: q.id, type: q.type, text: q.text })))
-
   if (questionsError) {
-    console.log('[getSurvey] Questions error:', questionsError)
     return null
   }
 
   return { ...survey, questions: questions || [] }
+}
+
+async function getResponseCount(surveyId: string): Promise<number> {
+  const { count } = await supabase
+    .from('responses')
+    .select('*', { count: 'exact', head: true })
+    .eq('survey_id', surveyId)
+  return count ?? 0
 }
 
 export default async function PlaySurveyPage({ params }: PageProps) {
@@ -45,6 +49,19 @@ export default async function PlaySurveyPage({ params }: PageProps) {
 
   if (!survey) {
     notFound()
+  }
+
+  // Paused surveys show a friendly "closed" message instead of 404
+  if (!survey.is_active) {
+    return <SurveyClosed surveyTitle={survey.title} />
+  }
+
+  // Enforce free tier response limit (null/undefined = unlimited for paid accounts)
+  if (survey.max_responses != null) {
+    const count = await getResponseCount(surveyId)
+    if (count >= survey.max_responses) {
+      return <SurveyFull surveyTitle={survey.title} />
+    }
   }
 
   return <SurveyPlayer survey={survey} />
