@@ -810,7 +810,8 @@ export function QuestionEditor({
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
+                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded flex items-center gap-1">
+                    <span>{questionTypeInfo[question.type]?.emoji}</span>
                     {questionTypeInfo[question.type]?.label || question.type}
                   </span>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
