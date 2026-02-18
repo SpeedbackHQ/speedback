@@ -796,22 +796,23 @@ export function QuestionEditor({
                 </svg>
               </div>
 
-              {/* Question type emoji */}
-              <div className="text-2xl">{questionTypeInfo[question.type]?.emoji || '❓'}</div>
+              {/* Question type emoji — click to change mechanic */}
+              <button
+                type="button"
+                onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
+                className="text-2xl mt-0.5 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-violet-100 transition-colors flex-shrink-0"
+                title="Change mechanic"
+              >
+                {questionTypeInfo[question.type]?.emoji || '❓'}
+              </button>
 
               {/* Question content */}
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
-                    className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded hover:bg-violet-200 transition-colors flex items-center gap-1"
-                    title="Click to change mechanic"
-                  >
+                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
                     {questionTypeInfo[question.type]?.label || question.type}
-                    <span className="text-violet-400">✎</span>
-                  </button>
+                  </span>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
                 </div>
 
