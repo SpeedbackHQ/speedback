@@ -1,11 +1,17 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy init — Resend throws if key is undefined at module load time (e.g. during build)
+let _resend: Resend | null = null
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+  return _resend
+}
+
 const FROM = 'SpeedBack <hello@speedback.app>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://speedback.app'
 
 export async function sendWelcomeEmail(to: string, customerName?: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: 'Welcome to SpeedBack ⚡',
@@ -44,7 +50,7 @@ export async function sendWelcomeEmail(to: string, customerName?: string) {
 }
 
 export async function sendPaymentConfirmationEmail(to: string, plan: string, amount: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Payment confirmed — SpeedBack ${plan}`,
@@ -85,7 +91,7 @@ export async function sendUpgradePromptEmail(to: string, surveyTitle: string, re
   const starterLink = process.env.NEXT_PUBLIC_STRIPE_STARTER_LINK || `${APP_URL}/pricing`
   const eventLink = process.env.NEXT_PUBLIC_STRIPE_EVENT_LINK || `${APP_URL}/pricing`
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Your survey "${surveyTitle}" has reached its limit`,
