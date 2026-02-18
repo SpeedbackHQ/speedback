@@ -180,6 +180,8 @@ export function QuestionEditor({
   onQuestionUpdate,
   onQuestionDelete,
 }: QuestionEditorProps) {
+  const [changingTypeFor, setChangingTypeFor] = useState<string | null>(null)
+
   // Render config section for a question
   const renderQuestionConfig = (question: QuestionDraft) => {
     switch (question.type) {
@@ -801,9 +803,15 @@ export function QuestionEditor({
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
+                  <button
+                    type="button"
+                    onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
+                    className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded hover:bg-violet-200 transition-colors flex items-center gap-1"
+                    title="Click to change mechanic"
+                  >
                     {questionTypeInfo[question.type]?.label || question.type}
-                  </span>
+                    <span className="text-violet-400">✎</span>
+                  </button>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
                 </div>
 
@@ -816,11 +824,26 @@ export function QuestionEditor({
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
                 />
 
+                {/* Inline mechanic type picker */}
+                {changingTypeFor === question.id && (
+                  <div className="mt-2">
+                    <QuestionTypeSelector
+                      onSelect={(newType) => {
+                        onQuestionUpdate(question.id, { type: newType, config: getDefaultConfig(newType) })
+                        setChangingTypeFor(null)
+                      }}
+                      onCancel={() => setChangingTypeFor(null)}
+                    />
+                  </div>
+                )}
+
                 {/* Config section - always visible */}
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  {renderQuestionConfig(question)}
-                  {renderFollowUpSection(question)}
-                </div>
+                {changingTypeFor !== question.id && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    {renderQuestionConfig(question)}
+                    {renderFollowUpSection(question)}
+                  </div>
+                )}
               </div>
 
               {/* Delete button */}
