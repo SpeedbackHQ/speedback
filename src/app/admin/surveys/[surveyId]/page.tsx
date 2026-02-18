@@ -9,7 +9,6 @@ import { Survey, Question, Response, QuestionType, QuestionConfig } from '@/lib/
 import Link from 'next/link'
 import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
 import { getDisplayQRConfig, getDownloadQRConfig } from '@/components/qr/qrConfig'
-import { PosterModal } from '@/components/poster/PosterModal'
 
 type TabType = 'questions' | 'share' | 'responses' | 'analytics'
 
@@ -63,9 +62,6 @@ export default function SurveyEditorPage() {
 
   // Copy link state
   const [copied, setCopied] = useState(false)
-
-  // Poster modal state
-  const [posterModalOpen, setPosterModalOpen] = useState(false)
 
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
@@ -839,15 +835,9 @@ export default function SurveyEditorPage() {
                 >
                   Download QR Code
                 </button>
-                <p className="text-xs text-slate-500 mt-2 mb-3">
+                <p className="text-xs text-slate-500 mt-2">
                   Make scanning feel like starting a game
                 </p>
-                <button
-                  onClick={() => setPosterModalOpen(true)}
-                  className="w-full py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-semibold"
-                >
-                  🎨 Create Poster
-                </button>
               </div>
 
               {/* Link and embed */}
@@ -908,18 +898,6 @@ export default function SurveyEditorPage() {
             </div>
           </motion.div>
         )}
-
-        {/* Poster Modal */}
-        <AnimatePresence>
-          {posterModalOpen && survey && (
-            <PosterModal
-              survey={survey}
-              qrUrl={qrCodeUrl}
-              playUrl={playUrl}
-              onClose={() => setPosterModalOpen(false)}
-            />
-          )}
-        </AnimatePresence>
 
         {currentTab === 'responses' && (
           <motion.div
