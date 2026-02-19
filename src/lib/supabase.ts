@@ -34,6 +34,7 @@ export interface Organization {
 export interface Survey {
   id: string
   org_id: string
+  user_id?: string // User who owns this survey
   title: string
   branding_config: {
     logo_url?: string
@@ -80,4 +81,27 @@ export interface Response {
   }>
   completed_at: string
   duration_ms: number | null
+}
+
+export interface UserProfile {
+  id: string // References auth.users(id)
+  display_name: string | null
+  plan_type: 'free' | 'starter' | 'per-event'
+  stripe_customer_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Subscription {
+  id: string
+  user_id: string
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
+  plan_type: 'free' | 'starter' | 'per-event'
+  status: 'active' | 'canceled' | 'past_due' | 'trialing'
+  current_period_start: string | null
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+  created_at: string
+  updated_at: string
 }

@@ -1,11 +1,15 @@
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { CreateSurveyButton } from '@/components/CreateSurveyButton'
+import { getUser, createServerSupabaseClient } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
-async function getSurveys() {
+async function getSurveys(userId: string) {
+  const supabase = await createServerSupabaseClient()
+
   const { data: surveys, error } = await supabase
     .from('surveys')
     .select('*, responses(count)')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -17,7 +21,13 @@ async function getSurveys() {
 }
 
 export default async function AdminDashboard() {
-  const surveys = await getSurveys()
+  const user = await getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const surveys = await getSurveys(user.id)
 
   return (
     <div className="animate-fade-in">

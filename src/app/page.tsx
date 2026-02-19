@@ -1,6 +1,14 @@
 import Link from 'next/link'
+import { getUser } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
-export default function Home() {
+export default async function Home() {
+  // Redirect logged-in users to dashboard
+  const user = await getUser()
+  if (user) {
+    redirect('/admin')
+  }
+
   return (
     <div className="min-h-screen landing-gradient-bg relative overflow-hidden">
       {/* Navigation */}

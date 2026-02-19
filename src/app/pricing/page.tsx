@@ -1,9 +1,18 @@
 import Link from 'next/link'
+import { getUser, getUserProfile, createServerSupabaseClient } from '@/lib/auth'
 
 const STARTER_LINK = process.env.NEXT_PUBLIC_STRIPE_STARTER_LINK || '#'
 const EVENT_LINK = process.env.NEXT_PUBLIC_STRIPE_EVENT_LINK || '#'
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const user = await getUser()
+  let currentPlan = 'free'
+
+  if (user) {
+    const profile = await getUserProfile(user.id)
+    currentPlan = profile?.plan_type || 'free'
+  }
+
   return (
     <div className="min-h-screen landing-gradient-bg relative overflow-hidden">
       {/* Navigation */}
@@ -20,9 +29,18 @@ export default function PricingPage() {
         <h1 className="text-5xl font-chonko mb-4 animate-fade-in-up" style={{ color: '#0F172A' }}>
           Simple pricing
         </h1>
-        <p className="text-lg font-manrope mb-16 animate-fade-in-up delay-100" style={{ color: '#64748B' }}>
+        <p className="text-lg font-manrope mb-8 animate-fade-in-up delay-100" style={{ color: '#64748B' }}>
           Start free. Upgrade when you&apos;re ready.
         </p>
+
+        {/* Current Plan Badge for Logged-In Users */}
+        {user && (
+          <div className="mb-8 inline-block px-6 py-3 bg-violet-100 border border-violet-300 rounded-lg">
+            <p className="text-sm font-medium text-violet-800">
+              Current Plan: <strong className="font-bold capitalize">{currentPlan}</strong>
+            </p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-3 gap-6 animate-fade-in-up delay-200">
           {/* Free */}
