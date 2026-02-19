@@ -805,17 +805,20 @@ export function QuestionEditor({
               <div className="flex-1">
                 {/* Header row */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-violet-500 bg-violet-100 px-2 py-1 rounded">
-                    {questionTypeInfo[question.type]?.label || question.type}
-                  </span>
                   <button
                     type="button"
                     onClick={() => setChangingTypeFor(changingTypeFor === question.id ? null : question.id)}
-                    className="text-gray-400 hover:text-violet-500 transition-colors"
-                    title="Change mechanic"
+                    className="text-xs font-medium text-violet-500 bg-violet-100 hover:bg-violet-200 px-2 py-1 rounded transition-colors flex items-center gap-1.5 group"
+                    title="Click to change mechanic"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    <span>{questionTypeInfo[question.type]?.label || question.type}</span>
+                    <svg
+                      className={`w-3 h-3 transition-transform ${changingTypeFor === question.id ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   <span className="text-gray-400 text-sm">#{index + 1}</span>
