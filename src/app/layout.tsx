@@ -12,13 +12,13 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://speedback.app'),
+  metadataBase: new URL('https://speedback.fun'),
   title: "SpeedBack ⚡ — Feedback that feels like play",
   description: "Feedback forms that feel like games. Swipe, tap, and drag through questions — way faster than a boring form.",
   openGraph: {
     title: 'SpeedBack ⚡',
     description: 'Feedback forms that feel like games. Get 3x more responses.',
-    url: 'https://speedback.app',
+    url: 'https://speedback.fun',
     siteName: 'SpeedBack',
     type: 'website',
   },

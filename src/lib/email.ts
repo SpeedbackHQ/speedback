@@ -7,8 +7,8 @@ function getResend(): Resend {
   return _resend
 }
 
-const FROM = 'SpeedBack <hello@speedback.app>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://speedback.app'
+const FROM = 'SpeedBack <hello@speedback.fun>'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://speedback.fun'
 
 export async function sendWelcomeEmail(to: string, customerName?: string) {
   return getResend().emails.send({
