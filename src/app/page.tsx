@@ -20,10 +20,10 @@ export default async function Home() {
           Speed<span style={{ color: '#8B5CF6' }}>Back</span>
         </div>
         <Link
-          href="/admin"
+          href="/login"
           className="btn-secondary"
         >
-          Dashboard
+          Sign In
         </Link>
       </nav>
 

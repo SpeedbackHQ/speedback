@@ -34,12 +34,8 @@ export function Navigation() {
   }
 
   // Don't show nav on certain pages
-  if (pathname?.startsWith('/play/') || pathname?.startsWith('/auth/') || pathname?.startsWith('/admin')) {
-    return null
-  }
-
-  // Hide on homepage (it has its own nav, and logged-in users should auto-redirect to /admin)
-  if (pathname === '/') {
+  const hiddenRoutes = ['/play/', '/auth/', '/admin', '/login', '/signup', '/reset-password', '/verify-email', '/']
+  if (hiddenRoutes.some(route => pathname === route || pathname?.startsWith(route))) {
     return null
   }
 
