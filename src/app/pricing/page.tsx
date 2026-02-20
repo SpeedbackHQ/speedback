@@ -15,17 +15,7 @@ export default async function PricingPage() {
 
   return (
     <div className="min-h-screen landing-gradient-bg relative overflow-hidden">
-      {/* Navigation */}
-      <nav className="relative flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <Link href="/" className="text-2xl font-chonko tracking-tight" style={{ color: '#0F172A' }}>
-          Speed<span style={{ color: '#8B5CF6' }}>Back</span>
-        </Link>
-        <Link href="/admin" className="btn-secondary">
-          Dashboard
-        </Link>
-      </nav>
-
-      <main className="relative max-w-5xl mx-auto px-6 pt-16 pb-32 text-center">
+      <main className="relative max-w-5xl mx-auto px-6 pt-24 pb-32 text-center">
         <h1 className="text-5xl font-chonko mb-4 animate-fade-in-up" style={{ color: '#0F172A' }}>
           Simple pricing
         </h1>

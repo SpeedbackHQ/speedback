@@ -14,21 +14,8 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen landing-gradient-bg relative overflow-hidden">
-      {/* Navigation */}
-      <nav className="relative flex items-center justify-between px-6 py-4 max-w-6xl mx-auto animate-fade-in">
-        <div className="text-2xl font-chonko tracking-tight" style={{ color: '#0F172A' }}>
-          Speed<span style={{ color: '#8B5CF6' }}>Back</span>
-        </div>
-        <Link
-          href="/login"
-          className="btn-secondary"
-        >
-          Sign In
-        </Link>
-      </nav>
-
       {/* Hero */}
-      <main className="relative max-w-4xl mx-auto px-6 pt-16 pb-32 text-center">
+      <main className="relative max-w-4xl mx-auto px-6 pt-24 pb-32 text-center">
         {/* Playful mascot teaser / speed icon */}
         <div className="relative inline-block mb-8 animate-fade-in-up">
           <div className="text-8xl animate-float">⚡</div>

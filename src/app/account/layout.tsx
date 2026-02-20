@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import type { User } from '@supabase/supabase-js'
 
@@ -13,20 +13,51 @@ export default function AccountLayout({
 }) {
   const pathname = usePathname()
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const supabase = createBrowserSupabaseClient()
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }: any) => {
       setUser(data.user)
+      if (data.user) {
+        loadProfile(data.user.id)
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        loadProfile(session.user.id)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [supabase])
+
+  async function loadProfile(userId: string) {
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    setProfile(data)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdownOpen])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -81,13 +112,13 @@ export default function AccountLayout({
 
             {/* User Dropdown */}
             {user && (
-              <div className="relative ml-2">
+              <div className="relative ml-2" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-violet-50 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                    {user.email?.[0].toUpperCase()}
+                    {(profile?.display_name?.[0] || user.email?.[0] || '?').toUpperCase()}
                   </div>
                   <svg
                     className={`w-4 h-4 text-slate-600 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
@@ -100,14 +131,9 @@ export default function AccountLayout({
                 </button>
 
                 {dropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{profile?.display_name || user.email}</p>
                         <p className="text-xs text-gray-500">Free Plan</p>
                       </div>
                       <Link
@@ -132,7 +158,6 @@ export default function AccountLayout({
                         Sign Out
                       </button>
                     </div>
-                  </>
                 )}
               </div>
             )}

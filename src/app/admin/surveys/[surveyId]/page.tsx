@@ -642,13 +642,14 @@ export default function SurveyEditorPage() {
           </Link>
 
           {/* Editable title */}
-          <div className="flex items-center gap-3 mt-2">
-            <input
-              type="text"
+          <div className="flex items-start gap-3 mt-2">
+            <textarea
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Survey title..."
-              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors"
+              rows={2}
+              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors resize-none overflow-hidden leading-tight"
+              style={{ minHeight: '3.5rem' }}
             />
             {/* Save status indicator */}
             <div className="text-sm font-medium">

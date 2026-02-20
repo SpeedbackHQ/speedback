@@ -35,7 +35,7 @@ export function Navigation() {
 
   // Don't show nav on certain pages (admin and account have their own branded headers)
   const hiddenRoutes = ['/play/', '/auth/', '/admin', '/account', '/login', '/signup', '/reset-password', '/verify-email']
-  const shouldHide = pathname === '/' || hiddenRoutes.some(route => pathname === route || pathname?.startsWith(route))
+  const shouldHide = hiddenRoutes.some(route => pathname === route || pathname?.startsWith(route))
 
   if (shouldHide) {
     return null
