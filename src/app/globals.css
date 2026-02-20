@@ -77,7 +77,7 @@ html, body {
 .font-outfit {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
-  /* Removed text-transform: uppercase - let content control casing */
+  text-transform: uppercase;
   letter-spacing: 0.02em;
   line-height: 1;
 }

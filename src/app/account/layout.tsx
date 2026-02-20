@@ -51,12 +51,12 @@ export default function AccountLayout({
             <Link
               href="/account/profile"
               className={`font-outfit font-medium transition-colors px-3 py-2 rounded-lg ${
-                pathname === '/account/profile'
+                pathname === '/account/profile' || pathname === '/account/settings'
                   ? 'text-violet-500 bg-violet-50'
                   : 'text-slate-600 hover:text-violet-500 hover:bg-violet-50'
               }`}
             >
-              Profile
+              Account
             </Link>
             <Link
               href="/account/billing"
@@ -67,16 +67,6 @@ export default function AccountLayout({
               }`}
             >
               Billing
-            </Link>
-            <Link
-              href="/account/settings"
-              className={`font-outfit font-medium transition-colors px-3 py-2 rounded-lg ${
-                pathname === '/account/settings'
-                  ? 'text-violet-500 bg-violet-50'
-                  : 'text-slate-600 hover:text-violet-500 hover:bg-violet-50'
-              }`}
-            >
-              Settings
             </Link>
 
             {/* User Dropdown */}
@@ -115,7 +105,7 @@ export default function AccountLayout({
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setDropdownOpen(false)}
                       >
-                        Account Settings
+                        Account
                       </Link>
                       <Link
                         href="/account/billing"
