@@ -67,14 +67,20 @@ export default async function PlaySurveyPage({ params }: PageProps) {
   // Determine if Speedback branding should be shown (for free surveys)
   const { data: userProfile } = await supabase
     .from('user_profiles')
-    .select('plan_type')
+    .select('plan_type, id')
     .eq('id', survey.user_id)
     .single()
 
+  // Get survey owner's email to check if test account
+  const { data: ownerUser } = await supabase.auth.admin.getUserById(survey.user_id)
+  const isTestAccount = ownerUser?.user?.email === 'millerdjonathan@proton.me'
+
   const showSpeedbackBranding =
-    !userProfile ||
-    userProfile.plan_type === 'free' ||
-    survey.max_responses !== null
+    !isTestAccount && (
+      !userProfile ||
+      userProfile.plan_type === 'free' ||
+      survey.max_responses !== null
+    )
 
   return <SurveyPlayer survey={survey} showSpeedbackBranding={showSpeedbackBranding} />
 }

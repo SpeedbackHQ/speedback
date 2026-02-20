@@ -38,6 +38,7 @@ export default function SurveyEditorPage() {
 
   const [survey, setSurvey] = useState<SurveyData | null>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
+  const [isTestAccount, setIsTestAccount] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -125,6 +126,9 @@ export default function SurveyEditorPage() {
     // Load user profile to check plan type
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
+      // Check if test account
+      setIsTestAccount(user.email === 'millerdjonathan@proton.me')
+
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
@@ -177,7 +181,11 @@ export default function SurveyEditorPage() {
 
   // Check if user can export CSV (paid feature)
   const canExportCSV = () => {
-    if (!userProfile || !survey) return false
+    if (!survey) return false
+    // Test account bypass
+    if (isTestAccount) return true
+    // Regular plan checks
+    if (!userProfile) return false
     // Starter plan: unlimited for all surveys
     if (userProfile.plan_type === 'starter') return true
     // Per-event or free with premium credit: only for unlimited surveys
@@ -187,7 +195,11 @@ export default function SurveyEditorPage() {
 
   // Check if user can view full analytics (paid feature)
   const canViewFullAnalytics = () => {
-    if (!userProfile || !survey) return false
+    if (!survey) return false
+    // Test account bypass
+    if (isTestAccount) return true
+    // Regular plan checks
+    if (!userProfile) return false
     // Starter plan: full analytics for all surveys
     if (userProfile.plan_type === 'starter') return true
     // Per-event or free with premium credit: only for unlimited surveys

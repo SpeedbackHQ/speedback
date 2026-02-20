@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createBrowserSupabaseClient } from '@/lib/auth-client'
 
 interface CreateSurveyButtonProps {
   className?: string
@@ -18,11 +18,16 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
     setIsCreating(true)
 
     try {
+      const supabase = createBrowserSupabaseClient()
+
       // Get authenticated user
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       if (authError || !user) {
         throw new Error('Not authenticated')
       }
+
+      // Test account bypass - millerdjonathan@proton.me gets unlimited everything
+      const isTestAccount = user.email === 'millerdjonathan@proton.me'
 
       // Get user's profile to check plan type and credits
       const { data: profile } = await supabase
@@ -35,7 +40,10 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
       let maxResponses: number | null = 25 // Default for free users
       let shouldDecrementCredit = false
 
-      if (profile?.plan_type === 'starter') {
+      if (isTestAccount) {
+        // Test account gets unlimited everything
+        maxResponses = null
+      } else if (profile?.plan_type === 'starter') {
         // Subscription users get unlimited responses
         maxResponses = null
       } else if ((profile?.plan_type === 'free' || profile?.plan_type === 'per-event') && (profile?.premium_credits || 0) > 0) {
