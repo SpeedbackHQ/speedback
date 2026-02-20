@@ -44,29 +44,39 @@ export default function AccountLayout({
           <nav className="flex items-center gap-4">
             <Link
               href="/admin"
-              className="font-outfit font-medium transition-colors px-3 py-2 rounded-lg text-slate-600 hover:text-violet-500 hover:bg-violet-50"
+              className={`font-outfit font-medium transition-colors px-3 py-2 rounded-lg ${
+                pathname === '/admin'
+                  ? 'text-violet-500 bg-violet-50'
+                  : 'text-slate-600 hover:text-violet-500 hover:bg-violet-50'
+              }`}
             >
               Dashboard
             </Link>
             <Link
-              href="/account/profile"
+              href="/admin/templates"
               className={`font-outfit font-medium transition-colors px-3 py-2 rounded-lg ${
-                pathname === '/account/profile' || pathname === '/account/settings'
+                pathname?.startsWith('/admin/templates')
                   ? 'text-violet-500 bg-violet-50'
                   : 'text-slate-600 hover:text-violet-500 hover:bg-violet-50'
               }`}
             >
-              Account
+              Templates
             </Link>
             <Link
-              href="/account/billing"
+              href="/admin/playground"
               className={`font-outfit font-medium transition-colors px-3 py-2 rounded-lg ${
-                pathname === '/account/billing'
+                pathname?.startsWith('/admin/playground')
                   ? 'text-violet-500 bg-violet-50'
                   : 'text-slate-600 hover:text-violet-500 hover:bg-violet-50'
               }`}
             >
-              Billing
+              Playground
+            </Link>
+            <Link
+              href="/admin/surveys/new"
+              className="btn-primary"
+            >
+              + New Survey
             </Link>
 
             {/* User Dropdown */}
