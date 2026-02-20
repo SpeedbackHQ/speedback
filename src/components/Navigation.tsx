@@ -34,7 +34,12 @@ export function Navigation() {
   }
 
   // Don't show nav on certain pages
-  if (pathname?.startsWith('/play/') || pathname?.startsWith('/auth/')) {
+  if (pathname?.startsWith('/play/') || pathname?.startsWith('/auth/') || pathname?.startsWith('/admin')) {
+    return null
+  }
+
+  // Hide on homepage when logged out (homepage has its own nav)
+  if (pathname === '/' && !user && !loading) {
     return null
   }
 

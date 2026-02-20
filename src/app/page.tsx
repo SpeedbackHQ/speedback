@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
+// Force dynamic rendering to check auth on every request
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   // Redirect logged-in users to dashboard
   const user = await getUser()
