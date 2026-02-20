@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCodeStyling from 'qr-code-styling'
-import { supabase } from '@/lib/supabase'
+import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import { Survey, Question, Response, QuestionType, QuestionConfig } from '@/lib/types'
 import Link from 'next/link'
 import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
@@ -32,6 +32,7 @@ export default function SurveyEditorPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const surveyId = params.surveyId as string
+  const supabase = createBrowserSupabaseClient()
 
   // Tab state from URL
   const currentTab = (searchParams.get('tab') as TabType) || 'questions'
