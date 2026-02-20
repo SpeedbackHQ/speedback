@@ -33,8 +33,8 @@ export function Navigation() {
     window.location.href = '/'
   }
 
-  // Don't show nav on certain pages
-  const hiddenRoutes = ['/play/', '/auth/', '/admin', '/login', '/signup', '/reset-password', '/verify-email']
+  // Don't show nav on certain pages (admin and account have their own branded headers)
+  const hiddenRoutes = ['/play/', '/auth/', '/admin', '/account', '/login', '/signup', '/reset-password', '/verify-email']
   const shouldHide = pathname === '/' || hiddenRoutes.some(route => pathname === route || pathname?.startsWith(route))
 
   if (shouldHide) {
