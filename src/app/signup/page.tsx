@@ -128,9 +128,11 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-chonko tracking-tight mb-2">
-            Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
-          </h1>
+          <Link href="/" className="inline-block">
+            <h1 className="text-4xl font-chonko tracking-tight mb-2 hover:opacity-80 transition-opacity cursor-pointer">
+              Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
+            </h1>
+          </Link>
           <p className="text-gray-600 font-manrope">Create your account</p>
         </div>
 

@@ -23,19 +23,27 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      console.log('[LOGIN] Attempting login for:', email)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('[LOGIN] Response:', { data, error })
+
       if (error) throw error
 
       if (data.session) {
+        console.log('[LOGIN] Session created, redirecting to:', redirectTo)
         // Use hard redirect for reliability
         window.location.href = redirectTo
+      } else {
+        console.log('[LOGIN] No session in response')
+        setError('Login succeeded but no session was created')
+        setLoading(false)
       }
     } catch (err: any) {
-      console.error('Login error:', err)
+      console.error('[LOGIN] Error:', err)
       setError(err.message || 'Failed to log in')
       setLoading(false)
     }
@@ -70,9 +78,11 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-chonko tracking-tight mb-2">
-            Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
-          </h1>
+          <Link href="/" className="inline-block">
+            <h1 className="text-4xl font-chonko tracking-tight mb-2 hover:opacity-80 transition-opacity cursor-pointer">
+              Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
+            </h1>
+          </Link>
           <p className="text-gray-600 font-manrope">Sign in to your account</p>
         </div>
 

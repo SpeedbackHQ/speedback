@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
+import type { UserProfile } from '@/lib/supabase'
 
 export default function ProfilePage() {
   const supabase = createBrowserSupabaseClient()
@@ -57,7 +58,7 @@ export default function ProfilePage() {
           id: user.id,
           display_name: displayName,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
 
       if (profileError) throw profileError
 

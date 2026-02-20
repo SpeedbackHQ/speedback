@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
+import type { UserProfile, Survey } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function BillingPage() {
@@ -46,7 +47,7 @@ export default function BillingPage() {
         .eq('user_id', user.id)
 
       if (userSurveys && userSurveys.length > 0) {
-        const surveyIds = userSurveys.map(s => s.id)
+        const surveyIds = userSurveys.map((s: any) => s.id)
         const { count: responses } = await supabase
           .from('responses')
           .select('*', { count: 'exact', head: true })
