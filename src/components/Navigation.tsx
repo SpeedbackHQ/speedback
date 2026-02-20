@@ -45,8 +45,8 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-outfit font-bold" style={{ color: '#8B5CF6' }}>
-              SpeedBack ⚡
+            <span className="text-2xl font-chonko tracking-tight">
+              Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
             </span>
           </Link>
 

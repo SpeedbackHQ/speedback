@@ -74,8 +74,8 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-outfit font-bold mb-2" style={{ color: '#8B5CF6' }}>
-            SpeedBack ⚡
+          <h1 className="text-4xl font-chonko tracking-tight mb-2">
+            Speed<span style={{ color: '#8B5CF6' }}>Back</span> ⚡
           </h1>
           <p className="text-gray-600 font-manrope">Reset your password</p>
         </div>
