@@ -31,12 +31,12 @@ function LoginForm() {
       if (error) throw error
 
       if (data.session) {
-        router.push(redirectTo)
-        router.refresh()
+        // Use hard redirect for reliability
+        window.location.href = redirectTo
       }
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'Failed to log in')
-    } finally {
       setLoading(false)
     }
   }

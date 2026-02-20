@@ -51,12 +51,18 @@ export default function SignupPage() {
       if (error) throw error
 
       if (data.user) {
-        setSuccess(true)
-        // User will receive verification email
+        // If email confirmation is disabled, user is immediately logged in
+        if (data.session) {
+          // User is logged in, redirect to dashboard
+          window.location.href = '/admin'
+        } else {
+          // Email confirmation required, show success message
+          setSuccess(true)
+        }
       }
     } catch (err: any) {
+      console.error('Signup error:', err)
       setError(err.message || 'Failed to sign up')
-    } finally {
       setLoading(false)
     }
   }

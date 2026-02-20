@@ -48,7 +48,7 @@ export default async function Home() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
           <Link
-            href="/admin/surveys/new"
+            href="/signup"
             className="btn-primary text-lg px-8 py-4"
           >
             Try Free
