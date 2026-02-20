@@ -18,6 +18,32 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
     setIsCreating(true)
 
     try {
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        throw new Error('Not authenticated')
+      }
+
+      // Get user's profile to check plan type and credits
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('plan_type, premium_credits')
+        .eq('id', user.id)
+        .single()
+
+      // Determine max_responses based on plan type and credits
+      let maxResponses: number | null = 25 // Default for free users
+      let shouldDecrementCredit = false
+
+      if (profile?.plan_type === 'starter') {
+        // Subscription users get unlimited responses
+        maxResponses = null
+      } else if ((profile?.plan_type === 'free' || profile?.plan_type === 'per-event') && (profile?.premium_credits || 0) > 0) {
+        // Free or per-event users with credits get unlimited responses
+        maxResponses = null
+        shouldDecrementCredit = true
+      }
+
       // Ensure we have an organization
       let { data: org } = await supabase
         .from('organizations')
@@ -39,13 +65,23 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         .from('surveys')
         .insert({
           org_id: org!.id,
+          user_id: user.id,
           title: 'Untitled Survey',
           branding_config: { primary_color: '#8B5CF6', mascot_enabled: true },
+          max_responses: maxResponses,
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // Decrement premium credit if used
+      if (shouldDecrementCredit && profile) {
+        await supabase
+          .from('user_profiles')
+          .update({ premium_credits: (profile.premium_credits || 1) - 1 })
+          .eq('id', user.id)
+      }
 
       // Redirect to the editor
       router.push(`/admin/surveys/${survey!.id}`)

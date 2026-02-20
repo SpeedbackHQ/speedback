@@ -47,9 +47,9 @@ export default async function PricingPage() {
               {[
                 '25 responses per survey',
                 'All question mechanics',
-                'QR code & poster generator',
+                'QR code generator',
                 'SpeedBack branding visible',
-                'Basic results dashboard',
+                'Basic analytics (completion rate only)',
               ].map(f => (
                 <li key={f} className="flex items-start gap-2 font-manrope text-sm" style={{ color: '#475569' }}>
                   <span className="mt-0.5 flex-shrink-0" style={{ color: '#06B6D4' }}>✓</span>
@@ -122,10 +122,10 @@ export default async function PricingPage() {
               {[
                 'Unlimited responses for 1 event',
                 'All question mechanics',
-                'QR code & poster generator',
+                'QR code generator',
+                'Remove SpeedBack branding',
                 'Full analytics dashboard',
                 'CSV export',
-                'Buy more events as needed',
               ].map(f => (
                 <li key={f} className="flex items-start gap-2 font-manrope text-sm" style={{ color: '#475569' }}>
                   <span className="mt-0.5 flex-shrink-0" style={{ color: '#F97316' }}>✓</span>

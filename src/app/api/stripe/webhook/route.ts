@@ -78,13 +78,31 @@ export async function POST(req: NextRequest) {
               })
 
             console.log(`[webhook] Synced subscription ${subscriptionId} for user ${user.id}`)
-          }
 
-          // Update all user's surveys to have unlimited responses
-          await supabaseAdmin
-            .from('surveys')
-            .update({ max_responses: null })
-            .eq('user_id', user.id)
+            // For subscription: upgrade ALL surveys to unlimited responses
+            await supabaseAdmin
+              .from('surveys')
+              .update({ max_responses: null })
+              .eq('user_id', user.id)
+
+            console.log(`[webhook] Upgraded all surveys for user ${user.id} to unlimited`)
+          } else {
+            // For per-event: increment premium credits (don't upgrade existing surveys)
+            const { data: currentProfile } = await supabaseAdmin
+              .from('user_profiles')
+              .select('premium_credits')
+              .eq('id', user.id)
+              .single()
+
+            const currentCredits = currentProfile?.premium_credits || 0
+
+            await supabaseAdmin
+              .from('user_profiles')
+              .update({ premium_credits: currentCredits + 1 })
+              .eq('id', user.id)
+
+            console.log(`[webhook] Added 1 premium credit to user ${user.id} (total: ${currentCredits + 1})`)
+          }
 
           console.log(`[webhook] Upgraded user ${user.id} to ${planType}`)
         }

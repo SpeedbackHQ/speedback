@@ -37,6 +37,7 @@ export default function SurveyEditorPage() {
   const currentTab = (searchParams.get('tab') as TabType) || 'questions'
 
   const [survey, setSurvey] = useState<SurveyData | null>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -121,6 +122,17 @@ export default function SurveyEditorPage() {
       .eq('survey_id', surveyId)
       .order('completed_at', { ascending: false })
 
+    // Load user profile to check plan type
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      setUserProfile(profile)
+    }
+
     if (surveyData) {
       setSurvey({
         ...surveyData,
@@ -161,6 +173,26 @@ export default function SurveyEditorPage() {
     navigator.clipboard.writeText(playUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Check if user can export CSV (paid feature)
+  const canExportCSV = () => {
+    if (!userProfile || !survey) return false
+    // Starter plan: unlimited for all surveys
+    if (userProfile.plan_type === 'starter') return true
+    // Per-event or free with premium credit: only for unlimited surveys
+    if ((userProfile.plan_type === 'per-event' || userProfile.plan_type === 'free') && survey.max_responses === null) return true
+    return false
+  }
+
+  // Check if user can view full analytics (paid feature)
+  const canViewFullAnalytics = () => {
+    if (!userProfile || !survey) return false
+    // Starter plan: full analytics for all surveys
+    if (userProfile.plan_type === 'starter') return true
+    // Per-event or free with premium credit: only for unlimited surveys
+    if ((userProfile.plan_type === 'per-event' || userProfile.plan_type === 'free') && survey.max_responses === null) return true
+    return false
   }
 
   // Auto-save with debounce
@@ -911,15 +943,27 @@ export default function SurveyEditorPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-slate-800">Responses</h2>
               {survey.responses.length > 0 && (
-                <button
-                  onClick={downloadCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Download CSV
-                </button>
+                canExportCSV() ? (
+                  <button
+                    onClick={downloadCSV}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download CSV
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-sm font-medium cursor-not-allowed" title="CSV export available on Starter plan or with per-event purchase">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>CSV Export (Premium)</span>
+                    <a href="/pricing" className="ml-2 text-violet-600 hover:text-violet-700 underline">
+                      Upgrade
+                    </a>
+                  </div>
+                )
               )}
             </div>
 
@@ -1346,71 +1390,113 @@ export default function SurveyEditorPage() {
           )}
 
           {!analyticsLoading && analyticsData && (
-            <div className="space-y-6">
-              {/* Hero metric */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-violet-50 rounded-2xl p-6 text-center">
-                  <div className="text-5xl font-bold mb-1" style={{ color: '#8B5CF6' }}>
+            canViewFullAnalytics() ? (
+              <div className="space-y-6">
+                {/* Hero metric - Full analytics for paid users */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-violet-50 rounded-2xl p-6 text-center">
+                    <div className="text-5xl font-bold mb-1" style={{ color: '#8B5CF6' }}>
+                      {analyticsData.completionRate !== null ? `${analyticsData.completionRate}%` : '—'}
+                    </div>
+                    <div className="text-sm font-semibold text-violet-700">Completion rate</div>
+                    <div className="text-xs text-slate-400 mt-1">Industry avg: ~15%</div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-6 text-center">
+                    <div className="text-5xl font-bold text-slate-700 mb-1">
+                      {analyticsData.started}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-500">Started</div>
+                    <div className="text-xs text-slate-400 mt-1">{analyticsData.completed} completed</div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-6 text-center">
+                    <div className="text-5xl font-bold text-slate-700 mb-1">
+                      {analyticsData.avgTimeSec !== null
+                        ? analyticsData.avgTimeSec >= 60
+                          ? `${Math.floor(analyticsData.avgTimeSec / 60)}m ${analyticsData.avgTimeSec % 60}s`
+                          : `${analyticsData.avgTimeSec}s`
+                        : '—'}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-500">Avg. time</div>
+                    <div className="text-xs text-slate-400 mt-1">to complete</div>
+                  </div>
+                </div>
+
+                {/* Drop-off by question - Only for paid users */}
+                {analyticsData.dropoff.length > 0 && analyticsData.started > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-slate-700 mb-3">Answers by question</h3>
+                    <div className="space-y-2">
+                      {analyticsData.dropoff.map((count, i) => {
+                        const pct = Math.round((count / analyticsData.started) * 100)
+                        const q = survey.questions[i]
+                        return (
+                          <div key={i} className="flex items-center gap-3">
+                            <div className="w-6 text-right text-xs font-medium text-slate-400">Q{i + 1}</div>
+                            <div className="flex-1 bg-slate-100 rounded-full h-5 overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: `${pct}%`, backgroundColor: '#8B5CF6' }}
+                              />
+                            </div>
+                            <div className="w-10 text-xs font-semibold text-slate-500">{pct}%</div>
+                            <div className="w-48 text-xs text-slate-400 truncate">{q?.text || ''}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {analyticsData.started === 0 && (
+                  <div className="text-center py-6 text-slate-400">
+                    <p className="font-medium">No data yet</p>
+                    <p className="text-sm">Analytics will appear once respondents start this survey.</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Basic analytics - Free users */}
+                <div className="bg-violet-50 rounded-2xl p-8 text-center max-w-md mx-auto">
+                  <div className="text-6xl font-bold mb-2" style={{ color: '#8B5CF6' }}>
                     {analyticsData.completionRate !== null ? `${analyticsData.completionRate}%` : '—'}
                   </div>
-                  <div className="text-sm font-semibold text-violet-700">Completion rate</div>
-                  <div className="text-xs text-slate-400 mt-1">Industry avg: ~15%</div>
+                  <div className="text-lg font-semibold text-violet-700 mb-1">Completion rate</div>
+                  <div className="text-sm text-slate-400">Industry avg: ~15%</div>
+                  <div className="mt-4 pt-4 border-t border-violet-200 text-sm text-slate-600">
+                    <strong>{analyticsData.started}</strong> started · <strong>{analyticsData.completed}</strong> completed
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-2xl p-6 text-center">
-                  <div className="text-5xl font-bold text-slate-700 mb-1">
-                    {analyticsData.started}
+                {/* Upgrade CTA */}
+                <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-200">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-slate-900 mb-2">Unlock Full Analytics Dashboard</h3>
+                      <p className="text-sm text-slate-600 mb-4">
+                        Upgrade to see average completion time, drop-off by question analysis, and advanced metrics to optimize your survey.
+                      </p>
+                      <a
+                        href="/pricing"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        View Plans
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </div>
                   </div>
-                  <div className="text-sm font-semibold text-slate-500">Started</div>
-                  <div className="text-xs text-slate-400 mt-1">{analyticsData.completed} completed</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-6 text-center">
-                  <div className="text-5xl font-bold text-slate-700 mb-1">
-                    {analyticsData.avgTimeSec !== null
-                      ? analyticsData.avgTimeSec >= 60
-                        ? `${Math.floor(analyticsData.avgTimeSec / 60)}m ${analyticsData.avgTimeSec % 60}s`
-                        : `${analyticsData.avgTimeSec}s`
-                      : '—'}
-                  </div>
-                  <div className="text-sm font-semibold text-slate-500">Avg. time</div>
-                  <div className="text-xs text-slate-400 mt-1">to complete</div>
                 </div>
               </div>
-
-              {/* Drop-off by question */}
-              {analyticsData.dropoff.length > 0 && analyticsData.started > 0 && (
-                <div>
-                  <h3 className="font-semibold text-slate-700 mb-3">Answers by question</h3>
-                  <div className="space-y-2">
-                    {analyticsData.dropoff.map((count, i) => {
-                      const pct = Math.round((count / analyticsData.started) * 100)
-                      const q = survey.questions[i]
-                      return (
-                        <div key={i} className="flex items-center gap-3">
-                          <div className="w-6 text-right text-xs font-medium text-slate-400">Q{i + 1}</div>
-                          <div className="flex-1 bg-slate-100 rounded-full h-5 overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all"
-                              style={{ width: `${pct}%`, backgroundColor: '#8B5CF6' }}
-                            />
-                          </div>
-                          <div className="w-10 text-xs font-semibold text-slate-500">{pct}%</div>
-                          <div className="w-48 text-xs text-slate-400 truncate">{q?.text || ''}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {analyticsData.started === 0 && (
-                <div className="text-center py-6 text-slate-400">
-                  <p className="font-medium">No data yet</p>
-                  <p className="text-sm">Analytics will appear once respondents start this survey.</p>
-                </div>
-              )}
-            </div>
+            )
           )}
         </motion.div>
       )}

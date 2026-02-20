@@ -13,11 +13,12 @@ import { track } from '@/lib/analytics'
 
 interface SurveyPlayerProps {
   survey: SurveyWithQuestions
+  showSpeedbackBranding?: boolean
 }
 
 type GameState = 'intro' | 'playing' | 'complete'
 
-export function SurveyPlayer({ survey }: SurveyPlayerProps) {
+export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPlayerProps) {
   const [gameState, setGameState] = useState<GameState>('intro')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Array<{ question_id: string; value: AnswerValue }>>([])
@@ -370,7 +371,7 @@ export function SurveyPlayer({ survey }: SurveyPlayerProps) {
   }
 
   if (gameState === 'complete') {
-    return <Celebration message={survey.thank_you_message} elapsedTime={elapsedTime} />
+    return <Celebration message={survey.thank_you_message} elapsedTime={elapsedTime} showSpeedbackBranding={showSpeedbackBranding} />
   }
 
   const primaryColor = survey.branding_config?.primary_color || '#8B5CF6'

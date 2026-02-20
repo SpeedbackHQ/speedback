@@ -6,6 +6,7 @@ interface CelebrationProps {
   message?: string
   elapsedTime?: number // in milliseconds
   onComplete?: () => void
+  showSpeedbackBranding?: boolean
 }
 
 // Format time: decimal for <60s, whole numbers for 60s+
@@ -45,7 +46,7 @@ const generateConfetti = () => Array.from({ length: 50 }, (_, i) => {
 
 const CONFETTI_DATA = generateConfetti()
 
-export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, onComplete }: CelebrationProps) {
+export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, onComplete, showSpeedbackBranding = false }: CelebrationProps) {
   const confetti = useMemo(() => CONFETTI_DATA, [])
 
   return (
@@ -156,6 +157,29 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
           </motion.button>
         )}
       </motion.div>
+
+      {/* Speedback branding (for free users) */}
+      {showSpeedbackBranding && (
+        <motion.div
+          className="absolute bottom-6 left-0 right-0 flex justify-center z-10"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.0 }}
+        >
+          <a
+            href="https://speedback.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-colors"
+          >
+            <span className="text-white/80 text-sm font-medium">Powered by</span>
+            <span className="text-white font-bold text-lg" style={{ fontFamily: 'Chonko, sans-serif' }}>
+              Speed<span className="text-violet-200">Back</span>
+            </span>
+            <span className="text-white text-lg">⚡</span>
+          </a>
+        </motion.div>
+      )}
 
       {/* Background circles */}
       <motion.div
