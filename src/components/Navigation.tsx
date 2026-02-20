@@ -38,8 +38,8 @@ export function Navigation() {
     return null
   }
 
-  // Hide on homepage when logged out (homepage has its own nav)
-  if (pathname === '/' && !user && !loading) {
+  // Hide on homepage (it has its own nav, and logged-in users should auto-redirect to /admin)
+  if (pathname === '/') {
     return null
   }
 
