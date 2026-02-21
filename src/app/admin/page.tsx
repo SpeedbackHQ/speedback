@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
     <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Your Surveys</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Your Surveys</h1>
           <p className="text-slate-500 mt-1">{surveys.length} survey{surveys.length !== 1 ? 's' : ''} created</p>
         </div>
         {surveys.length > 0 && (
@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800 group-hover:text-violet-500 transition-colors">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-800 group-hover:text-violet-500 transition-colors break-words line-clamp-2">
                     {survey.title}
                   </h2>
                   <p className="text-slate-500 text-sm font-medium mt-1">
@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
 
       {/* Quick stats cards */}
       {surveys.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-8">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">
             <div className="text-3xl font-bold text-violet-500">{surveys.length}</div>
             <div className="text-slate-500 font-medium mt-1">Total Surveys</div>

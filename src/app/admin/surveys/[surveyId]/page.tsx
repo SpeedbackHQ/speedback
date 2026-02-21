@@ -693,7 +693,7 @@ export default function SurveyEditorPage() {
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Survey title..."
               rows={2}
-              className="text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors resize-none overflow-hidden leading-tight"
+              className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors resize-none overflow-hidden leading-tight w-full"
               style={{ minHeight: '3.5rem' }}
             />
             {/* Save status indicator */}
@@ -786,7 +786,7 @@ export default function SurveyEditorPage() {
       )}
 
       {/* Tab navigation */}
-      <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-1 mb-6 sm:bg-slate-100 sm:p-1 sm:rounded-xl">
         {(['questions', 'share', 'responses', 'analytics'] as TabType[]).map((tab) => (
           <button
             key={tab}
@@ -794,7 +794,7 @@ export default function SurveyEditorPage() {
             className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
               currentTab === tab
                 ? 'bg-white text-slate-800 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                : 'text-slate-500 hover:text-slate-700 bg-slate-50 sm:bg-transparent'
             }`}
           >
             {tab === 'questions' && '📝 Questions'}
@@ -1017,7 +1017,7 @@ export default function SurveyEditorPage() {
             ) : (
               <div className="space-y-6">
                 {/* Summary stats */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-slate-50 rounded-xl p-4 text-center">
                     <div className="text-3xl font-bold text-violet-500">{survey.responses.length}</div>
                     <div className="text-sm text-slate-500 font-medium">Total Responses</div>
@@ -1406,7 +1406,7 @@ export default function SurveyEditorPage() {
             canViewFullAnalytics() ? (
               <div className="space-y-6">
                 {/* Hero metric - Full analytics for paid users */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-violet-50 rounded-2xl p-6 text-center">
                     <div className="text-5xl font-bold mb-1" style={{ color: '#8B5CF6' }}>
                       {analyticsData.completionRate !== null ? `${analyticsData.completionRate}%` : '—'}

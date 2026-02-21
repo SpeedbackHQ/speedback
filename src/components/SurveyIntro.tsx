@@ -44,7 +44,7 @@ export function SurveyIntro({ survey, questionCount, onStart }: SurveyIntroProps
 
       {/* Title */}
       <motion.h1
-        className="text-3xl font-bold text-gray-800 text-center mt-8 mb-4"
+        className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 text-center mt-8 mb-4 px-6 max-w-2xl break-words"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
@@ -54,7 +54,7 @@ export function SurveyIntro({ survey, questionCount, onStart }: SurveyIntroProps
 
       {/* Question count */}
       <motion.p
-        className="text-gray-600 text-center mb-8"
+        className="text-sm sm:text-base text-gray-600 text-center mb-8 px-6"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5 }}
@@ -84,7 +84,7 @@ export function SurveyIntro({ survey, questionCount, onStart }: SurveyIntroProps
       {/* Start button */}
       <motion.button
         onClick={onStart}
-        className="px-12 py-4 text-white font-bold text-xl rounded-full shadow-lg"
+        className="px-8 sm:px-12 py-3 sm:py-4 text-white font-bold text-lg sm:text-xl rounded-full shadow-lg"
         style={{
           background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
         }}

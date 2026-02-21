@@ -125,18 +125,21 @@ export function GestureHint({ questionType, onDismiss }: GestureHintProps) {
     document.head.appendChild(style)
   }, [])
 
-  // Show after brief delay, auto-dismiss after 2s
+  // Show after brief delay, auto-dismiss after 2s (3s on mobile)
   useEffect(() => {
     if (!gesture) {
       onDismiss()
       return
     }
 
+    const isMobile = window.innerWidth < 768
+    const dismissDelay = isMobile ? 3000 : 2200
+
     const showTimer = setTimeout(() => setVisible(true), 200)
     const hideTimer = setTimeout(() => {
       setVisible(false)
       setTimeout(onDismiss, 300) // wait for fade-out
-    }, 2200)
+    }, dismissDelay)
 
     return () => {
       clearTimeout(showTimer)

@@ -64,7 +64,7 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
 
       {/* Title */}
       <motion.h1
-        className="text-2xl font-bold text-center mb-2 relative z-10"
+        className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-2 relative z-10 px-4 max-w-2xl break-words"
         style={{ color: '#0F172A' }}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -74,7 +74,7 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
       </motion.h1>
 
       <motion.p
-        className="text-center mb-8 relative z-10"
+        className="text-sm sm:text-base text-center mb-8 relative z-10 px-4"
         style={{ color: '#64748B' }}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -106,7 +106,7 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
       {!hasStarted && (
         <motion.button
           onClick={startCountdown}
-          className="mt-12 px-12 py-4 text-white font-bold text-xl rounded-full shadow-lg relative z-10"
+          className="mt-12 px-8 sm:px-12 py-3 sm:py-4 text-white font-bold text-lg sm:text-xl rounded-full shadow-lg relative z-10"
           style={{
             background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
           }}

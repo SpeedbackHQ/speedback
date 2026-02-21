@@ -94,8 +94,8 @@ function PlaygroundContent() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Mechanics Playground</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Mechanics Playground</h1>
+        <p className="text-sm sm:text-base text-gray-500 mt-1">
           Test all {totalTypes} interactive mechanics instantly. Click one to try it out.
         </p>
       </div>
@@ -116,7 +116,7 @@ function PlaygroundContent() {
                     <button
                       key={categoryName}
                       onClick={() => setSelectedCategory(categoryName)}
-                      className="flex items-center gap-4 p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-violet-300 hover:shadow-md transition-all text-left"
+                      className="flex items-center gap-4 p-6 sm:p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-violet-300 hover:shadow-md transition-all text-left min-h-[88px]"
                     >
                       <span className="text-3xl">{categoryEmojis[categoryName] || '📋'}</span>
                       <div className="flex-1 min-w-0">
@@ -150,7 +150,7 @@ function PlaygroundContent() {
                     {questionCategories[selectedCategory]?.description}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {questionCategories[selectedCategory]?.types.map((entry) => {
                     const isActive = selectedType === entry.type
                     return (
@@ -158,18 +158,18 @@ function PlaygroundContent() {
                         key={entry.type}
                         onClick={() => handleSelectType(entry.type)}
                         className={`
-                          text-left p-3 rounded-xl border-2 transition-all
+                          text-left p-4 sm:p-3 rounded-xl border-2 transition-all min-h-[100px] sm:min-h-0
                           ${isActive
                             ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100'
                             : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                           }
                         `}
                       >
-                        <div className="text-xl mb-1">{entry.emoji}</div>
+                        <div className="text-2xl sm:text-xl mb-1">{entry.emoji}</div>
                         <div className={`text-sm font-semibold ${isActive ? 'text-violet-600' : 'text-gray-700'}`}>
                           {entry.label}
                         </div>
-                        <div className="text-xs text-gray-400 mt-0.5">{entry.description}</div>
+                        <div className="text-xs text-gray-400 mt-0.5 break-words">{entry.description}</div>
                       </button>
                     )
                   })}
@@ -268,7 +268,7 @@ function PlaygroundContent() {
             </div>
 
             {/* Mobile mechanic preview (no phone frame - they're on a phone) */}
-            <div className="h-[calc(100dvh-56px)] flex items-center justify-center overflow-hidden">
+            <div className="h-[calc(100dvh-56px)] flex items-center justify-center overflow-hidden px-4">
               <MechanicRenderer
                 key={previewKey}
                 question={createMockQuestion(selectedType)}

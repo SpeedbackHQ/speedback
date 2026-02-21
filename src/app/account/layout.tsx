@@ -103,12 +103,6 @@ export default function AccountLayout({
             >
               Playground
             </Link>
-            <Link
-              href="/admin/surveys/new"
-              className="btn-primary"
-            >
-              + New Survey
-            </Link>
 
             {/* User Dropdown */}
             {user && (

@@ -120,10 +120,10 @@ export function SwipeQuestion({
         >
           {/* Question text ON the card */}
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2 break-words max-w-md px-2">
               {question.text}
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs sm:text-sm">
               Swipe {show_meh ? 'left, right, or up' : 'left or right'}
             </p>
           </div>
