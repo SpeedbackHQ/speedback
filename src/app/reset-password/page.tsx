@@ -3,12 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
+import { validateEmail } from '@/lib/validation'
+import { humanizeError } from '@/lib/error-messages'
+import { ButtonSpinner } from '@/components/ui/Spinner'
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [emailTouched, setEmailTouched] = useState(false)
 
   const supabase = createBrowserSupabaseClient()
 
@@ -26,7 +31,7 @@ export default function ResetPasswordPage() {
 
       setSuccess(true)
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email')
+      setError(humanizeError(err))
     } finally {
       setLoading(false)
     }
@@ -103,11 +108,25 @@ export default function ResetPasswordPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (emailTouched) setEmailError(validateEmail(e.target.value))
+                }}
+                onBlur={() => {
+                  setEmailTouched(true)
+                  setEmailError(validateEmail(email))
+                }}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                aria-required="true"
+                aria-invalid={!!(emailTouched && emailError)}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-colors ${
+                  emailTouched && emailError ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="you@example.com"
               />
+              {emailTouched && emailError && (
+                <p className="mt-1 text-xs text-red-500">{emailError}</p>
+              )}
             </div>
 
             <button
@@ -115,7 +134,14 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <ButtonSpinner className="text-white" />
+                  Sending...
+                </span>
+              ) : (
+                'Send Reset Link'
+              )}
             </button>
           </form>
 

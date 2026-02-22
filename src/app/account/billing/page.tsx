@@ -4,10 +4,15 @@ import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import type { UserProfile, Survey } from '@/lib/supabase'
 import Link from 'next/link'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/ToastProvider'
+import { ButtonSpinner } from '@/components/ui/Spinner'
 
 export default function BillingPage() {
   const supabase = createBrowserSupabaseClient()
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
+  const [portalLoading, setPortalLoading] = useState(false)
   const [planType, setPlanType] = useState<'free' | 'starter' | 'per-event'>('free')
   const [surveyCount, setSurveyCount] = useState(0)
   const [totalResponses, setTotalResponses] = useState(0)
@@ -64,8 +69,24 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500" />
+      <div>
+        <Skeleton.Line width="w-56" className="h-7 mb-6" />
+        <div className="mb-8">
+          <Skeleton.Line width="w-28" className="h-5 mb-4" />
+          <div className="bg-gradient-to-br from-violet-50 to-pink-50 rounded-lg p-6 border border-violet-200">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Skeleton.Line width="w-24" className="h-7" />
+                <Skeleton.Line width="w-40" className="h-4" />
+              </div>
+              <Skeleton.Line width="w-20" className="h-8" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton.Stat />
+          <Skeleton.Stat />
+        </div>
       </div>
     )
   }
@@ -125,11 +146,34 @@ export default function BillingPage() {
       {/* Billing Details */}
       {planType !== 'free' && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Billing Details</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Manage Subscription</h3>
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <p className="text-gray-600">
-              Your subscription is managed through Stripe. To update payment methods or cancel your subscription, please contact support.
+            <p className="text-gray-600 mb-4">
+              Update payment methods, view invoices, or manage your subscription through the Stripe Customer Portal.
             </p>
+            <button
+              onClick={async () => {
+                setPortalLoading(true)
+                try {
+                  const res = await fetch('/api/billing/portal', { method: 'POST' })
+                  const data = await res.json()
+                  if (data.url) {
+                    window.location.href = data.url
+                  } else {
+                    toast.error(data.error || 'Failed to open billing portal')
+                  }
+                } catch {
+                  toast.error('Failed to open billing portal')
+                } finally {
+                  setPortalLoading(false)
+                }
+              }}
+              disabled={portalLoading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-500 text-white font-semibold rounded-lg hover:bg-violet-600 transition-colors disabled:opacity-50"
+            >
+              {portalLoading && <ButtonSpinner />}
+              {portalLoading ? 'Opening...' : 'Manage Subscription'}
+            </button>
           </div>
         </div>
       )}

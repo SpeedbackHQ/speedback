@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
+import { useToast } from '@/components/ui/ToastProvider'
 
 interface CreateSurveyButtonProps {
   className?: string
@@ -11,6 +12,7 @@ interface CreateSurveyButtonProps {
 
 export function CreateSurveyButton({ className, children }: CreateSurveyButtonProps) {
   const router = useRouter()
+  const toast = useToast()
   const [isCreating, setIsCreating] = useState(false)
 
   const handleCreate = async () => {
@@ -95,7 +97,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
       router.push(`/admin/surveys/${survey!.id}`)
     } catch (error) {
       console.error('Error creating survey:', error)
-      alert('Failed to create survey. Please try again.')
+      toast.error('Failed to create survey. Please try again.')
       setIsCreating(false)
     }
   }

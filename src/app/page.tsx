@@ -26,7 +26,7 @@ export default async function Home() {
           <div className="absolute -right-6 top-1/2 -translate-y-1/2 mt-3 w-4 h-0.5 rounded-full" style={{ background: 'linear-gradient(to left, transparent, rgba(6, 182, 212, 0.4), transparent)' }} />
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-chonko mb-6 leading-tight animate-fade-in-up delay-100" style={{ color: '#0F172A' }}>
+        <h1 className="font-chonko mb-6 leading-tight animate-fade-in-up delay-100" style={{ color: '#0F172A', fontSize: 'var(--text-hero)' }}>
           The most fun feedback form<br />you&apos;ll ever use
         </h1>
         <p className="text-lg sm:text-xl font-manrope mb-12 max-w-2xl mx-auto animate-fade-in-up delay-200" style={{ color: '#64748B' }}>

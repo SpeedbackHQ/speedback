@@ -6,11 +6,13 @@ import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { surveyTemplates, SurveyTemplate } from '@/lib/templates'
 import { questionTypeInfo } from '@/components/QuestionEditor'
+import { useToast } from '@/components/ui/ToastProvider'
 
 const categories = ['All', 'Team', 'Events', 'Product', 'Fun'] as const
 
 export default function TemplatesPage() {
   const router = useRouter()
+  const toast = useToast()
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [creatingId, setCreatingId] = useState<string | null>(null)
 
@@ -70,7 +72,7 @@ export default function TemplatesPage() {
       router.push(`/admin/surveys/${survey!.id}?tab=questions`)
     } catch (error) {
       console.error('Error creating survey from template:', error)
-      alert('Failed to create survey. Please try again.')
+      toast.error('Failed to create survey. Please try again.')
       setCreatingId(null)
     }
   }

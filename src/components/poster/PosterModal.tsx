@@ -7,6 +7,7 @@ import { PosterTemplate, PosterSize, POSTER_SIZES } from '@/lib/types'
 import { PosterCustomizer } from './PosterCustomizer'
 import { PosterPreview } from './PosterPreview'
 import { generatePosterPNG } from './posterGenerator'
+import { useToast } from '@/components/ui/ToastProvider'
 
 interface PosterModalProps {
   survey: Survey
@@ -16,6 +17,7 @@ interface PosterModalProps {
 }
 
 export function PosterModal({ survey, playUrl, onClose }: PosterModalProps) {
+  const toast = useToast()
   const [template, setTemplate] = useState<PosterTemplate>('gradient-hero')
   const [headline, setHeadline] = useState('Follow the Rabbit')
   const [size, setSize] = useState<PosterSize>(POSTER_SIZES.print)
@@ -62,7 +64,7 @@ export function PosterModal({ survey, playUrl, onClose }: PosterModalProps) {
       )
     } catch (error) {
       console.error('Download error:', error)
-      alert('Failed to download poster. Please try again.')
+      toast.error('Failed to download poster. Please try again.')
     } finally {
       setIsDownloading(false)
     }

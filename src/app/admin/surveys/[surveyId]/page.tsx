@@ -9,6 +9,9 @@ import { Survey, Question, Response, QuestionType, QuestionConfig } from '@/lib/
 import Link from 'next/link'
 import { QuestionEditor, QuestionTypeSelector, QuestionDraft, questionTypeInfo, getDefaultConfig } from '@/components/QuestionEditor'
 import { getDisplayQRConfig, getDownloadQRConfig } from '@/components/qr/qrConfig'
+import { useToast } from '@/components/ui/ToastProvider'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Breadcrumb } from '@/components/ui/Breadcrumb'
 
 type TabType = 'questions' | 'share' | 'responses' | 'analytics'
 
@@ -33,6 +36,10 @@ export default function SurveyEditorPage() {
   const searchParams = useSearchParams()
   const surveyId = params.surveyId as string
   const supabase = createBrowserSupabaseClient()
+  const toast = useToast()
+
+  // Confirm dialog state for question deletion
+  const [questionToDelete, setQuestionToDelete] = useState<string | null>(null)
 
   // Tab state from URL
   const currentTab = (searchParams.get('tab') as TabType) || 'questions'
@@ -316,7 +323,13 @@ export default function SurveyEditorPage() {
   }
 
   const handleQuestionDelete = async (id: string) => {
-    if (!confirm('Delete this question?')) return
+    setQuestionToDelete(id)
+  }
+
+  const executeQuestionDelete = async () => {
+    if (!questionToDelete) return
+    const id = questionToDelete
+    setQuestionToDelete(null)
 
     const newQuestions = questions.filter(q => q.id !== id)
     setQuestions(newQuestions)
@@ -363,7 +376,7 @@ export default function SurveyEditorPage() {
       setSurvey(prev => prev ? { ...prev, is_active: !prev.is_active } : null)
     } catch (error) {
       console.error('Error toggling status:', error)
-      alert('Failed to update survey status')
+      toast.error('Failed to update survey status')
     } finally {
       setIsTogglingStatus(false)
     }
@@ -397,7 +410,7 @@ export default function SurveyEditorPage() {
       router.push('/admin')
     } catch (error) {
       console.error('Error deleting survey:', error)
-      alert('Failed to delete survey')
+      toast.error('Failed to delete survey')
       setIsDeleting(false)
     }
   }
@@ -679,12 +692,10 @@ export default function SurveyEditorPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <Link
-            href="/admin"
-            className="text-violet-500 hover:text-violet-600 mb-2 inline-flex items-center gap-1 font-medium transition-colors"
-          >
-            ← Back to surveys
-          </Link>
+          <Breadcrumb items={[
+            { label: 'Dashboard', href: '/admin' },
+            { label: survey.title || 'Untitled Survey' },
+          ]} />
 
           {/* Editable title */}
           <div className="flex items-start gap-3 mt-2">
@@ -1514,6 +1525,17 @@ export default function SurveyEditorPage() {
         </motion.div>
       )}
       </AnimatePresence>
+
+      {/* Question Delete Confirmation */}
+      <ConfirmDialog
+        open={!!questionToDelete}
+        title="Delete this question?"
+        message="This question and its responses will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={executeQuestionDelete}
+        onCancel={() => setQuestionToDelete(null)}
+      />
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>

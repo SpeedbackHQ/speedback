@@ -3,32 +3,36 @@
 import { useState } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/ToastProvider'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { ButtonSpinner } from '@/components/ui/Spinner'
 
 export default function SettingsPage() {
   const supabase = createBrowserSupabaseClient()
   const router = useRouter()
+  const toast = useToast()
   const [deleting, setDeleting] = useState(false)
   const [confirmText, setConfirmText] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   async function handleDeleteAccount() {
     if (confirmText !== 'DELETE') {
-      alert('Please type DELETE to confirm')
+      toast.error('Please type DELETE to confirm')
       return
     }
 
-    if (!confirm('Are you absolutely sure? This action cannot be undone.')) {
-      return
-    }
+    setShowDeleteConfirm(true)
+  }
 
+  async function executeDelete() {
+    setShowDeleteConfirm(false)
     setDeleting(true)
 
     try {
-      // Note: Actual account deletion should be handled server-side
-      // For now, just sign out and show message
       await supabase.auth.signOut()
       router.push('/?deleted=true')
     } catch (err: any) {
-      alert('Failed to delete account: ' + err.message)
+      toast.error('Failed to delete account. Please try again.')
       setDeleting(false)
     }
   }
@@ -80,10 +84,28 @@ export default function SettingsPage() {
             disabled={deleting || confirmText !== 'DELETE'}
             className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {deleting ? 'Deleting...' : 'Delete Account'}
+            {deleting ? (
+              <span className="flex items-center gap-2">
+                <ButtonSpinner />
+                Deleting...
+              </span>
+            ) : (
+              'Delete Account'
+            )}
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete your account?"
+        message="This will permanently delete your account, all surveys, and all response data. This action cannot be undone."
+        confirmLabel="Delete Forever"
+        cancelLabel="Keep Account"
+        variant="danger"
+        onConfirm={executeDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

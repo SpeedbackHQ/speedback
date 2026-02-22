@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import type { UserProfile } from '@/lib/supabase'
+import { useToast } from '@/components/ui/ToastProvider'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { ButtonSpinner } from '@/components/ui/Spinner'
 
 export default function ProfilePage() {
   const supabase = createBrowserSupabaseClient()
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadProfile()
@@ -45,7 +47,6 @@ export default function ProfilePage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
     setSaving(true)
 
     try {
@@ -62,10 +63,9 @@ export default function ProfilePage() {
 
       if (profileError) throw profileError
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Profile updated!')
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile')
+      toast.error(err.message || 'Failed to update profile')
     } finally {
       setSaving(false)
     }
@@ -73,8 +73,19 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500" />
+      <div>
+        <Skeleton.Line width="w-32" className="h-7 mb-6" />
+        <div className="space-y-6">
+          <div>
+            <Skeleton.Line width="w-24" className="h-4 mb-2" />
+            <div className="h-10 w-full bg-slate-200 rounded-lg animate-pulse" />
+          </div>
+          <div>
+            <Skeleton.Line width="w-16" className="h-4 mb-2" />
+            <div className="h-10 w-full bg-slate-100 rounded-lg animate-pulse" />
+          </div>
+          <div className="h-10 w-32 bg-slate-200 rounded-lg animate-pulse" />
+        </div>
       </div>
     )
   }
@@ -82,18 +93,6 @@ export default function ProfilePage() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Account</h2>
-
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          Profile updated successfully!
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSave} className="space-y-6">
         <div>
@@ -131,7 +130,14 @@ export default function ProfilePage() {
           disabled={saving}
           className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? (
+            <span className="flex items-center gap-2">
+              <ButtonSpinner />
+              Saving...
+            </span>
+          ) : (
+            'Save Changes'
+          )}
         </button>
       </form>
     </div>

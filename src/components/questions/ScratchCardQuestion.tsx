@@ -60,12 +60,6 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
       )
     }
     ctx.globalAlpha = 1
-
-    // Add scratch instruction
-    ctx.font = 'bold 18px Arial'
-    ctx.fillStyle = '#666'
-    ctx.textAlign = 'center'
-    ctx.fillText('✨ SCRATCH TO CONFIRM ✨', canvas.width / 2, canvas.height / 2 + 6)
   }, [selectedOption])
 
   const scratch = useCallback((x: number, y: number) => {

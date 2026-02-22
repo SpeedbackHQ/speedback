@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClarityInit } from "@/components/ClarityInit";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Navigation } from "@/components/Navigation";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -37,10 +38,15 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ colorScheme: 'light' }}>
       <body className={`${plusJakarta.variable} antialiased`}>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <ClarityInit />
         <PostHogProvider>
-          <Navigation />
-          {children}
+          <ToastProvider>
+            <Navigation />
+            <div id="main-content">
+              {children}
+            </div>
+          </ToastProvider>
         </PostHogProvider>
       </body>
     </html>
