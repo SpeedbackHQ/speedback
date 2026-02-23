@@ -27,10 +27,10 @@ export default async function Home() {
         </div>
 
         <h1 className="font-chonko mb-6 leading-tight animate-fade-in-up delay-100" style={{ color: '#0F172A', fontSize: 'var(--text-hero)' }}>
-          The most fun feedback form<br />you&apos;ll ever use
+          Feedback forms that feel like games.<br />Get more responses, faster.
         </h1>
         <p className="text-lg sm:text-xl font-manrope mb-12 max-w-2xl mx-auto animate-fade-in-up delay-200" style={{ color: '#64748B' }}>
-          Feedback forms that feel like games. Get more responses, faster.
+          Surveys people actually finish — with the depth to understand why.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
