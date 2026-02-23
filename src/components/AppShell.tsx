@@ -36,7 +36,8 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const desktopDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDropdownRef = useRef<HTMLDivElement>(null)
   const supabase = createBrowserSupabaseClient()
 
   useEffect(() => {
@@ -68,7 +69,10 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      const inDesktop = desktopDropdownRef.current?.contains(target)
+      const inMobile = mobileDropdownRef.current?.contains(target)
+      if (!inDesktop && !inMobile) {
         setDropdownOpen(false)
       }
     }
@@ -119,7 +123,7 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
 
             {/* User Dropdown */}
             {user && (
-              <div className="relative ml-2" ref={dropdownRef}>
+              <div className="relative ml-2" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   aria-expanded={dropdownOpen}
@@ -153,7 +157,7 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
 
           {/* Mobile Navigation */}
           {user && (
-            <div className="md:hidden relative" ref={dropdownRef}>
+            <div className="md:hidden relative" ref={mobileDropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 aria-expanded={dropdownOpen}
