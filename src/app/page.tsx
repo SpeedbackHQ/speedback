@@ -65,10 +65,10 @@ export default async function Home() {
             </p>
           </div>
           <div className="bg-white rounded-2xl p-6 text-left card-hover animate-fade-in-up delay-500 group" style={{ border: '1px solid rgba(100, 116, 139, 0.1)', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)' }}>
-            <div className="text-5xl mb-4 group-hover:animate-bounce-subtle transition-transform" style={{ color: '#06B6D4' }}>⚡</div>
-            <h3 className="text-2xl font-outfit mb-2" style={{ color: '#0F172A' }}>Lightning Fast</h3>
+            <div className="text-5xl mb-4 group-hover:animate-bounce-subtle transition-transform" style={{ color: '#06B6D4' }}>📊</div>
+            <h3 className="text-2xl font-outfit mb-2" style={{ color: '#0F172A' }}>Get the Numbers AND the Why</h3>
             <p className="font-manrope" style={{ color: '#64748B' }}>
-              Swipe and tap through questions. Way faster than traditional surveys.
+              Quick interactions for quantitative data. Smart follow-ups capture the &lsquo;why&rsquo; when you need it.
             </p>
           </div>
         </div>
