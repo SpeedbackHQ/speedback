@@ -70,7 +70,7 @@ export function GradientHeroTemplate({
         {showTimeEstimate && (
           <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8">
             <p className="text-white font-bold text-xl">
-              ⏱️ Only 30 seconds
+              ⏱️ Under 60 seconds
             </p>
           </div>
         )}
@@ -81,7 +81,7 @@ export function GradientHeroTemplate({
         {/* CTA */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-4">
           <p className="text-gray-800 font-bold text-2xl">
-            Scan to Play →
+            Scan to Play ⚡
           </p>
         </div>
       </div>

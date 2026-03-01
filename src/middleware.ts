@@ -59,7 +59,8 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - redirect to login if not authenticated
   if (request.nextUrl.pathname.startsWith('/admin') ||
-      request.nextUrl.pathname.startsWith('/account')) {
+      request.nextUrl.pathname.startsWith('/account') ||
+      request.nextUrl.pathname.startsWith('/internal')) {
     if (!user || error) {
       // Store the original URL to redirect back after login
       const redirectUrl = new URL('/login', request.url)

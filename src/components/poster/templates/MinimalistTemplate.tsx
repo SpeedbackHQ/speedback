@@ -74,7 +74,7 @@ export function MinimalistTemplate({
         {/* Time estimate */}
         {showTimeEstimate && (
           <p className="text-gray-500 font-medium text-lg mb-12">
-            30 seconds of your time
+            Under 60 seconds
           </p>
         )}
 
@@ -92,7 +92,7 @@ export function MinimalistTemplate({
           className="font-semibold text-lg"
           style={{ color: brandColor || '#8B5CF6' }}
         >
-          Scan to begin →
+          Scan to start the challenge →
         </p>
       </div>
     </div>

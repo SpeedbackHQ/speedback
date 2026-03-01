@@ -16,6 +16,7 @@ export interface SurveyWithQuestions {
   thank_you_message: string
   is_active: boolean
   max_responses?: number | null
+  context?: Record<string, unknown>
   created_at: string
   questions: Question[]
 }

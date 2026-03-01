@@ -45,6 +45,7 @@ export interface Survey {
   thank_you_message: string
   is_active: boolean
   max_responses?: number | null // null = unlimited (paid); default 25 (free)
+  context?: Record<string, unknown> // Optional metadata: audience_size, event_type, industry
   created_at: string
 }
 
@@ -81,6 +82,7 @@ export interface Response {
   }>
   completed_at: string
   duration_ms: number | null
+  initials: string | null
 }
 
 export interface UserProfile {

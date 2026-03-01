@@ -14,9 +14,9 @@ interface PosterCustomizerProps {
 }
 
 const HEADLINE_PRESETS = [
-  'Follow the Rabbit',
-  'Quick Challenge Inside',
-  '30 Seconds of Fun',
+  'Can You Beat the Average?',
+  'This Is Not a Survey',
+  'The Fastest Feedback Ever',
   'Ready to Play?',
 ]
 
@@ -136,7 +136,7 @@ export function PosterCustomizer({
             className="w-5 h-5 rounded border-gray-300 text-violet-500 focus:ring-violet-500"
           />
           <span className="text-sm font-medium text-gray-700">
-            Show time estimate (30 seconds)
+            Show time challenge
           </span>
         </label>
       </div>

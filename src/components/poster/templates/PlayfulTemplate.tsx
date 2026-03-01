@@ -88,7 +88,7 @@ export function PlayfulTemplate({
         {showTimeEstimate && (
           <div className="bg-white rounded-full px-6 py-2 mb-8 shadow-md">
             <p className="text-gray-700 font-bold text-lg">
-              ⚡ Quick 30 seconds!
+              ⚡ Under 60 seconds
             </p>
           </div>
         )}
@@ -105,10 +105,10 @@ export function PlayfulTemplate({
         {/* Multiple emoji CTAs */}
         <div className="flex flex-wrap gap-3 justify-center">
           <div className="bg-white rounded-full px-5 py-2 shadow-md">
-            <p className="text-gray-800 font-bold">👉 Scan here</p>
+            <p className="text-gray-800 font-bold">👉 Scan to play</p>
           </div>
           <div className="bg-white rounded-full px-5 py-2 shadow-md">
-            <p className="text-gray-800 font-bold">🎯 Let&apos;s go!</p>
+            <p className="text-gray-800 font-bold">🏆 Beat the record!</p>
           </div>
         </div>
       </div>

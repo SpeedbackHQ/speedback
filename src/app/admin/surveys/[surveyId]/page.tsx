@@ -12,6 +12,7 @@ import { getDisplayQRConfig, getDownloadQRConfig } from '@/components/qr/qrConfi
 import { useToast } from '@/components/ui/ToastProvider'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { PosterModal } from '@/components/poster/PosterModal'
 
 type TabType = 'questions' | 'share' | 'responses' | 'analytics'
 
@@ -66,6 +67,9 @@ export default function SurveyEditorPage() {
 
   // Toggle state
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+
+  // Poster modal
+  const [posterModalOpen, setPosterModalOpen] = useState(false)
 
   // Warning banner dismissed
   const [warningDismissed, setWarningDismissed] = useState(false)
@@ -895,6 +899,12 @@ export default function SurveyEditorPage() {
                 <p className="text-xs text-slate-500 mt-2">
                   Make scanning feel like starting a game
                 </p>
+                <button
+                  onClick={() => setPosterModalOpen(true)}
+                  className="w-full mt-3 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold"
+                >
+                  Create Poster
+                </button>
               </div>
 
               {/* Link and embed */}
@@ -1599,6 +1609,17 @@ export default function SurveyEditorPage() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Poster Modal */}
+      <AnimatePresence>
+        {posterModalOpen && survey && (
+          <PosterModal
+            survey={survey}
+            playUrl={playUrl}
+            onClose={() => setPosterModalOpen(false)}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -81,7 +81,7 @@ export function EventPosterTemplate({
               className="font-black text-2xl mb-8 tracking-wide"
               style={{ color: brandColor || '#8B5CF6' }}
             >
-              30 SECONDS • MOBILE ONLY
+              UNDER 60 SECONDS
             </p>
           )}
 
@@ -106,7 +106,7 @@ export function EventPosterTemplate({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: brandColor || '#8B5CF6' }}
             />
-            <span>DONE</span>
+            <span>BEAT THE CLOCK</span>
           </div>
         </div>
       </div>

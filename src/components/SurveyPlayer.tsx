@@ -10,6 +10,7 @@ import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQu
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions, InlineFollowUp, QuestionConfig } from '@/lib/types'
 import { track } from '@/lib/analytics'
+import { getQuestionCategory } from '@/lib/question-types'
 
 interface SurveyPlayerProps {
   survey: SurveyWithQuestions
@@ -24,6 +25,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
   const [answers, setAnswers] = useState<Array<{ question_id: string; value: AnswerValue }>>([])
   const [startTime, setStartTime] = useState<number | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const [percentile, setPercentile] = useState<number | null>(null)
+  const [responseId, setResponseId] = useState<string | null>(null)
 
   // Streak tracking for swipe questions
   const [swipeStreak, setSwipeStreak] = useState(0)
@@ -93,6 +96,9 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         survey_id: survey.id,
         last_question_index: currentIndex,
         last_question_type: currentQuestion?.type,
+        last_question_category: currentQuestion ? getQuestionCategory(currentQuestion.type) : null,
+        last_question_position_pct: questions.length > 0 ? currentIndex / questions.length : 0,
+        previous_question_type: currentIndex > 0 ? questions[currentIndex - 1]?.type : null,
         questions_completed: answers.length,
         questions_total: questions.length,
       })
@@ -122,6 +128,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
     track('survey_started', {
       survey_id: survey.id,
       question_count: questions.length,
+      question_types: questions.map(q => q.type),
+      question_categories: [...new Set(questions.map(q => getQuestionCategory(q.type)))],
     })
     questionStartTime.current = Date.now()
     setGameState('playing')
@@ -138,6 +146,10 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         survey_id: survey.id,
         question_index: currentIndex,
         question_type: pendingFollowUp.question.type,
+        question_category: getQuestionCategory(pendingFollowUp.question.type),
+        question_position_pct: questions.length > 0 ? currentIndex / questions.length : 0,
+        previous_question_type: currentQuestion?.type ?? null,
+        previous_question_category: currentQuestion ? getQuestionCategory(currentQuestion.type) : null,
         time_spent_ms: timeOnQuestion,
         questions_total: questions.length,
         is_follow_up: true,
@@ -164,8 +176,17 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
           survey_id: survey.id,
           question_count: questions.length,
           total_time_ms: finalElapsed,
+          question_types: questions.map(q => q.type),
         })
-        saveResponse(newAnswers, finalElapsed)
+        saveResponse(newAnswers, finalElapsed).then((id) => {
+          if (id) setResponseId(id)
+          calculatePercentile(survey.id, finalElapsed).then((p) => {
+            setPercentile(p)
+            if (p !== null) {
+              track('speed_percentile_shown', { survey_id: survey.id, percentile: p, duration_ms: finalElapsed })
+            }
+          })
+        })
         setGameState('complete')
       }
       return
@@ -176,6 +197,10 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
       survey_id: survey.id,
       question_index: currentIndex,
       question_type: currentQuestion.type,
+      question_category: getQuestionCategory(currentQuestion.type),
+      question_position_pct: questions.length > 0 ? currentIndex / questions.length : 0,
+      previous_question_type: currentIndex > 0 ? questions[currentIndex - 1]?.type : null,
+      previous_question_category: currentIndex > 0 ? getQuestionCategory(questions[currentIndex - 1].type) : null,
       time_spent_ms: timeOnQuestion,
       questions_total: questions.length,
     })
@@ -239,20 +264,55 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         question_count: questions.length,
         total_time_ms: finalElapsed,
       })
-      saveResponse(newAnswers, finalElapsed)
+      saveResponse(newAnswers, finalElapsed).then((id) => {
+        if (id) setResponseId(id)
+        calculatePercentile(survey.id, finalElapsed).then((p) => {
+          setPercentile(p)
+          if (p !== null) {
+            track('speed_percentile_shown', { survey_id: survey.id, percentile: p, duration_ms: finalElapsed })
+          }
+        })
+      })
       setGameState('complete')
     }
   }
 
-  const saveResponse = async (answers: Array<{ question_id: string; value: AnswerValue }>, duration: number | null) => {
+  const saveResponse = async (answers: Array<{ question_id: string; value: AnswerValue }>, duration: number | null): Promise<string | null> => {
     try {
-      await supabase.from('responses').insert({
+      const { data } = await supabase.from('responses').insert({
         survey_id: survey.id,
         answers,
         duration_ms: duration,
-      })
+      }).select('id').single()
+      return data?.id ?? null
     } catch (error) {
       console.error('Failed to save response:', error)
+      return null
+    }
+  }
+
+  const calculatePercentile = async (surveyId: string, durationMs: number) => {
+    try {
+      const { count: totalCount } = await supabase
+        .from('responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('survey_id', surveyId)
+        .not('duration_ms', 'is', null)
+
+      // Don't show percentile with fewer than 10 responses (avoids meaningless data from test runs)
+      if (!totalCount || totalCount < 10) return null
+
+      const { count: slowerCount } = await supabase
+        .from('responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('survey_id', surveyId)
+        .not('duration_ms', 'is', null)
+        .gt('duration_ms', durationMs)
+
+      return Math.round(((slowerCount ?? 0) / totalCount) * 100)
+    } catch (error) {
+      console.error('Failed to calculate percentile:', error)
+      return null
     }
   }
 
@@ -371,7 +431,16 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
   }
 
   if (gameState === 'complete') {
-    return <Celebration message={survey.thank_you_message} elapsedTime={elapsedTime} showSpeedbackBranding={showSpeedbackBranding} />
+    return (
+      <Celebration
+        message={survey.thank_you_message}
+        elapsedTime={elapsedTime}
+        percentile={percentile}
+        surveyId={survey.id}
+        responseId={responseId}
+        showSpeedbackBranding={showSpeedbackBranding}
+      />
+    )
   }
 
   const primaryColor = survey.branding_config?.primary_color || '#8B5CF6'
