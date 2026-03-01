@@ -42,9 +42,9 @@ export default async function NewSurveyPage() {
 
   if (error) {
     console.error('Error creating survey:', error)
-    redirect('/admin')
+    redirect('/dashboard')
   }
 
   // Redirect to the tabbed editor
-  redirect(`/admin/surveys/${survey!.id}`)
+  redirect(`/dashboard/surveys/${survey!.id}`)
 }

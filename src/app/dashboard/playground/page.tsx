@@ -60,7 +60,7 @@ function PlaygroundContent() {
     setPreviewKey(prev => prev + 1)
     setLastAnswer(null)
     setMobilePreviewOpen(true)
-    router.push(`/admin/playground?type=${type}`, { scroll: false })
+    router.push(`/dashboard/playground?type=${type}`, { scroll: false })
   }, [router, clearPendingReset])
 
   const handleAnswer = useCallback((value: unknown) => {

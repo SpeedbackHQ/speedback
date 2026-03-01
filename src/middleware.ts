@@ -58,9 +58,9 @@ export async function middleware(request: NextRequest) {
   const { data: { user }, error } = await supabase.auth.getUser()
 
   // Protected routes - redirect to login if not authenticated
-  if (request.nextUrl.pathname.startsWith('/admin') ||
+  if (request.nextUrl.pathname.startsWith('/dashboard') ||
       request.nextUrl.pathname.startsWith('/account') ||
-      request.nextUrl.pathname.startsWith('/internal')) {
+      request.nextUrl.pathname.startsWith('/admin')) {
     if (!user || error) {
       // Store the original URL to redirect back after login
       const redirectUrl = new URL('/login', request.url)
@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
 
   // If user is logged in and tries to access login/signup, redirect to dashboard
   if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') && user) {
-    return NextResponse.redirect(new URL('/admin', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response

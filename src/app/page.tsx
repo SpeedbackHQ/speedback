@@ -9,7 +9,7 @@ export default async function Home() {
   // Redirect logged-in users to dashboard
   const user = await getUser()
   if (user) {
-    redirect('/admin')
+    redirect('/dashboard')
   }
 
   return (

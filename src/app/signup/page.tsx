@@ -105,7 +105,7 @@ export default function SignupPage() {
 
       if (data.user) {
         if (data.session) {
-          window.location.href = '/admin'
+          window.location.href = '/dashboard'
         } else {
           setSuccess(true)
         }
@@ -125,7 +125,7 @@ export default function SignupPage() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=/admin`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect=/dashboard`,
         },
       })
 

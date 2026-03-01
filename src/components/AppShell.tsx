@@ -15,15 +15,15 @@ interface NavItem {
 }
 
 const mainNavItems: NavItem[] = [
-  { href: '/admin', label: 'Dashboard' },
-  { href: '/admin/templates', label: 'Templates', matchPrefix: true },
-  { href: '/admin/playground', label: 'Playground', matchPrefix: true },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard/templates', label: 'Templates', matchPrefix: true },
+  { href: '/dashboard/playground', label: 'Playground', matchPrefix: true },
 ]
 
 const mobileNavItems: NavItem[] = [
-  { href: '/admin', label: 'Dashboard', emoji: '📊' },
-  { href: '/admin/templates', label: 'Templates', emoji: '📋' },
-  { href: '/admin/playground', label: 'Playground', emoji: '🎮' },
+  { href: '/dashboard', label: 'Dashboard', emoji: '📊' },
+  { href: '/dashboard/templates', label: 'Templates', emoji: '📋' },
+  { href: '/dashboard/playground', label: 'Playground', emoji: '🎮' },
 ]
 
 interface AppShellProps {

@@ -59,7 +59,7 @@ export default async function PricingPage() {
             </ul>
 
             <Link
-              href="/admin/surveys/new"
+              href="/dashboard/surveys/new"
               className="btn-secondary w-full text-center py-3 font-outfit font-semibold"
             >
               Try Free

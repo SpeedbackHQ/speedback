@@ -69,7 +69,7 @@ export default function TemplatesPage() {
 
       if (questionsError) throw questionsError
 
-      router.push(`/admin/surveys/${survey!.id}?tab=questions`)
+      router.push(`/dashboard/surveys/${survey!.id}?tab=questions`)
     } catch (error) {
       console.error('Error creating survey from template:', error)
       toast.error('Failed to create survey. Please try again.')

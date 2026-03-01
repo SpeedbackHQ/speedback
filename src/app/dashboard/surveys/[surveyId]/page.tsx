@@ -411,7 +411,7 @@ export default function SurveyEditorPage() {
 
       if (error) throw error
 
-      router.push('/admin')
+      router.push('/dashboard')
     } catch (error) {
       console.error('Error deleting survey:', error)
       toast.error('Failed to delete survey')
@@ -420,7 +420,7 @@ export default function SurveyEditorPage() {
   }
 
   const setTab = (tab: TabType) => {
-    router.push(`/admin/surveys/${surveyId}?tab=${tab}`, { scroll: false })
+    router.push(`/dashboard/surveys/${surveyId}?tab=${tab}`, { scroll: false })
   }
 
   const calculateStats = () => {
@@ -680,7 +680,7 @@ export default function SurveyEditorPage() {
       <div className="text-center py-12">
         <div className="text-6xl mb-4">🔍</div>
         <h2 className="text-xl font-bold text-slate-800 mb-2">Survey not found</h2>
-        <Link href="/admin" className="text-violet-500 hover:underline">
+        <Link href="/dashboard" className="text-violet-500 hover:underline">
           Back to dashboard
         </Link>
       </div>
@@ -697,7 +697,7 @@ export default function SurveyEditorPage() {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <Breadcrumb items={[
-            { label: 'Dashboard', href: '/admin' },
+            { label: 'Dashboard', href: '/dashboard' },
             { label: survey.title || 'Untitled Survey' },
           ]} />
 

@@ -94,7 +94,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
       }
 
       // Redirect to the editor
-      router.push(`/admin/surveys/${survey!.id}`)
+      router.push(`/dashboard/surveys/${survey!.id}`)
     } catch (error) {
       console.error('Error creating survey:', error)
       toast.error('Failed to create survey. Please try again.')

@@ -36,7 +36,7 @@ export async function sendWelcomeEmail(to: string, customerName?: string) {
           <li>Watch responses roll in live from the Responses tab</li>
         </ol>
 
-        <a href="${APP_URL}/admin" style="display: inline-block; background: #8B5CF6; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 16px; margin-bottom: 32px;">
+        <a href="${APP_URL}/dashboard" style="display: inline-block; background: #8B5CF6; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 16px; margin-bottom: 32px;">
           Go to Dashboard →
         </a>
 
@@ -79,7 +79,7 @@ export async function sendPaymentConfirmationEmail(to: string, plan: string, amo
           Your plan is active. Head to your dashboard to start creating surveys.
         </p>
 
-        <a href="${APP_URL}/admin" style="display: inline-block; background: #8B5CF6; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+        <a href="${APP_URL}/dashboard" style="display: inline-block; background: #8B5CF6; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 16px;">
           Go to Dashboard →
         </a>
       </div>

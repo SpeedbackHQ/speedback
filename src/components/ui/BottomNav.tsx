@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const navItems = [
   {
-    href: '/admin',
+    href: '/dashboard',
     label: 'Dashboard',
     icon: (active: boolean) => (
       <svg className="w-5 h-5" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -15,7 +15,7 @@ const navItems = [
     exact: true,
   },
   {
-    href: '/admin/templates',
+    href: '/dashboard/templates',
     label: 'Templates',
     icon: (active: boolean) => (
       <svg className="w-5 h-5" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -24,7 +24,7 @@ const navItems = [
     ),
   },
   {
-    href: '/admin/playground',
+    href: '/dashboard/playground',
     label: 'Playground',
     icon: (active: boolean) => (
       <svg className="w-5 h-5" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">

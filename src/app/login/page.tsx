@@ -11,7 +11,7 @@ import { ButtonSpinner, Spinner } from '@/components/ui/Spinner'
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/admin'
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

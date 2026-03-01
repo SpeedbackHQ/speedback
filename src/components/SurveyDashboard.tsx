@@ -179,7 +179,7 @@ export function SurveyDashboard({ surveys }: { surveys: SurveyItem[] }) {
             return (
               <Link
                 key={survey.id}
-                href={`/admin/surveys/${survey.id}`}
+                href={`/dashboard/surveys/${survey.id}`}
                 className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover group animate-fade-in-up ${
                   view === 'list' ? 'flex items-center justify-between' : ''
                 }`}

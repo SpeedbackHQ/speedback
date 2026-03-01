@@ -60,7 +60,7 @@ export function InternalDashboard() {
   const [categoryFilter, setCategoryFilter] = useState<string>('All')
 
   useEffect(() => {
-    fetch('/api/internal/analytics')
+    fetch('/api/admin/analytics')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
@@ -197,7 +197,7 @@ export function InternalDashboard() {
       <div className="min-h-screen bg-slate-950 text-white p-8">
         <div className="max-w-7xl mx-auto text-center py-20">
           <p className="text-red-400 text-lg">Failed to load analytics: {error || 'Unknown error'}</p>
-          <Link href="/admin" className="text-violet-400 underline mt-4 inline-block">Back to Dashboard</Link>
+          <Link href="/dashboard" className="text-violet-400 underline mt-4 inline-block">Back to Dashboard</Link>
         </div>
       </div>
     )
@@ -213,7 +213,7 @@ export function InternalDashboard() {
           <h1 className="text-xl font-bold text-white">SpeedBack Internal</h1>
           <p className="text-xs text-slate-500 mt-1">Data as of {new Date(data.fetchedAt).toLocaleString()}</p>
         </div>
-        <Link href="/admin" className="text-sm text-slate-400 hover:text-white transition-colors">
+        <Link href="/dashboard" className="text-sm text-slate-400 hover:text-white transition-colors">
           ← Back to Dashboard
         </Link>
       </header>
