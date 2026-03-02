@@ -112,6 +112,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
   const [stage, setStage] = useState<CelebrationStage>('results')
   const [initials, setInitials] = useState('')
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [userOverallRank, setUserOverallRank] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const initialsInputRef = useRef<HTMLInputElement>(null)
 
@@ -154,10 +155,23 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
         setLeaderboard(data as LeaderboardEntry[])
         track('leaderboard_viewed', { survey_id: surveyId, entry_count: data.length })
       }
+
+      // Compute user's overall rank if they have a time
+      if (elapsedTime) {
+        const { count } = await supabase
+          .from('responses')
+          .select('*', { count: 'exact', head: true })
+          .eq('survey_id', surveyId)
+          .not('duration_ms', 'is', null)
+          .not('initials', 'is', null)
+          .lt('duration_ms', elapsedTime)
+
+        setUserOverallRank((count ?? 0) + 1)
+      }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)
     }
-  }, [surveyId])
+  }, [surveyId, elapsedTime])
 
   const submitInitials = async () => {
     if (!responseId || !initials.trim() || isSubmitting) return
@@ -339,7 +353,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                   onKeyDown={handleInitialsKeyDown}
                   placeholder="AAA"
                   maxLength={3}
-                  className="w-32 text-center text-3xl font-mono font-bold tracking-[0.3em] bg-black/30 backdrop-blur-sm border-2 border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/60 uppercase"
+                  className="w-32 text-center text-3xl font-mondwest font-bold tracking-[0.3em] bg-black/30 backdrop-blur-sm border-2 border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/60 uppercase"
                   autoComplete="off"
                 />
               </div>
@@ -367,19 +381,23 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
           {stage === 'leaderboard' && (
             <motion.div
               key="leaderboard"
-              className="flex flex-col items-center w-full"
+              className="flex flex-col items-center w-full pb-20"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 20 }}
             >
-              <h2 className="text-2xl font-bold text-white mb-1 drop-shadow-lg">
+              <h2 className="text-2xl font-bold text-white mb-1 drop-shadow-lg font-mondwest">
                 Leaderboard
               </h2>
               <p className="text-white/60 text-sm mb-4">Fastest completions</p>
 
               {leaderboard.length > 0 ? (
-                <div className="w-full bg-black/30 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10">
+                <div className={`w-full bg-black/30 backdrop-blur-sm overflow-hidden border border-white/10 ${
+                  elapsedTime && userRank === 0 && userOverallRank && initials.trim()
+                    ? 'rounded-t-2xl border-b-0'
+                    : 'rounded-2xl'
+                }`}>
                   {leaderboard.map((entry, i) => {
                     const isUser = userRank === i + 1
                     return (
@@ -393,17 +411,17 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                         transition={{ delay: i * 0.08 }}
                       >
                         {/* Rank */}
-                        <span className={`w-8 text-lg font-bold font-mono ${RANK_STYLES[i] || 'text-white/50'}`}>
+                        <span className={`w-8 text-lg font-bold font-mondwest ${RANK_STYLES[i] || 'text-white/50'}`}>
                           {i + 1}.
                         </span>
 
                         {/* Initials */}
-                        <span className={`flex-1 text-lg font-mono font-bold tracking-widest ${isUser ? 'text-white' : 'text-white/80'}`}>
+                        <span className={`flex-1 text-lg font-mondwest font-bold tracking-widest ${isUser ? 'text-white' : 'text-white/80'}`}>
                           {entry.initials}
                         </span>
 
                         {/* Time */}
-                        <span className={`text-sm font-mono ${isUser ? 'text-white font-bold' : 'text-white/60'}`}>
+                        <span className={`text-sm font-mondwest ${isUser ? 'text-white font-bold' : 'text-white/60'}`}>
                           {formatTimeShort(entry.duration_ms)}
                         </span>
 
@@ -430,17 +448,38 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                 </div>
               )}
 
-              {/* Show user's time if they're not on the board */}
-              {elapsedTime && userRank === 0 && (
+              {/* Show user's rank below the board if they're not in top 10 */}
+              {elapsedTime && userRank === 0 && userOverallRank && initials.trim() && (
                 <motion.div
-                  className="mt-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2"
+                  className="w-full mt-0 bg-black/30 backdrop-blur-sm rounded-b-2xl overflow-hidden border border-t-0 border-white/10"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <p className="text-white/70 text-sm">
-                    Your time: <span className="font-mono font-bold text-white">{formatTimeShort(elapsedTime)}</span>
-                  </p>
+                  {/* Divider dots */}
+                  <div className="text-center py-1.5 text-white/30 font-mondwest tracking-widest text-sm">
+                    ···
+                  </div>
+                  {/* User's row */}
+                  <div className="flex items-center px-4 py-3 bg-white/10">
+                    <span className="w-8 text-lg font-bold font-mondwest text-white/50">
+                      {userOverallRank}.
+                    </span>
+                    <span className="flex-1 text-lg font-mondwest font-bold tracking-widest text-white">
+                      {initials.trim().toUpperCase()}
+                    </span>
+                    <span className="text-sm font-mondwest text-white font-bold">
+                      {formatTimeShort(elapsedTime)}
+                    </span>
+                    <motion.span
+                      className="ml-2 text-sm"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', delay: 0.7 }}
+                    >
+                      ← you
+                    </motion.span>
+                  </div>
                 </motion.div>
               )}
 
@@ -477,7 +516,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
             className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-colors"
           >
             <span className="text-white/80 text-sm font-medium">Powered by</span>
-            <span className="text-white font-bold text-lg" style={{ fontFamily: 'Chonko, sans-serif' }}>
+            <span className="text-white text-lg font-chonko">
               Speed<span className="text-violet-200">Back</span>
             </span>
             <span className="text-white text-lg">⚡</span>

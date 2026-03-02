@@ -18,6 +18,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'PPMondwest';
+  src: url('/assets/ppmondwest-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import "tailwindcss";
 
 :root {
@@ -84,6 +92,10 @@ html, body {
 
 .font-manrope {
   font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.font-mondwest {
+  font-family: 'PPMondwest', monospace;
 }
 
 /* Mobile viewport fix - handle browser chrome */

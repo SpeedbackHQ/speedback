@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QuestionType } from '@/lib/types'
 
-type GestureType = 'swipe-lr' | 'drag-to-target' | 'pull-release' | 'drag-side' | 'swipe-browse' | 'hold' | 'scratch'
+type GestureType = 'swipe-lr' | 'drag-to-target' | 'pull-release' | 'drag-side' | 'drag-updown' | 'swipe-browse' | 'hold' | 'scratch'
 
 const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   swipe: 'swipe-lr',
@@ -13,7 +13,7 @@ const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   slingshot: 'pull-release',
   // slider: omitted — visible thumb + gradient track + "Slide to rate" button text are sufficient affordance
   // tug_of_war: omitted — visible rope makes the drag mechanic self-evident
-  thermometer: 'drag-side',
+  thermometer: 'drag-updown',
   tilt: 'drag-side',
   dial: 'drag-side',
   rolodex: 'swipe-browse',
@@ -32,6 +32,7 @@ const gestureConfig: Record<GestureType, { text: string }> = {
   'drag-to-target': { text: 'Drag to your answer' },
   'pull-release': { text: 'Pull back and release' },
   'drag-side': { text: 'Drag to set your value' },
+  'drag-updown': { text: 'Drag up or down' },
   'swipe-browse': { text: 'Swipe to browse' },
   'hold': { text: 'Press and hold' },
   'scratch': { text: 'Scratch to reveal' },
@@ -43,6 +44,7 @@ const gestureAnimations: Record<GestureType, string> = {
   'drag-to-target': 'gestureDragToTarget 2s ease-in-out infinite',
   'pull-release': 'gesturePullRelease 1.8s ease-in-out infinite',
   'drag-side': 'gestureDragSide 1.8s ease-in-out infinite',
+  'drag-updown': 'gestureDragUpDown 1.8s ease-in-out infinite',
   'swipe-browse': 'gestureSwipeBrowse 1.4s ease-in-out infinite',
   'hold': 'gestureHold 2s ease-in-out infinite',
   'scratch': 'gestureScratch 1.2s ease-in-out infinite',
@@ -73,6 +75,12 @@ const keyframesCSS = `
   15% { transform: translateX(-35px) scale(0.85); }
   80% { transform: translateX(35px) scale(0.85); }
   90%, 100% { transform: translateX(35px) scale(1); }
+}
+@keyframes gestureDragUpDown {
+  0%, 10% { transform: translateY(30px) scale(1); }
+  15% { transform: translateY(30px) scale(0.85); }
+  80% { transform: translateY(-30px) scale(0.85); }
+  90%, 100% { transform: translateY(-30px) scale(1); }
 }
 @keyframes gestureSwipeBrowse {
   0% { transform: translateX(20px); }
@@ -192,8 +200,8 @@ export function GestureHint({ questionType, onDismiss }: GestureHintProps) {
               <div className="absolute w-16 h-0.5 bg-white/20 rounded-full" />
             )}
 
-            {/* Vertical trail for drag-to-target and pull-release */}
-            {(gesture === 'drag-to-target' || gesture === 'pull-release') && (
+            {/* Vertical trail for drag-to-target, pull-release, and drag-updown */}
+            {(gesture === 'drag-to-target' || gesture === 'pull-release' || gesture === 'drag-updown') && (
               <div className="absolute w-0.5 h-16 bg-white/20 rounded-full" />
             )}
           </div>

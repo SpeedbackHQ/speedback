@@ -64,7 +64,7 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
         className="text-gray-500 text-center mb-6 text-sm"
         animate={{ opacity: phase === 'picking' ? 1 : 0 }}
       >
-        Tap a door to reveal what&apos;s behind it
+        Pick a door
       </motion.p>
 
       {/* Doors grid */}
@@ -104,19 +104,19 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
                         transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
                       >
                         <motion.span
-                          className="text-4xl block"
-                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+                          className="text-5xl block"
+                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.3, 1] }}
                           transition={{ duration: 0.6, delay: 0.2 }}
                         >
-                          ✨
+                          ✅
                         </motion.span>
                         <motion.p
-                          className="font-bold text-gray-800 text-base mt-2"
+                          className="font-semibold text-gray-500 text-sm mt-2"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.3 }}
                         >
-                          {option}
+                          Great choice!
                         </motion.p>
                       </motion.div>
                     )}
@@ -138,11 +138,8 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
                     delay: isChosen ? 0.3 : 0,
                   }}
                 >
-                  {/* Door number */}
-                  <span className="text-3xl font-black text-white/90">{i + 1}</span>
-
-                  {/* Question mark */}
-                  <span className="text-white/60 text-lg mt-1">?</span>
+                  {/* Option label */}
+                  <span className="text-lg font-bold text-white/90 text-center px-2 leading-tight">{option}</span>
 
                   {/* Knob */}
                   <div className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${color.knob} shadow-sm`} />
