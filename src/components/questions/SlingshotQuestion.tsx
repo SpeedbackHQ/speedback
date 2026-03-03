@@ -36,17 +36,17 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   const labelMaxWidth = options.length <= 3 ? 'max-w-20' : 'max-w-16'
   const hitRadius = options.length <= 3 ? 12 : 10
 
-  // All targets in a single row across the top
+  // All targets in a single row across the bottom (grounded)
   const targets = options.map((label, i) => {
     const count = options.length
-    const totalWidth = count <= 3 ? 60 : 70
+    const totalWidth = count <= 3 ? 70 : 80
     const xSpacing = count > 1 ? totalWidth / (count - 1) : 0
     const xOffset = count > 1 ? (100 - totalWidth) / 2 : 50
 
     return {
       label,
       x: count > 1 ? xOffset + i * xSpacing : 50,
-      y: 18,  // Below rounded corners
+      y: 68,  // Bottom third of screen
       color: targetColors[i % targetColors.length],
     }
   })
@@ -214,6 +214,9 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
           <div className="absolute top-8 left-0 right-0 h-1 bg-blue-500" />
           <div className="absolute top-16 left-0 right-0 h-1 bg-yellow-500" />
         </div>
+
+        {/* Ground platform at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-amber-800/40 to-amber-900/60 border-t-2 border-amber-900/40" />
         {/* Targets - carnival bullseye style */}
         {targets.map((target, index) => {
           const isHit = hitTarget === target.label
@@ -236,10 +239,6 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
               }}
               transition={{ delay: index * 0.1, type: 'spring' }}
             >
-              {/* Target stand (pole) */}
-              <div className="absolute top-12 w-2 h-24 bg-gradient-to-b from-amber-700 to-amber-800 rounded-full"
-                   style={{ boxShadow: '2px 0 4px rgba(0,0,0,0.3)' }} />
-
               {/* Bullseye target board */}
               <div className="relative" style={{ width: targetSize, height: targetSize }}>
                 {/* Outer ring */}
@@ -287,16 +286,24 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
                 )}
               </div>
 
-              {/* Label below target */}
-              <div
-                className={`mt-1 text-xs font-bold px-2 py-1 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-sm`}
-                style={{
-                  backgroundColor: 'white',
-                  color: target.color.label,
-                  border: `2px solid ${target.color.label}`
-                }}
-              >
-                {target.label}
+              {/* Label below target with platform */}
+              <div className="flex flex-col items-center mt-2">
+                {/* Small decorative stand */}
+                <div className="w-1.5 h-8 bg-gradient-to-b from-amber-700 to-amber-800 rounded-full mb-1"
+                     style={{ boxShadow: '1px 0 2px rgba(0,0,0,0.3)' }} />
+
+                {/* Label on platform */}
+                <div
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md`}
+                  style={{
+                    backgroundColor: 'white',
+                    color: target.color.label,
+                    border: `2px solid ${target.color.label}`,
+                    minWidth: '60px'
+                  }}
+                >
+                  {target.label}
+                </div>
               </div>
             </motion.div>
           )
