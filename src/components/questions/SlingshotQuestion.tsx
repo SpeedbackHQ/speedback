@@ -40,16 +40,16 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
     const count = options.length
 
     // Calculate evenly distributed positions across the width
-    // Shifted slightly left by ~5% (half a target width)
+    // Shifted left by ~10% (one target width)
     let x: number
     if (count === 1) {
-      x = 45 // Single target slightly left of center
+      x = 40 // Single target left of center
     } else if (count === 2) {
-      x = 20 + i * 50 // At 20% and 70%
+      x = 15 + i * 50 // At 15% and 65%
     } else if (count === 3) {
-      x = 15 + i * 30 // At 15%, 45%, 75%
+      x = 10 + i * 30 // At 10%, 40%, 70%
     } else {
-      x = 10 + i * 23.33 // At 10%, ~33%, ~56%, 80%
+      x = 5 + i * 23.33 // At 5%, ~28%, ~51%, 75%
     }
 
     return {
