@@ -692,9 +692,9 @@ export default function SurveyEditorPage() {
   const hasResponses = survey.responses.length > 0
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
         <div className="flex-1">
           <Breadcrumb items={[
             { label: 'Dashboard', href: '/dashboard' },
@@ -702,26 +702,26 @@ export default function SurveyEditorPage() {
           ]} />
 
           {/* Editable title */}
-          <div className="flex items-start gap-3 mt-2">
+          <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 mt-2 min-w-0">
             <textarea
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Survey title..."
               rows={2}
-              className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors resize-none overflow-hidden leading-tight w-full"
+              className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-transparent hover:border-slate-200 focus:border-violet-500 focus:outline-none px-1 py-1 transition-colors resize-none overflow-hidden leading-tight w-full min-w-0"
               style={{ minHeight: '3.5rem' }}
             />
             {/* Save status indicator */}
-            <div className="text-sm font-medium">
+            <div className="text-xs sm:text-sm font-medium flex-shrink-0">
               {saveStatus === 'saving' && (
-                <span className="text-slate-400 flex items-center gap-1">
+                <span className="text-slate-400 flex items-center gap-1 whitespace-nowrap">
                   <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
                   Saving...
                 </span>
               )}
               {saveStatus === 'saved' && (
                 <motion.span
-                  className="text-emerald-500"
+                  className="text-emerald-500 whitespace-nowrap"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -729,7 +729,7 @@ export default function SurveyEditorPage() {
                 </motion.span>
               )}
               {saveStatus === 'error' && (
-                <span className="text-red-500 flex items-center gap-1">
+                <span className="text-red-500 flex items-center gap-1 whitespace-nowrap">
                   ⚠️ Unable to save
                   <button
                     onClick={() => debouncedSaveQuestions(questions)}
@@ -748,12 +748,12 @@ export default function SurveyEditorPage() {
         </div>
 
         {/* Status and actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Status toggle */}
           <button
             onClick={handleToggleStatus}
             disabled={isTogglingStatus}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
               survey.is_active
                 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200'
                 : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
@@ -770,7 +770,7 @@ export default function SurveyEditorPage() {
           {/* Delete button */}
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors border border-red-200"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs sm:text-sm font-medium transition-colors border border-red-200 whitespace-nowrap"
           >
             Delete
           </button>
@@ -911,16 +911,16 @@ export default function SurveyEditorPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Survey Link</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 min-w-0">
                     <input
                       type="text"
                       value={playUrl}
                       readOnly
-                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-600 font-medium"
+                      className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-600 font-medium"
                     />
                     <button
                       onClick={copyLink}
-                      className={`px-4 py-2 rounded-xl transition-all font-medium ${
+                      className={`flex-shrink-0 px-4 py-2 rounded-xl transition-all font-medium whitespace-nowrap ${
                         copied
                           ? 'bg-emerald-100 text-emerald-700'
                           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
@@ -974,26 +974,26 @@ export default function SurveyEditorPage() {
             exit={{ opacity: 0, y: -10 }}
             className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
               <h2 className="text-lg font-bold text-slate-800">Responses</h2>
               {survey.responses.length > 0 && (
                 canExportCSV() ? (
                   <button
                     onClick={downloadCSV}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     Download CSV
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-sm font-medium cursor-not-allowed" title="CSV export available on Starter plan or with per-event purchase">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-sm font-medium cursor-not-allowed" title="CSV export available on Starter plan or with per-event purchase">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span>CSV Export (Premium)</span>
-                    <a href="/pricing" className="ml-2 text-violet-600 hover:text-violet-700 underline">
+                    <span className="whitespace-nowrap">CSV Export (Premium)</span>
+                    <a href="/pricing" className="text-violet-600 hover:text-violet-700 underline whitespace-nowrap">
                       Upgrade
                     </a>
                   </div>
@@ -1466,16 +1466,16 @@ export default function SurveyEditorPage() {
                         const pct = Math.round((count / analyticsData.started) * 100)
                         const q = survey.questions[i]
                         return (
-                          <div key={i} className="flex items-center gap-3">
-                            <div className="w-6 text-right text-xs font-medium text-slate-400">Q{i + 1}</div>
-                            <div className="flex-1 bg-slate-100 rounded-full h-5 overflow-hidden">
+                          <div key={i} className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-6 flex-shrink-0 text-right text-xs font-medium text-slate-400">Q{i + 1}</div>
+                            <div className="flex-1 min-w-0 bg-slate-100 rounded-full h-5 overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all"
                                 style={{ width: `${pct}%`, backgroundColor: '#8B5CF6' }}
                               />
                             </div>
-                            <div className="w-10 text-xs font-semibold text-slate-500">{pct}%</div>
-                            <div className="w-48 text-xs text-slate-400 truncate">{q?.text || ''}</div>
+                            <div className="w-10 flex-shrink-0 text-xs font-semibold text-slate-500">{pct}%</div>
+                            <div className="hidden sm:block w-48 text-xs text-slate-400 truncate">{q?.text || ''}</div>
                           </div>
                         )
                       })}

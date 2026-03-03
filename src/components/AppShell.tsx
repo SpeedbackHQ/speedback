@@ -225,7 +225,7 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-4 py-8 pb-20 md:pb-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 pb-20 md:pb-8 overflow-x-hidden">
         {children}
       </main>
 

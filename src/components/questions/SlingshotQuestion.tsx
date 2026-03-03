@@ -160,10 +160,6 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
           if (navigator.vibrate) {
             navigator.vibrate([50, 30, 100])
           }
-
-          setTimeout(() => {
-            onAnswer(bestTarget.label)
-          }, 1200)
         } else {
           // Missed - reset
           setTimeout(() => {
@@ -329,25 +325,56 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         <AnimatePresence>
           {showResult && hitTarget && (
             <motion.div
-              className="absolute inset-0 flex items-center justify-center bg-black/30"
+              className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <motion.div
-                className="bg-white rounded-xl px-6 py-4 shadow-2xl text-center"
+                className="bg-white rounded-2xl px-6 py-5 shadow-2xl text-center max-w-xs w-full mx-4"
                 initial={{ scale: 0, rotate: -10 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
                 <motion.div
-                  className="text-4xl mb-2"
+                  className="text-5xl mb-3"
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 0.3, repeat: 2 }}
                 >
                   🎯
                 </motion.div>
-                <p className="text-lg font-bold text-gray-800">{hitTarget}</p>
-                <p className="text-sm text-gray-500">Direct hit!</p>
+                <p className="text-xl font-bold text-gray-800 mb-1">{hitTarget}</p>
+                <p className="text-sm text-gray-500 mb-6">Direct hit!</p>
+
+                {/* Confirm/Retry buttons */}
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={() => {
+                      // Reset for retry
+                      setIsLaunched(false)
+                      setPullback({ x: 0, y: 0 })
+                      setProjectilePos({ x: 50, y: 85 })
+                      setHitTarget(null)
+                      setShowResult(false)
+                      if (navigator.vibrate) navigator.vibrate(20)
+                    }}
+                    className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-colors"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    ↺ Retry
+                  </motion.button>
+                  <motion.button
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate([30, 50, 100])
+                      onAnswer(hitTarget)
+                    }}
+                    className="flex-1 py-3 px-4 bg-violet-500 hover:bg-violet-600 text-white rounded-xl font-semibold transition-colors"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    ✓ Confirm
+                  </motion.button>
+                </div>
               </motion.div>
             </motion.div>
           )}

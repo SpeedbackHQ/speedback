@@ -78,7 +78,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
   }
 
   // Transform drag position to visual feedback
-  const mainCardRotateX = useTransform(y, [-150, 0, 150], [15, 0, -15])
+  // Removed rotateX to keep movement strictly vertical (up/down)
   const mainCardScale = useTransform(y, [-150, 0, 150], [0.92, 1, 0.92])
 
   // Get indices for visible cards
@@ -98,7 +98,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-6">
-        Swipe to browse options
+        Swipe up or down to browse options
       </p>
 
       {/* Stacked cards container */}
@@ -166,7 +166,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
             cursor-grab active:cursor-grabbing select-none
             bg-gradient-to-br ${cardColors[currentIndex % cardColors.length]}
           `}
-          style={{ y, rotateX: mainCardRotateX, scale: mainCardScale }}
+          style={{ y, scale: mainCardScale }}
           drag={!isSubmitting ? 'y' : false}
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={0.3}
