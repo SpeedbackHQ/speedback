@@ -33,13 +33,14 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
 
   // Dynamic sizing based on option count (max 4 options)
   const targetSizeClass = options.length <= 3 ? 'w-14 h-14' : 'w-12 h-12'
-  const labelMaxWidth = options.length <= 3 ? 'max-w-20' : 'max-w-16'
+  const labelMaxWidth = options.length === 2 ? 'max-w-24' : options.length === 3 ? 'max-w-16' : 'max-w-14'
   const hitRadius = options.length <= 3 ? 12 : 10
 
   // All targets in a single row across the top
   const targets = options.map((label, i) => {
     const count = options.length
-    const totalWidth = count <= 3 ? 70 : 80
+    // Reduce width to prevent overflow
+    const totalWidth = count <= 2 ? 50 : count === 3 ? 60 : 68
     const xSpacing = count > 1 ? totalWidth / (count - 1) : 0
     const xOffset = count > 1 ? (100 - totalWidth) / 2 : 50
 
@@ -288,12 +289,11 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
 
               {/* Label below target */}
               <div
-                className={`mt-2 text-xs font-bold px-3 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md`}
+                className={`mt-2 text-xs font-bold px-2 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md truncate`}
                 style={{
                   backgroundColor: 'white',
                   color: target.color.label,
                   border: `2px solid ${target.color.label}`,
-                  minWidth: '60px'
                 }}
               >
                 {target.label}
