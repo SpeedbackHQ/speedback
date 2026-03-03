@@ -18,7 +18,6 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
   // Field-level validation errors (shown on blur)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({})
@@ -103,12 +102,10 @@ export default function SignupPage() {
 
       if (error) throw error
 
+      // Always redirect to dashboard on successful signup
+      // Users can access immediately; verification email sent in background
       if (data.user) {
-        if (data.session) {
-          window.location.href = '/dashboard'
-        } else {
-          setSuccess(true)
-        }
+        window.location.href = '/dashboard'
       }
     } catch (err: any) {
       console.error('Signup error:', err)
@@ -134,38 +131,6 @@ export default function SignupPage() {
       setError(humanizeError(err))
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center p-6"
-        style={{
-          background: 'linear-gradient(135deg, #F8F7FF 0%, #F3EEFF 50%, #EFF6FF 100%)',
-        }}
-      >
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">📧</div>
-            <h2 className="text-2xl font-outfit font-bold mb-3" style={{ color: '#8B5CF6' }}>
-              Check your email
-            </h2>
-            <p className="text-gray-600 mb-6">
-              We've sent a verification link to <strong>{email}</strong>
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              Click the link in the email to verify your account and get started with SpeedBack.
-            </p>
-            <Link
-              href="/login"
-              className="inline-block px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Go to Login
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   const fieldClass = (field: string) =>

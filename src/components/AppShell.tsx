@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/auth-client'
 import type { User } from '@supabase/supabase-js'
 import { BottomNav } from '@/components/ui/BottomNav'
+import { VerificationBanner } from '@/components/ui/VerificationBanner'
 
 interface NavItem {
   href: string
@@ -197,6 +198,11 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
       </header>
 
       <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-amber-500" aria-hidden="true" />
+
+      {/* Verification banner for unverified users */}
+      {user && !user.email_confirmed_at && user.email && (
+        <VerificationBanner userEmail={user.email} />
+      )}
 
       {/* Account sub-navigation tabs */}
       {accountTabs && (
