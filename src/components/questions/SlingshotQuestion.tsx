@@ -33,20 +33,28 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
 
   // Dynamic sizing based on option count (max 4 options)
   const targetSizeClass = options.length <= 3 ? 'w-14 h-14' : 'w-12 h-12'
-  const labelMaxWidth = options.length === 2 ? 'max-w-24' : options.length === 3 ? 'max-w-16' : 'max-w-14'
   const hitRadius = options.length <= 3 ? 12 : 10
 
-  // All targets in a single row across the top
+  // All targets in a single row across the top with proper centering
   const targets = options.map((label, i) => {
     const count = options.length
-    // Reduce width to prevent overflow
-    const totalWidth = count <= 2 ? 50 : count === 3 ? 60 : 68
-    const xSpacing = count > 1 ? totalWidth / (count - 1) : 0
-    const xOffset = count > 1 ? (100 - totalWidth) / 2 : 50
+
+    // Calculate evenly distributed positions across the width
+    // Leave margins on both sides and space targets evenly
+    let x: number
+    if (count === 1) {
+      x = 50 // Single target centered
+    } else if (count === 2) {
+      x = 30 + i * 40 // At 30% and 70% (equal 30% margins)
+    } else if (count === 3) {
+      x = 25 + i * 25 // At 25%, 50%, 75% (equal 25% margins)
+    } else {
+      x = 20 + i * 20 // At 20%, 40%, 60%, 80% (equal 20% margins)
+    }
 
     return {
       label,
-      x: count > 1 ? xOffset + i * xSpacing : 50,
+      x,
       y: 20,  // Top of screen - shoot upward at them
       color: targetColors[i % targetColors.length],
     }
@@ -289,11 +297,13 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
 
               {/* Label below target */}
               <div
-                className={`mt-2 text-xs font-bold px-2 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md truncate`}
+                className="mt-2 text-xs font-bold px-2 py-1 rounded-lg text-center leading-tight shadow-md line-clamp-2"
                 style={{
                   backgroundColor: 'white',
                   color: target.color.label,
                   border: `2px solid ${target.color.label}`,
+                  maxWidth: options.length === 2 ? '90px' : options.length === 3 ? '70px' : '60px',
+                  minHeight: '2.5rem',
                 }}
               >
                 {target.label}
