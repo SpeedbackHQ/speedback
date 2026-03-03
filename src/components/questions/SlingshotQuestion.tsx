@@ -40,22 +40,22 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
     const count = options.length
 
     // Calculate evenly distributed positions across the width
-    // Tighter grouping with equal margins on both sides
+    // Spread wider with equal margins on both sides
     let x: number
     if (count === 1) {
       x = 50 // Single target centered
     } else if (count === 2) {
-      x = 33.33 + i * 33.34 // At 33.33% and 66.67% (equal margins)
+      x = 25 + i * 50 // At 25% and 75% (equal 25% margins)
     } else if (count === 3) {
-      x = 30 + i * 20 // At 30%, 50%, 70% (equal 30% margins)
+      x = 20 + i * 30 // At 20%, 50%, 80% (equal 20% margins)
     } else {
-      x = 22.5 + i * 18.33 // At ~22.5%, ~40.8%, ~59.2%, ~77.5% (equal margins)
+      x = 15 + i * 23.33 // At 15%, ~38%, ~62%, 85% (equal 15% margins)
     }
 
     return {
       label,
       x,
-      y: 12,  // Much closer to top - align with reference image
+      y: 8,  // Very close to top edge
       color: targetColors[i % targetColors.length],
     }
   })
