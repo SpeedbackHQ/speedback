@@ -11,11 +11,11 @@ interface SlingshotQuestionProps {
 }
 
 const targetColors = [
-  { bg: 'bg-red-500', ring: 'ring-red-300', glow: 'shadow-red-500/50' },
-  { bg: 'bg-blue-500', ring: 'ring-blue-300', glow: 'shadow-blue-500/50' },
-  { bg: 'bg-green-500', ring: 'ring-green-300', glow: 'shadow-green-500/50' },
-  { bg: 'bg-purple-500', ring: 'ring-purple-300', glow: 'shadow-purple-500/50' },
-  { bg: 'bg-orange-500', ring: 'ring-orange-300', glow: 'shadow-orange-500/50' },
+  { outer: '#ef4444', middle: '#f87171', inner: '#fca5a5', label: '#dc2626' }, // red
+  { outer: '#3b82f6', middle: '#60a5fa', inner: '#93c5fd', label: '#2563eb' }, // blue
+  { outer: '#22c55e', middle: '#4ade80', inner: '#86efac', label: '#16a34a' }, // green
+  { outer: '#a855f7', middle: '#c084fc', inner: '#d8b4fe', label: '#9333ea' }, // purple
+  { outer: '#f97316', middle: '#fb923c', inner: '#fdba74', label: '#ea580c' }, // orange
 ]
 
 export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps) {
@@ -188,14 +188,19 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         {question.text}
       </motion.h2>
 
-      <p className="text-gray-500 text-center mb-4 text-sm">
-        Pull back and aim at your answer!
-      </p>
+      <motion.p
+        className="text-gray-600 text-center mb-4 text-sm font-medium"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        🎯 Pull back the slingshot and launch at your answer!
+      </motion.p>
 
       {/* Game area */}
       <motion.div
         ref={containerRef}
-        className="relative w-full aspect-[3/4] bg-gradient-to-b from-sky-200 to-green-100 rounded-2xl overflow-hidden shadow-lg touch-none"
+        className="relative w-full aspect-[3/4] bg-gradient-to-b from-amber-100 via-orange-50 to-yellow-100 rounded-2xl overflow-hidden shadow-lg touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -203,9 +208,16 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
-        {/* Targets */}
+        {/* Carnival game backdrop pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
+          <div className="absolute top-8 left-0 right-0 h-1 bg-blue-500" />
+          <div className="absolute top-16 left-0 right-0 h-1 bg-yellow-500" />
+        </div>
+        {/* Targets - carnival bullseye style */}
         {targets.map((target, index) => {
           const isHit = hitTarget === target.label
+          const targetSize = options.length <= 3 ? 56 : 48 // px
 
           return (
             <motion.div
@@ -216,34 +228,81 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
                 top: `${target.y}%`,
                 transform: 'translateX(-50%)',
               }}
-              initial={{ scale: 0 }}
-              animate={{ scale: isHit ? 1.3 : 1 }}
+              initial={{ y: -20, opacity: 0 }}
+              animate={{
+                y: 0,
+                opacity: 1,
+                scale: isHit ? 1.15 : 1,
+              }}
               transition={{ delay: index * 0.1, type: 'spring' }}
             >
-              {/* Target board */}
-              <div
-                className={`${targetSizeClass} rounded-lg ${target.color.bg} ${
-                  isHit ? `shadow-xl ${target.color.glow} ring-4 ${target.color.ring}` : 'shadow-md'
-                } flex items-center justify-center`}
-              >
+              {/* Target stand (pole) */}
+              <div className="absolute top-12 w-2 h-24 bg-gradient-to-b from-amber-700 to-amber-800 rounded-full"
+                   style={{ boxShadow: '2px 0 4px rgba(0,0,0,0.3)' }} />
+
+              {/* Bullseye target board */}
+              <div className="relative" style={{ width: targetSize, height: targetSize }}>
+                {/* Outer ring */}
+                <div
+                  className="absolute inset-0 rounded-full shadow-lg"
+                  style={{
+                    backgroundColor: target.color.outer,
+                    boxShadow: isHit ? `0 0 20px ${target.color.outer}` : '0 4px 8px rgba(0,0,0,0.2)'
+                  }}
+                />
+                {/* Middle ring */}
+                <div
+                  className="absolute inset-[15%] rounded-full"
+                  style={{ backgroundColor: target.color.middle }}
+                />
+                {/* Inner bullseye */}
+                <div
+                  className="absolute inset-[35%] rounded-full"
+                  style={{ backgroundColor: target.color.inner }}
+                />
+
+                {/* Hit explosion */}
                 {isHit && (
-                  <motion.div
-                    className="text-2xl"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                  >
-                    💥
-                  </motion.div>
+                  <>
+                    <motion.div
+                      className="absolute inset-0 flex items-center justify-center text-3xl z-10"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    >
+                      💥
+                    </motion.div>
+                    {/* Impact rings */}
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute inset-0 rounded-full border-4"
+                        style={{ borderColor: target.color.outer }}
+                        initial={{ scale: 1, opacity: 0.8 }}
+                        animate={{ scale: 1.8, opacity: 0 }}
+                        transition={{ duration: 0.6, delay: i * 0.1 }}
+                      />
+                    ))}
+                  </>
                 )}
               </div>
-              <span className={`mt-1 text-xs font-medium text-gray-700 bg-white/80 px-2 py-0.5 rounded text-center ${labelMaxWidth} leading-tight`}>
+
+              {/* Label below target */}
+              <div
+                className={`mt-1 text-xs font-bold px-2 py-1 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-sm`}
+                style={{
+                  backgroundColor: 'white',
+                  color: target.color.label,
+                  border: `2px solid ${target.color.label}`
+                }}
+              >
                 {target.label}
-              </span>
+              </div>
             </motion.div>
           )
         })}
 
-        {/* Slingshot */}
+        {/* Wooden slingshot base */}
         <div
           className="absolute"
           style={{
@@ -252,73 +311,128 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
             transform: 'translate(-50%, -50%)',
           }}
         >
-          {/* Left arm */}
-          <div className="absolute -left-8 -top-16 w-3 h-20 bg-amber-800 rounded-full origin-bottom rotate-[-15deg]" />
-          {/* Right arm */}
-          <div className="absolute -right-8 -top-16 w-3 h-20 bg-amber-800 rounded-full origin-bottom rotate-[15deg]" />
-          {/* Base */}
-          <div className="absolute -left-4 -top-4 w-8 h-8 bg-amber-700 rounded" />
+          {/* Base platform */}
+          <div className="absolute -left-6 -top-2 w-12 h-4 rounded"
+               style={{
+                 background: 'linear-gradient(to bottom, #92400e, #78350f)',
+                 boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+               }} />
+
+          {/* Left arm (Y-fork) */}
+          <div className="absolute -left-7 -top-16 w-3.5 h-20 rounded-full origin-bottom"
+               style={{
+                 background: 'linear-gradient(to right, #92400e, #78350f)',
+                 transform: 'rotate(-12deg)',
+                 boxShadow: '-2px 0 4px rgba(0,0,0,0.3)'
+               }} />
+
+          {/* Right arm (Y-fork) */}
+          <div className="absolute -right-7 -top-16 w-3.5 h-20 rounded-full origin-bottom"
+               style={{
+                 background: 'linear-gradient(to left, #92400e, #78350f)',
+                 transform: 'rotate(12deg)',
+                 boxShadow: '2px 0 4px rgba(0,0,0,0.3)'
+               }} />
 
           {/* Elastic bands */}
           {isDragging && (
-            <>
-              <svg
-                className="absolute pointer-events-none"
-                style={{
-                  left: -60,
-                  top: -70,
-                  width: 120,
-                  height: 100,
-                }}
-              >
-                {/* Left band */}
-                <line
-                  x1={15}
-                  y1={10}
-                  x2={60 + pullback.x}
-                  y2={70 + pullback.y}
-                  stroke="#8B4513"
-                  strokeWidth={4}
-                />
-                {/* Right band */}
-                <line
-                  x1={105}
-                  y1={10}
-                  x2={60 + pullback.x}
-                  y2={70 + pullback.y}
-                  stroke="#8B4513"
-                  strokeWidth={4}
-                />
-              </svg>
-            </>
+            <svg
+              className="absolute pointer-events-none"
+              style={{
+                left: -60,
+                top: -70,
+                width: 120,
+                height: 100,
+              }}
+            >
+              {/* Left band */}
+              <line
+                x1={15}
+                y1={10}
+                x2={60 + pullback.x}
+                y2={70 + pullback.y}
+                stroke="#451a03"
+                strokeWidth={3}
+                strokeLinecap="round"
+              />
+              {/* Right band */}
+              <line
+                x1={105}
+                y1={10}
+                x2={60 + pullback.x}
+                y2={70 + pullback.y}
+                stroke="#451a03"
+                strokeWidth={3}
+                strokeLinecap="round"
+              />
+              {/* Leather pouch */}
+              <ellipse
+                cx={60 + pullback.x}
+                cy={70 + pullback.y}
+                rx={12}
+                ry={6}
+                fill="#78350f"
+                stroke="#451a03"
+                strokeWidth={2}
+              />
+            </svg>
           )}
         </div>
 
         {/* Projectile (rock) */}
         <motion.div
-          className="absolute w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 shadow-lg"
+          className="absolute w-9 h-9 rounded-full shadow-lg z-30"
           style={{
             left: `${isLaunched ? projectilePos.x : launchOrigin.x + pullback.x}%`,
             top: `${isLaunched ? projectilePos.y : launchOrigin.y + pullback.y}%`,
-            marginLeft: -16,
-            marginTop: -16,
+            marginLeft: -18,
+            marginTop: -18,
+            background: 'radial-gradient(circle at 30% 30%, #9ca3af, #4b5563, #1f2937)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.3)',
           }}
-          animate={isDragging ? { scale: 1.1 } : {}}
+          animate={isDragging ? { scale: 1.15, rotate: 5 } : { rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 300 }}
         >
-          <div className="absolute top-1 left-2 w-2 h-1.5 rounded-full bg-white/50" />
+          {/* Rock texture/highlight */}
+          <div className="absolute top-1.5 left-2 w-3 h-2 rounded-full bg-white/40 blur-[1px]" />
+          <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-black/30" />
         </motion.div>
 
-        {/* Aim guide */}
+        {/* Aim guide - dotted trajectory line */}
         {isDragging && pullback.y !== 0 && (
-          <div
-            className="absolute w-1 h-16 bg-red-400/30 rounded"
+          <svg
+            className="absolute pointer-events-none"
             style={{
               left: `${launchOrigin.x}%`,
-              top: `${launchOrigin.y - 20}%`,
-              transform: `translateX(-50%) rotate(${Math.atan2(-pullback.x, pullback.y) * (180 / Math.PI)}deg)`,
-              transformOrigin: 'bottom center',
+              top: `${launchOrigin.y}%`,
+              width: 200,
+              height: 200,
+              marginLeft: -100,
+              marginTop: -100,
             }}
-          />
+          >
+            <line
+              x1={100}
+              y1={100}
+              x2={100 + (-pullback.x * 3)}
+              y2={100 + (-pullback.y * 3)}
+              stroke="#ef4444"
+              strokeWidth={2}
+              strokeDasharray="4 4"
+              opacity={0.5}
+            />
+            {/* Arrow head */}
+            <polygon
+              points={`
+                ${100 + (-pullback.x * 3)},${100 + (-pullback.y * 3) - 6}
+                ${100 + (-pullback.x * 3) - 4},${100 + (-pullback.y * 3) + 2}
+                ${100 + (-pullback.x * 3) + 4},${100 + (-pullback.y * 3) + 2}
+              `}
+              fill="#ef4444"
+              opacity={0.6}
+              transform={`rotate(${Math.atan2(-pullback.y, -pullback.x) * (180 / Math.PI) - 90}, ${100 + (-pullback.x * 3)}, ${100 + (-pullback.y * 3)})`}
+            />
+          </svg>
         )}
 
         {/* Result overlay */}
@@ -381,10 +495,17 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         </AnimatePresence>
       </motion.div>
 
-      {/* Instructions */}
-      <p className="mt-4 text-center text-xs text-gray-400">
-        Pull back from the slingshot, aim, and release!
-      </p>
+      {/* Visual hint when not interacting */}
+      {!isDragging && !isLaunched && !showResult && (
+        <motion.div
+          className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500"
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <span className="text-base">👆</span>
+          <span className="font-medium">Drag the rock back to aim</span>
+        </motion.div>
+      )}
     </div>
   )
 }
