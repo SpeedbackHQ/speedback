@@ -94,6 +94,13 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
     }
   }, [isDragging, isLaunched])
 
+  const handlePointerLeave = useCallback(() => {
+    // When pointer leaves, just reset drag state without launching
+    if (!isDragging) return
+    setIsDragging(false)
+    setPullback({ x: 0, y: 0 })
+  }, [isDragging])
+
   const handlePointerUp = useCallback(() => {
     if (!isDragging || isLaunched) return
     setIsDragging(false)
@@ -213,7 +220,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
