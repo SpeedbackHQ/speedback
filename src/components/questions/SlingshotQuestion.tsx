@@ -36,7 +36,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   const labelMaxWidth = options.length <= 3 ? 'max-w-20' : 'max-w-16'
   const hitRadius = options.length <= 3 ? 12 : 10
 
-  // All targets in a single row across the bottom (grounded)
+  // All targets in a single row across the top
   const targets = options.map((label, i) => {
     const count = options.length
     const totalWidth = count <= 3 ? 70 : 80
@@ -46,7 +46,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
     return {
       label,
       x: count > 1 ? xOffset + i * xSpacing : 50,
-      y: 68,  // Bottom third of screen
+      y: 20,  // Top of screen - shoot upward at them
       color: targetColors[i % targetColors.length],
     }
   })
@@ -208,15 +208,15 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
+        {/* Target backdrop board at top */}
+        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-amber-900/30 to-transparent border-b-2 border-amber-900/20" />
+
         {/* Carnival game backdrop pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
           <div className="absolute top-8 left-0 right-0 h-1 bg-blue-500" />
           <div className="absolute top-16 left-0 right-0 h-1 bg-yellow-500" />
         </div>
-
-        {/* Ground platform at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-amber-800/40 to-amber-900/60 border-t-2 border-amber-900/40" />
         {/* Targets - carnival bullseye style */}
         {targets.map((target, index) => {
           const isHit = hitTarget === target.label
@@ -286,24 +286,17 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
                 )}
               </div>
 
-              {/* Label below target with platform */}
-              <div className="flex flex-col items-center mt-2">
-                {/* Small decorative stand */}
-                <div className="w-1.5 h-8 bg-gradient-to-b from-amber-700 to-amber-800 rounded-full mb-1"
-                     style={{ boxShadow: '1px 0 2px rgba(0,0,0,0.3)' }} />
-
-                {/* Label on platform */}
-                <div
-                  className={`text-xs font-bold px-3 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md`}
-                  style={{
-                    backgroundColor: 'white',
-                    color: target.color.label,
-                    border: `2px solid ${target.color.label}`,
-                    minWidth: '60px'
-                  }}
-                >
-                  {target.label}
-                </div>
+              {/* Label below target */}
+              <div
+                className={`mt-2 text-xs font-bold px-3 py-1.5 rounded-lg text-center ${labelMaxWidth} leading-tight shadow-md`}
+                style={{
+                  backgroundColor: 'white',
+                  color: target.color.label,
+                  border: `2px solid ${target.color.label}`,
+                  minWidth: '60px'
+                }}
+              >
+                {target.label}
               </div>
             </motion.div>
           )
