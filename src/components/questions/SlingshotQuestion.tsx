@@ -512,10 +512,28 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
         </AnimatePresence>
       </motion.div>
 
+      {/* Options legend */}
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {targets.map((target, index) => (
+          <motion.span
+            key={target.label}
+            className={`px-3 py-1 rounded-full text-sm font-medium text-white ${
+              hitTarget === target.label ? 'ring-2 ring-offset-2 ring-gray-400' : ''
+            }`}
+            style={{ backgroundColor: target.color.outer }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 * index }}
+          >
+            {target.label}
+          </motion.span>
+        ))}
+      </div>
+
       {/* Visual hint when not interacting */}
       {!isDragging && !isLaunched && !showResult && (
         <motion.div
-          className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500"
+          className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500"
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
