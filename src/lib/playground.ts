@@ -5,6 +5,7 @@ import { getDefaultConfig } from '@/components/QuestionEditor'
 // Fun sample question text per type
 const demoQuestionTexts: Record<string, string> = {
   swipe: 'Is pizza the best food ever?',
+  this_or_that: 'Coffee or tea?',
   slider: 'How excited are you right now?',
   tap: 'Which superpowers would you want?',
   tap_meter: 'What is your favorite season?',

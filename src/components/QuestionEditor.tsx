@@ -21,41 +21,64 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'swipe':
       return { left_label: 'No', right_label: 'Yes', up_label: 'Meh', show_meh: false }
     case 'this_or_that':
-      return { left_label: 'This', right_label: 'That' }
+      return { left_label: 'Coffee', right_label: 'Tea' }
     case 'slider':
     case 'thermometer':
       return { min_label: 'Not great', max_label: 'Amazing!' }
     case 'stars':
       return { min_label: 'Poor', max_label: 'Excellent' }
     case 'tap':
-      return { options: ['Option 1', 'Option 2', 'Option 3'], multi_select: true }
+      return { options: ['Flying', 'Invisibility', 'Time travel'], multi_select: true }
     case 'paint_splatter':
+      return { options: ['Leadership', 'Creativity', 'Communication'] }
     case 'bingo_card':
+      return { options: ['AI', 'Design', 'Marketing', 'Engineering'] }
     case 'shopping_cart':
+      return { options: ['Free lunch', 'Gym pass', 'Extra PTO'] }
     case 'sticker_board':
+      return { options: ['Innovation', 'Teamwork', 'Growth'] }
     case 'jar_fill':
+      return { options: ['Trust', 'Communication', 'Fun'] }
     case 'conveyor_belt':
+      return { options: ['Dark mode', 'Mobile app', 'Integrations'] }
     case 'magnet_board':
+      return { options: ['Culture', 'Growth', 'Impact'] }
     case 'claw_machine':
-      return { options: ['Option 1', 'Option 2', 'Option 3'] }
+      return { options: ['Health plan', 'Remote work', 'Stock options'] }
     case 'tap_meter':
+      return { options: ['Spring', 'Summer', 'Autumn', 'Winter'] }
     case 'rolodex':
+      return { options: ['Beach', 'Mountains', 'City', 'Countryside'] }
     case 'fanned':
+      return { options: ['Red', 'Blue', 'Green', 'Purple'] }
     case 'fanned_swipe':
+      return { options: ['Pop', 'Rock', 'Jazz', 'Hip-hop'] }
     case 'stacked':
+      return { options: ['Dog', 'Cat', 'Rabbit', 'Parrot'] }
     case 'tilt_maze':
+      return { options: ['Love it', 'Needs work', 'Not sure'] }
     case 'racing_lanes':
+      return { options: ['Alpha', 'Beta', 'Gamma', 'Delta'] }
     case 'gravity_drop':
+      return { options: ['Product', 'Marketing', 'Engineering'] }
     case 'bubble_pop':
+      return { options: ['Pizza', 'Sushi', 'Tacos', 'Pasta'] }
     case 'slingshot':
+      return { options: ['Option A', 'Option B', 'Option C'] }
     case 'scratch_card':
+      return { options: ['Prize 1', 'Prize 2', 'Prize 3'] }
     case 'treasure_chest':
+      return { options: ['Gold', 'Silver', 'Bronze'] }
     case 'pinata':
+      return { options: ['Candy', 'Confetti', 'Surprise'] }
     case 'spin_stop':
+      return { options: ['Speed', 'Quality', 'Design'] }
     case 'door_choice':
+      return { options: ['Mystery A', 'Mystery B', 'Mystery C', 'Mystery D'] }
     case 'whack_a_mole':
+      return { options: ['Bugs', 'Meetings', 'Email', 'Slack'] }
     case 'flick':
-      return { options: ['Option 1', 'Option 2', 'Option 3'] }
+      return { options: ['Chips', 'Chocolate', 'Fruit', 'Coffee'] }
     case 'bullseye':
       return { min_label: 'Disagree', max_label: 'Agree' }
     case 'dial':
