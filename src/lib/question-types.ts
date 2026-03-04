@@ -13,7 +13,8 @@ export const questionCategories: Record<string, { description: string; types: Qu
   'Yes/No': {
     description: 'Binary choice questions',
     types: [
-      { type: 'swipe', label: 'Swipe Cards', emoji: '👆', description: 'Swipe left/right', tooltip: '💡 Group multiple Yes/No questions together for rapid-fire streaks!' },
+      { type: 'swipe', label: 'Like / Dislike', emoji: '👍', description: 'Swipe yes or no', tooltip: '💡 Best for agree/disagree or like/dislike. Group multiple for rapid-fire streaks!' },
+      { type: 'this_or_that', label: 'This or That', emoji: '⚔️', description: 'Pick A or B', tooltip: '💡 Great for "coffee or tea?" style preference questions' },
       { type: 'toggle_switch', label: 'Toggle Switch', emoji: '🔘', description: 'Flick to choose' },
       { type: 'tug_of_war', label: 'Tug of War', emoji: '🪢', description: 'Drag to your side' },
     ],

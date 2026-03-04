@@ -8,6 +8,7 @@ type GestureType = 'swipe-lr' | 'drag-to-target' | 'pull-release' | 'drag-side' 
 
 const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   swipe: 'swipe-lr',
+  this_or_that: 'swipe-lr',
   tilt_maze: 'drag-to-target',
   bullseye: 'drag-to-target',
   slingshot: 'pull-release',
@@ -28,7 +29,7 @@ const gestureForType: Partial<Record<QuestionType, GestureType>> = {
 }
 
 const gestureConfig: Record<GestureType, { text: string }> = {
-  'swipe-lr': { text: 'Swipe to choose' },
+  'swipe-lr': { text: 'Swipe or tap to choose' },
   'drag-to-target': { text: 'Drag to your answer' },
   'pull-release': { text: 'Pull back and release' },
   'drag-side': { text: 'Drag to set your value' },

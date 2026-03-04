@@ -10,10 +10,10 @@ interface DoorChoiceQuestionProps {
 }
 
 const doorColors = [
-  { frame: 'bg-violet-500', panel: 'bg-violet-500', knob: 'bg-amber-400' },
-  { frame: 'bg-rose-600', panel: 'bg-rose-500', knob: 'bg-amber-400' },
-  { frame: 'bg-emerald-600', panel: 'bg-emerald-500', knob: 'bg-amber-400' },
-  { frame: 'bg-amber-600', panel: 'bg-amber-500', knob: 'bg-amber-700' },
+  { frame: 'bg-violet-700', panel: 'bg-violet-500', knob: 'bg-amber-400' },
+  { frame: 'bg-rose-700', panel: 'bg-rose-500', knob: 'bg-amber-400' },
+  { frame: 'bg-emerald-700', panel: 'bg-emerald-500', knob: 'bg-amber-400' },
+  { frame: 'bg-amber-700', panel: 'bg-amber-500', knob: 'bg-amber-300' },
 ]
 
 export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionProps) {
@@ -92,9 +92,9 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
               onClick={() => handleDoorTap(i)}
             >
               {/* Door frame */}
-              <div className={`${color.frame} rounded-xl p-1.5 shadow-lg`} style={{ height: 160 }}>
+              <div className={`${color.frame} rounded-t-2xl rounded-b-lg p-2 shadow-lg`} style={{ height: 200 }}>
                 {/* Content behind door */}
-                <div className="absolute inset-1.5 rounded-lg bg-yellow-50 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-2 rounded-t-xl rounded-b-md bg-yellow-50 flex items-center justify-center overflow-hidden">
                   <AnimatePresence>
                     {isChosen && (phase === 'revealing' || phase === 'revealed') && (
                       <motion.div
@@ -125,7 +125,7 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
 
                 {/* Door panel (swings open) */}
                 <motion.div
-                  className={`absolute inset-1.5 ${color.panel} rounded-lg flex flex-col items-center justify-center shadow-md`}
+                  className={`absolute inset-2 ${color.panel} rounded-t-xl rounded-b-md flex flex-col items-center justify-center shadow-md`}
                   style={{ transformOrigin: 'left center' }}
                   animate={{
                     rotateY: isChosen && phase !== 'picking' ? -110 : 0,
@@ -141,8 +141,11 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
                   {/* Option label */}
                   <span className="text-lg font-bold text-white/90 text-center px-2 leading-tight">{option}</span>
 
+                  {/* Panel divider line */}
+                  <div className="absolute left-3 right-8 top-[45%] h-px bg-white/20 rounded-full" />
+
                   {/* Knob */}
-                  <div className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${color.knob} shadow-sm`} />
+                  <div className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full ${color.knob} shadow-md ring-1 ring-black/10`} />
                 </motion.div>
               </div>
             </motion.div>

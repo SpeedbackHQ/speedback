@@ -6,7 +6,7 @@ import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
 import { GestureHint, getGestureType } from './GestureHint'
-import { SwipeQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
+import { SwipeQuestion, ThisOrThatQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions, InlineFollowUp, QuestionConfig } from '@/lib/types'
 import { track } from '@/lib/analytics'
@@ -333,6 +333,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
             hasNextSwipe={hasNextSwipe}
           />
         )
+      case 'this_or_that':
+        return <ThisOrThatQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'slider':
         return <SliderQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'tap':

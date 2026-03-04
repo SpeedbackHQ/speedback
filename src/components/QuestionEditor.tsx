@@ -20,6 +20,8 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
   switch (type) {
     case 'swipe':
       return { left_label: 'No', right_label: 'Yes', up_label: 'Meh', show_meh: false }
+    case 'this_or_that':
+      return { left_label: 'This', right_label: 'That' }
     case 'slider':
     case 'thermometer':
       return { min_label: 'Not great', max_label: 'Amazing!' }
@@ -211,6 +213,7 @@ export function QuestionEditor({
           </div>
         )
 
+      case 'this_or_that':
       case 'toggle_switch':
       case 'tug_of_war':
         return (
@@ -448,7 +451,7 @@ export function QuestionEditor({
     const followUp = question.config.follow_up as InlineFollowUp | undefined
     const conditionKind = ['slider', 'thermometer', 'stars', 'dial'].includes(question.type)
       ? 'scale'
-      : ['swipe', 'toggle_switch'].includes(question.type)
+      : ['swipe', 'this_or_that', 'toggle_switch'].includes(question.type)
       ? 'binary'
       : 'choice'
 
@@ -506,6 +509,11 @@ export function QuestionEditor({
             { label: 'Yes (→ right)', value: 'right' },
             { label: 'No (← left)', value: 'left' },
             { label: 'Skip (↑ up)', value: 'up' },
+          ]
+        : question.type === 'this_or_that'
+        ? [
+            { label: (question.config.left_label as string) || 'This', value: (question.config.left_label as string) || 'This' },
+            { label: (question.config.right_label as string) || 'That', value: (question.config.right_label as string) || 'That' },
           ]
         : [
             { label: (question.config.right_label as string) || 'Right', value: 'right' },

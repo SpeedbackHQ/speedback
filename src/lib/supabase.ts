@@ -8,7 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // Types for our database
 // Core question types + mechanics for single-select and scale
 export type QuestionType =
-  | 'swipe' | 'slider' | 'tap' | 'rank' | 'counter'
+  | 'swipe' | 'this_or_that' | 'slider' | 'tap' | 'rank' | 'counter'
   | 'tap_meter' | 'rolodex' | 'stars' | 'thermometer'
   | 'fanned' | 'fanned_swipe' | 'stacked'
   // Mini-games

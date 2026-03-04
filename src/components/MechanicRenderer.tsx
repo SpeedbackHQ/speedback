@@ -8,6 +8,7 @@ import { Question, AnswerValue } from '@/lib/types'
 import { GestureHint, getGestureType } from './GestureHint'
 import {
   SwipeQuestion,
+  ThisOrThatQuestion,
   SliderQuestion,
   TapQuestion,
   TapMeterQuestion,
@@ -71,6 +72,8 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
   switch (question.type) {
     case 'swipe':
       content = <SwipeQuestion {...props} />; break
+    case 'this_or_that':
+      content = <ThisOrThatQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'slider':
       content = <SliderQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'tap':

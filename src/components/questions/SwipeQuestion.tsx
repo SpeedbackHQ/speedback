@@ -124,7 +124,7 @@ export function SwipeQuestion({
               {question.text}
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm">
-              Swipe {show_meh ? 'left, right, or up' : 'left or right'}
+              Swipe or tap to choose
             </p>
           </div>
 
@@ -150,7 +150,7 @@ export function SwipeQuestion({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-red-500 text-2xl font-bold">✗</span>
+              <span className="text-2xl">👎</span>
             </motion.button>
 
             {/* Meh button (optional) */}
@@ -162,7 +162,7 @@ export function SwipeQuestion({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="text-amber-500 text-xl font-bold">~</span>
+                <span className="text-xl">😐</span>
               </motion.button>
             )}
 
@@ -174,7 +174,7 @@ export function SwipeQuestion({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-emerald-500 text-2xl">♥</span>
+              <span className="text-2xl">👍</span>
             </motion.button>
           </div>
 

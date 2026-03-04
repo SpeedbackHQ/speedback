@@ -1,4 +1,5 @@
 export { SwipeQuestion } from './SwipeQuestion'
+export { ThisOrThatQuestion } from './ThisOrThatQuestion'
 export { SliderQuestion } from './SliderQuestion'
 export { TapQuestion } from './TapQuestion'
 export { TapMeterQuestion } from './TapMeterQuestion'
