@@ -194,10 +194,10 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
   }, [isDragging, isLaunched, pullback, targets, onAnswer])
 
   return (
-    <div className="w-full max-w-md mx-auto px-4">
+    <div className="w-full h-full max-w-md mx-auto px-4 flex flex-col">
       {/* Question text */}
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2 flex-shrink-0"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -205,7 +205,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
       </motion.h2>
 
       <motion.p
-        className="text-gray-600 text-center mb-4 text-sm font-medium"
+        className="text-gray-600 text-center mb-4 text-sm font-medium flex-shrink-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -216,7 +216,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
       {/* Game area */}
       <motion.div
         ref={containerRef}
-        className="relative w-full aspect-[3/4] bg-gradient-to-b from-amber-100 via-orange-50 to-yellow-100 rounded-2xl overflow-hidden shadow-lg touch-none"
+        className="relative w-full flex-1 min-h-0 bg-gradient-to-b from-amber-100 via-orange-50 to-yellow-100 rounded-2xl overflow-hidden shadow-lg touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -304,12 +304,12 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
 
               {/* Label below target */}
               <div
-                className="mt-2 text-xs font-bold px-2 py-1 rounded-lg text-center leading-tight shadow-md line-clamp-2"
+                className="mt-2 text-xs font-bold px-2 py-1 rounded-lg text-center leading-tight shadow-md line-clamp-3"
                 style={{
                   backgroundColor: 'white',
                   color: target.color.label,
                   border: `2px solid ${target.color.label}`,
-                  maxWidth: options.length === 2 ? '90px' : options.length === 3 ? '70px' : '60px',
+                  maxWidth: options.length === 2 ? '120px' : options.length === 3 ? '90px' : '75px',
                   minHeight: '2.5rem',
                 }}
               >
@@ -513,7 +513,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
       </motion.div>
 
       {/* Options legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
+      <div className="mt-4 flex flex-wrap justify-center gap-2 flex-shrink-0">
         {targets.map((target, index) => (
           <motion.span
             key={target.label}

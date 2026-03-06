@@ -144,7 +144,7 @@ export async function getUserSubscription(userId: string) {
     .select('*')
     .eq('user_id', userId)
     .eq('status', 'active')
-    .single()
+    .maybeSingle()
 
   if (error || !data) {
     // No active subscription = free tier

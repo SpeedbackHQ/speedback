@@ -69,7 +69,7 @@ export default async function PlaySurveyPage({ params }: PageProps) {
     .from('user_profiles')
     .select('plan_type, id')
     .eq('id', survey.user_id)
-    .single()
+    .maybeSingle()
 
   // Get survey owner's email to check if test account
   const { data: ownerUser } = await supabase.auth.admin.getUserById(survey.user_id)

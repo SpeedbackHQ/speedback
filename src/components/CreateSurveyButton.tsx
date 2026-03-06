@@ -36,7 +36,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         .from('user_profiles')
         .select('plan_type, premium_credits')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       // Determine max_responses based on plan type and credits
       let maxResponses: number | null = 25 // Default for free users
@@ -59,7 +59,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         .from('organizations')
         .select('id')
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (!org) {
         const { data: newOrg } = await supabase

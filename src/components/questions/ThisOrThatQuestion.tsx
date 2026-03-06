@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { Question } from '@/lib/types'
 
@@ -12,6 +12,7 @@ interface ThisOrThatQuestionProps {
 export function ThisOrThatQuestion({ question, onAnswer }: ThisOrThatQuestionProps) {
   const [isExiting, setIsExiting] = useState(false)
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null)
+  const hasDragged = useRef(false)
 
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 200], [-15, 15])
@@ -68,11 +69,17 @@ export function ThisOrThatQuestion({ question, onAnswer }: ThisOrThatQuestionPro
     <div className="relative flex flex-col items-center justify-center h-full w-full">
       <div className="flex items-center justify-center w-full relative">
         <motion.div
-          className="w-[92vw] max-w-md h-[70vh] max-h-[520px] bg-white rounded-3xl shadow-2xl flex flex-col cursor-grab active:cursor-grabbing overflow-hidden"
+          className="w-[92vw] max-w-md h-[65dvh] max-h-[480px] bg-white rounded-3xl shadow-2xl flex flex-col cursor-grab active:cursor-grabbing overflow-hidden"
           style={{ x, rotate, background }}
           drag
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
           dragElastic={0.9}
+          onDragStart={() => { hasDragged.current = false }}
+          onDrag={(_: never, info: PanInfo) => {
+            if (Math.abs(info.offset.x) > 5) {
+              hasDragged.current = true
+            }
+          }}
           onDragEnd={handleDragEnd}
           animate={isExiting && exitDirection ? exitVariants[exitDirection] : {}}
           whileTap={{ scale: 1.02 }}
@@ -82,16 +89,13 @@ export function ThisOrThatQuestion({ question, onAnswer }: ThisOrThatQuestionPro
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2 break-words max-w-md px-2">
               {question.text}
             </h2>
-            <p className="text-slate-400 text-xs sm:text-sm">
-              Swipe or tap to choose
-            </p>
           </div>
 
           {/* VS display — the two options */}
           <div className="flex-1 flex items-center justify-center px-6 gap-4">
             {/* Left option */}
             <motion.button
-              onClick={() => !isExiting && triggerExit('left')}
+              onClick={() => !isExiting && !hasDragged.current && triggerExit('left')}
               className="flex-1 h-32 rounded-2xl bg-blue-50 border-2 border-blue-200 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow active:scale-95 px-3"
               style={{ opacity: leftOpacity, scale: leftScale }}
               whileHover={{ scale: 1.05 }}
@@ -111,7 +115,7 @@ export function ThisOrThatQuestion({ question, onAnswer }: ThisOrThatQuestionPro
 
             {/* Right option */}
             <motion.button
-              onClick={() => !isExiting && triggerExit('right')}
+              onClick={() => !isExiting && !hasDragged.current && triggerExit('right')}
               className="flex-1 h-32 rounded-2xl bg-green-50 border-2 border-green-200 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow active:scale-95 px-3"
               style={{ opacity: rightOpacity, scale: rightScale }}
               whileHover={{ scale: 1.05 }}
@@ -125,8 +129,8 @@ export function ThisOrThatQuestion({ question, onAnswer }: ThisOrThatQuestionPro
 
           {/* Swipe hint arrows */}
           <div className="flex items-center justify-between px-10 pb-8 text-slate-300">
-            <span className="text-sm">← {left_label}</span>
-            <span className="text-sm">{right_label} →</span>
+            <span className="text-sm">←</span>
+            <span className="text-sm">→</span>
           </div>
         </motion.div>
       </div>

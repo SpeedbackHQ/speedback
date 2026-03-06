@@ -17,7 +17,7 @@ export default async function NewSurveyPage() {
     .select('id')
     .eq('user_id', user.id)
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (!org) {
     const { data: newOrg } = await supabase

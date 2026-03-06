@@ -152,10 +152,10 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
   }, [])
 
   return (
-    <div className="w-full max-w-md mx-auto px-4">
+    <div className="w-full h-full max-w-md mx-auto px-4 flex flex-col">
       {/* Question text */}
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2 flex-shrink-0"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -175,7 +175,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
       {/* Game area */}
       <motion.div
         ref={containerRef}
-        className="relative w-full aspect-[3/4] bg-gradient-to-b from-sky-200 to-sky-100 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
+        className="relative w-full flex-1 min-h-0 bg-gradient-to-b from-sky-200 to-sky-100 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
         onClick={!showResult ? handleDrop : undefined}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

@@ -31,7 +31,7 @@ export default function BillingPage() {
         .from('user_profiles')
         .select('plan_type')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (profile) {
         setPlanType(profile.plan_type || 'free')

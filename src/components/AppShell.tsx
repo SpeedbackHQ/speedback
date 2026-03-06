@@ -60,7 +60,7 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
     setProfile(data)
   }
 

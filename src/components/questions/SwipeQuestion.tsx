@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { Question, SwipeAnswer } from '@/lib/types'
 
@@ -21,6 +21,7 @@ export function SwipeQuestion({
 }: SwipeQuestionProps) {
   const [isExiting, setIsExiting] = useState(false)
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | 'up' | null>(null)
+  const hasDragged = useRef(false)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -107,13 +108,19 @@ export function SwipeQuestion({
     <div className="relative flex flex-col items-center justify-center h-full w-full">
       <div className="flex items-center justify-center w-full relative">
         <motion.div
-          className={`w-[92vw] max-w-md h-[70vh] max-h-[520px] bg-white rounded-3xl shadow-2xl flex flex-col cursor-grab active:cursor-grabbing overflow-hidden ${
+          className={`w-[92vw] max-w-md h-[65dvh] max-h-[480px] bg-white rounded-3xl shadow-2xl flex flex-col cursor-grab active:cursor-grabbing overflow-hidden ${
             isInStreak ? 'ring-2 ring-violet-400/50' : ''
           } ${isSpeedBonus ? 'ring-orange-400/60' : ''}`}
           style={{ x, y, rotate, background, boxShadow: streakGlow }}
           drag
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
           dragElastic={0.9}
+          onDragStart={() => { hasDragged.current = false }}
+          onDrag={(_: never, info: PanInfo) => {
+            if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) {
+              hasDragged.current = true
+            }
+          }}
           onDragEnd={handleDragEnd}
           animate={isExiting && exitDirection ? exitVariants[exitDirection] : {}}
           whileTap={{ scale: 1.02 }}
@@ -123,9 +130,6 @@ export function SwipeQuestion({
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2 break-words max-w-md px-2">
               {question.text}
             </h2>
-            <p className="text-slate-400 text-xs sm:text-sm">
-              Swipe or tap to choose
-            </p>
           </div>
 
           {/* Swipe up indicator for meh */}
@@ -144,7 +148,7 @@ export function SwipeQuestion({
           <div className={`flex items-center justify-center gap-6 pb-8 px-6 ${show_meh ? 'gap-4' : 'gap-12'}`}>
             {/* No button */}
             <motion.button
-              onClick={() => !isExiting && triggerExit('left')}
+              onClick={() => !isExiting && !hasDragged.current && triggerExit('left')}
               className="w-16 h-16 rounded-full bg-red-100 border-2 border-red-200 flex flex-col items-center justify-center shadow-md hover:shadow-lg transition-shadow active:scale-95"
               style={{ scale: leftButtonScale }}
               whileHover={{ scale: 1.1 }}
@@ -156,7 +160,7 @@ export function SwipeQuestion({
             {/* Meh button (optional) */}
             {show_meh && (
               <motion.button
-                onClick={() => !isExiting && triggerExit('up')}
+                onClick={() => !isExiting && !hasDragged.current && triggerExit('up')}
                 className="w-14 h-14 rounded-full bg-amber-100 border-2 border-amber-200 flex flex-col items-center justify-center shadow-md hover:shadow-lg transition-shadow active:scale-95"
                 style={{ scale: upButtonScale }}
                 whileHover={{ scale: 1.1 }}
@@ -168,7 +172,7 @@ export function SwipeQuestion({
 
             {/* Yes button */}
             <motion.button
-              onClick={() => !isExiting && triggerExit('right')}
+              onClick={() => !isExiting && !hasDragged.current && triggerExit('right')}
               className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-200 flex flex-col items-center justify-center shadow-md hover:shadow-lg transition-shadow active:scale-95"
               style={{ scale: rightButtonScale }}
               whileHover={{ scale: 1.1 }}

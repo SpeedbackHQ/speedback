@@ -441,6 +441,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         surveyId={survey.id}
         responseId={responseId}
         showSpeedbackBranding={showSpeedbackBranding}
+        demoLeaderboard={survey.branding_config?.demo_leaderboard}
       />
     )
   }

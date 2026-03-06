@@ -33,7 +33,8 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { options: rawOptions = [], multi_select = true } = question.config
-  const options = (rawOptions as string[]).slice(0, 4)  // Cap at 4 options max
+  const options = (rawOptions as string[]).slice(0, 6)  // Cap at 6 options max
+  const useGrid = options.length >= 5
 
   const handleTap = (option: string, event: React.MouseEvent<HTMLButtonElement>, colorIndex: number) => {
     const colors = optionColors[colorIndex % optionColors.length]
@@ -95,7 +96,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
     <div className="w-full max-w-md mx-auto px-4" ref={containerRef}>
       {/* Question text */}
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -106,8 +107,8 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
         {multi_select ? 'Tap all that apply' : 'Tap to select'}
       </p>
 
-      {/* Vertical stack of options */}
-      <div className="flex flex-col gap-3 relative">
+      {/* Options layout: vertical stack for <=4, 2-column grid for 5+ */}
+      <div className={`${useGrid ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-3'} relative`}>
         <AnimatePresence>
           {(options as string[]).map((option, index) => {
             const isSelected = selected.includes(option)
@@ -119,7 +120,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
                 key={option}
                 onClick={(e) => handleTap(option, e, index)}
                 className={`
-                  relative w-full py-4 px-6 rounded-xl font-semibold text-left
+                  relative w-full ${useGrid ? 'py-3 px-4' : 'py-4 px-6'} rounded-xl font-semibold text-left
                   border-2 overflow-hidden
                   ${isSelected
                     ? `${colors.selectedBg} ${colors.selectedText} border-transparent`
@@ -199,9 +200,9 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
                     />
                   ))}
 
-                <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center justify-between relative z-10 gap-2">
                   <motion.span
-                    className="text-lg"
+                    className={`${useGrid ? 'text-base break-words leading-tight' : 'text-lg'}`}
                     animate={{ scale: isSelected ? 1.03 : 1 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   >
@@ -211,7 +212,7 @@ export function TapQuestion({ question, onAnswer }: TapQuestionProps) {
                   {/* Selection indicator */}
                   <motion.div
                     className={`
-                      w-7 h-7 rounded-full flex items-center justify-center
+                      ${useGrid ? 'w-6 h-6' : 'w-7 h-7'} rounded-full flex items-center justify-center flex-shrink-0
                       ${isSelected
                         ? 'bg-white/30'
                         : `border-2 ${colors.border}`

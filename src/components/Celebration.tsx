@@ -13,6 +13,7 @@ interface CelebrationProps {
   responseId?: string | null
   onComplete?: () => void
   showSpeedbackBranding?: boolean
+  demoLeaderboard?: LeaderboardEntry[] | null
 }
 
 interface LeaderboardEntry {
@@ -106,7 +107,7 @@ const generateConfetti = () => Array.from({ length: 50 }, (_, i) => {
 
 const CONFETTI_DATA = generateConfetti()
 
-export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, percentile, surveyId, responseId, onComplete, showSpeedbackBranding = false }: CelebrationProps) {
+export function Celebration({ message = 'Thanks for your feedback!', elapsedTime, percentile, surveyId, responseId, onComplete, showSpeedbackBranding = false, demoLeaderboard }: CelebrationProps) {
   const confetti = useMemo(() => CONFETTI_DATA, [])
   const hasPlayedChime = useRef(false)
   const [stage, setStage] = useState<CelebrationStage>('results')
@@ -124,10 +125,16 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
     }
   }, [])
 
-  // Auto-advance to initials prompt after 2s (only if we have a responseId to update)
+  // Show leaderboard button after a delay (only if we have a responseId)
+  const [showLeaderboardButton, setShowLeaderboardButton] = useState(false)
+  const [buttonInteractive, setButtonInteractive] = useState(false)
   useEffect(() => {
     if (stage === 'results' && responseId) {
-      const timer = setTimeout(() => setStage('initials'), 2000)
+      const timer = setTimeout(() => {
+        setShowLeaderboardButton(true)
+        // Guard against ghost taps from previous question — delay interactivity
+        setTimeout(() => setButtonInteractive(true), 400)
+      }, 1500)
       return () => clearTimeout(timer)
     }
   }, [stage, responseId])
@@ -151,13 +158,18 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
         .order('duration_ms', { ascending: true })
         .limit(10)
 
-      if (data) {
-        setLeaderboard(data as LeaderboardEntry[])
-        track('leaderboard_viewed', { survey_id: surveyId, entry_count: data.length })
-      }
+      // Merge demo/seed entries with real entries, sort, take top 10
+      const realEntries = (data ?? []) as LeaderboardEntry[]
+      const merged = demoLeaderboard
+        ? [...realEntries, ...demoLeaderboard].sort((a, b) => a.duration_ms - b.duration_ms).slice(0, 10)
+        : realEntries
+
+      setLeaderboard(merged)
+      track('leaderboard_viewed', { survey_id: surveyId, entry_count: merged.length })
 
       // Compute user's overall rank if they have a time
       if (elapsedTime) {
+        // Count real entries faster than user + demo entries faster than user
         const { count } = await supabase
           .from('responses')
           .select('*', { count: 'exact', head: true })
@@ -166,12 +178,13 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
           .not('initials', 'is', null)
           .lt('duration_ms', elapsedTime)
 
-        setUserOverallRank((count ?? 0) + 1)
+        const demoFaster = demoLeaderboard?.filter(e => e.duration_ms < elapsedTime).length ?? 0
+        setUserOverallRank((count ?? 0) + demoFaster + 1)
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)
     }
-  }, [surveyId, elapsedTime])
+  }, [surveyId, elapsedTime, demoLeaderboard])
 
   const submitInitials = async () => {
     if (!responseId || !initials.trim() || isSubmitting) return
@@ -312,6 +325,22 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                   </motion.p>
                 )}
               </AnimatePresence>
+
+              {/* Leaderboard opt-in button */}
+              {showLeaderboardButton && (
+                <motion.button
+                  onClick={() => buttonInteractive && setStage('initials')}
+                  className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white/90 font-medium hover:bg-white/30 transition-colors"
+                  style={{ pointerEvents: buttonInteractive ? 'auto' : 'none' }}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {percentileCopy ? 'See where you rank →' : 'See the leaderboard →'}
+                </motion.button>
+              )}
             </motion.div>
           )}
 
@@ -483,26 +512,31 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                 </motion.div>
               )}
 
-              {onComplete && (
-                <motion.button
-                  onClick={onComplete}
-                  className="mt-4 px-8 py-3 bg-white text-violet-500 font-bold rounded-full shadow-lg"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Done
-                </motion.button>
-              )}
+              <motion.button
+                onClick={() => {
+                  setShowLeaderboardButton(false)
+                  setButtonInteractive(false)
+                  setStage('results')
+                  // Re-show button after returning
+                  setTimeout(() => {
+                    setShowLeaderboardButton(true)
+                    setTimeout(() => setButtonInteractive(true), 400)
+                  }, 500)
+                }}
+                className="mt-4 text-white/60 text-sm font-medium hover:text-white/80 transition-colors"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                ← Back
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Speedback branding (for free users) */}
-      {showSpeedbackBranding && (
+      {/* Speedback branding (for free users) — hidden on leaderboard to avoid overlap */}
+      {showSpeedbackBranding && stage !== 'leaderboard' && (
         <motion.div
           className="absolute bottom-6 left-0 right-0 flex justify-center z-10"
           initial={{ y: 20, opacity: 0 }}

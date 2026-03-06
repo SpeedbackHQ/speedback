@@ -127,7 +127,7 @@ export function SpinStopQuestion({ question, onAnswer }: SpinStopQuestionProps) 
   return (
     <div className="w-full max-w-md mx-auto px-4">
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >

@@ -78,7 +78,7 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
     <div className="w-full h-full flex flex-col items-center justify-center px-4 py-6">
       {/* Question text */}
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -90,7 +90,7 @@ export function TiltMazeQuestion({ question, onAnswer }: TiltMazeQuestionProps) 
       </p>
 
       {/* Game area */}
-      <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl shadow-lg p-6 min-h-[420px] flex flex-col">
+      <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl shadow-lg p-6 flex-1 min-h-0 flex flex-col">
 
         {/* Options to drag */}
         {!droppedOption && (

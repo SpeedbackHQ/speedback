@@ -30,7 +30,7 @@ export default function TemplatesPage() {
         .from('organizations')
         .select('id')
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (!org) {
         const { data: newOrg } = await supabase

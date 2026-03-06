@@ -12,6 +12,7 @@ export interface SurveyWithQuestions {
     primary_color?: string
     secondary_color?: string
     mascot_enabled?: boolean
+    demo_leaderboard?: Array<{ initials: string; duration_ms: number }>
   }
   thank_you_message: string
   is_active: boolean

@@ -164,7 +164,9 @@ export function QuestionEditor({
       case 'spin_stop':
       case 'door_choice':
       case 'whack_a_mole':
-      case 'flick':
+      case 'flick': {
+        // Tap supports up to 6 options (2-column grid for 5+), others cap at 4
+        const maxOptions = question.type === 'tap' ? 6 : 4
         return (
           <div className="space-y-2">
             <label className="text-xs text-gray-500 font-medium">Options</label>
@@ -209,14 +211,14 @@ export function QuestionEditor({
                 })
               }}
               className={`w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-violet-400 hover:text-violet-500 transition-colors text-sm ${
-                ((question.config.options as string[]) || []).length >= 4 ? 'opacity-50 cursor-not-allowed' : ''
+                ((question.config.options as string[]) || []).length >= maxOptions ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              disabled={((question.config.options as string[]) || []).length >= 4}
+              disabled={((question.config.options as string[]) || []).length >= maxOptions}
             >
               + Add option
             </button>
-            {((question.config.options as string[]) || []).length >= 4 && (
-              <p className="text-xs text-gray-400 mt-1">Maximum 4 options</p>
+            {((question.config.options as string[]) || []).length >= maxOptions && (
+              <p className="text-xs text-gray-400 mt-1">Maximum {maxOptions} options</p>
             )}
             {question.type === 'tap' && (
               <label className="flex items-center gap-2 cursor-pointer mt-3">
@@ -235,6 +237,7 @@ export function QuestionEditor({
             )}
           </div>
         )
+      }
 
       case 'this_or_that':
       case 'toggle_switch':

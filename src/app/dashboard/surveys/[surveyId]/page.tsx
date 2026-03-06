@@ -145,7 +145,7 @@ export default function SurveyEditorPage() {
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       setUserProfile(profile)
     }
 

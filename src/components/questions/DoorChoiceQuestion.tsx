@@ -51,9 +51,9 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
   const gridCols = 'grid-cols-2'
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 relative">
+    <div className="w-full h-full max-w-md mx-auto px-4 relative flex flex-col">
       <motion.h2
-        className="text-2xl font-bold text-gray-800 text-center mb-2"
+        className="text-lg sm:text-xl font-bold text-gray-800 text-center mb-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: phase === 'picking' ? 1 : 0, y: 0 }}
       >
@@ -68,7 +68,7 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
       </motion.p>
 
       {/* Doors grid */}
-      <div className={`grid ${gridCols} gap-3`}>
+      <div className={`grid ${gridCols} gap-3 flex-1 min-h-0`}>
         {options.map((option, i) => {
           const isChosen = chosenDoor === i
           const color = doorColors[i % doorColors.length]
@@ -92,7 +92,7 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
               onClick={() => handleDoorTap(i)}
             >
               {/* Door frame */}
-              <div className={`${color.frame} rounded-t-2xl rounded-b-lg p-2 shadow-lg`} style={{ height: 200 }}>
+              <div className={`${color.frame} rounded-t-2xl rounded-b-lg p-2 shadow-lg h-full`}>
                 {/* Content behind door */}
                 <div className="absolute inset-2 rounded-t-xl rounded-b-md bg-yellow-50 flex items-center justify-center overflow-hidden">
                   <AnimatePresence>

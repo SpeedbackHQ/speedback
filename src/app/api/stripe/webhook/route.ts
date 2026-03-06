@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
               .from('user_profiles')
               .select('premium_credits')
               .eq('id', user.id)
-              .single()
+              .maybeSingle()
 
             const currentCredits = currentProfile?.premium_credits || 0
 

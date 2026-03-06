@@ -33,7 +33,7 @@ export default function ProfilePage() {
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (profile) {
         setDisplayName(profile.display_name || '')
