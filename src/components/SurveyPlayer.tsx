@@ -6,7 +6,7 @@ import { CountdownIntro } from './CountdownIntro'
 import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
 import { GestureHint, getGestureType } from './GestureHint'
-import { SwipeQuestion, ThisOrThatQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion } from './questions'
+import { SwipeQuestion, ThisOrThatQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, CountdownTapQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion, WheelQuestion } from './questions'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions, InlineFollowUp, QuestionConfig } from '@/lib/types'
 import { track } from '@/lib/analytics'
@@ -22,7 +22,7 @@ type GameState = 'intro' | 'playing' | 'complete'
 export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPlayerProps) {
   const [gameState, setGameState] = useState<GameState>('intro')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [answers, setAnswers] = useState<Array<{ question_id: string; value: AnswerValue }>>([])
+  const [answers, setAnswers] = useState<Array<{ question_id: string; value: AnswerValue; time_spent_ms?: number }>>([])
   const [startTime, setStartTime] = useState<number | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [percentile, setPercentile] = useState<number | null>(null)
@@ -35,6 +35,9 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
 
   // Per-question timing for analytics
   const questionStartTime = useRef<number>(Date.now())
+
+  // Stable response ID generated once at mount, used as join key between PostHog events and Supabase
+  const responseSessionId = useRef<string>(crypto.randomUUID())
 
   // Gesture hint overlay — track which gesture types have already been shown this session
   const seenGestureTypes = useRef<Set<string>>(new Set())
@@ -127,6 +130,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
   const handleStart = () => {
     track('survey_started', {
       survey_id: survey.id,
+      response_id: responseSessionId.current,
       question_count: questions.length,
       question_types: questions.map(q => q.type),
       question_categories: [...new Set(questions.map(q => getQuestionCategory(q.type)))],
@@ -144,6 +148,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
     if (pendingFollowUp) {
       track('question_answered', {
         survey_id: survey.id,
+        response_id: responseSessionId.current,
         question_index: currentIndex,
         question_type: pendingFollowUp.question.type,
         question_category: getQuestionCategory(pendingFollowUp.question.type),
@@ -174,6 +179,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         setElapsedTime(finalElapsed)
         track('survey_completed', {
           survey_id: survey.id,
+          response_id: responseSessionId.current,
           question_count: questions.length,
           total_time_ms: finalElapsed,
           question_types: questions.map(q => q.type),
@@ -195,6 +201,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
     // --- Regular question answer ---
     track('question_answered', {
       survey_id: survey.id,
+      response_id: responseSessionId.current,
       question_index: currentIndex,
       question_type: currentQuestion.type,
       question_category: getQuestionCategory(currentQuestion.type),
@@ -204,7 +211,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
       time_spent_ms: timeOnQuestion,
       questions_total: questions.length,
     })
-    const newAnswer = { question_id: currentQuestion.id, value }
+    const newAnswer = { question_id: currentQuestion.id, value, time_spent_ms: timeOnQuestion }
     const newAnswers = [...answers, newAnswer]
     setAnswers(newAnswers)
 
@@ -261,6 +268,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
       setElapsedTime(finalElapsed)
       track('survey_completed', {
         survey_id: survey.id,
+        response_id: responseSessionId.current,
         question_count: questions.length,
         total_time_ms: finalElapsed,
       })
@@ -277,9 +285,11 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
     }
   }
 
-  const saveResponse = async (answers: Array<{ question_id: string; value: AnswerValue }>, duration: number | null): Promise<string | null> => {
+  const saveResponse = async (answers: Array<{ question_id: string; value: AnswerValue; time_spent_ms?: number }>, duration: number | null): Promise<string | null> => {
     try {
+      const id = responseSessionId.current
       const { data } = await supabase.from('responses').insert({
+        id,
         survey_id: survey.id,
         answers,
         duration_ms: duration,
@@ -417,6 +427,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         return <MagnetBoardQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'claw_machine':
         return <ClawMachineQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'wheel':
+        return <WheelQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }
@@ -465,7 +477,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
   const displayKey = followUpQuestion ? `${currentQuestion?.id}_follow_up` : currentQuestion?.id
 
   return (
-    <div className="h-screen h-[100dvh] bg-slate-50 flex flex-col overflow-hidden">
+    <div className="h-screen h-[100dvh] bg-slate-50 flex flex-col overflow-hidden" style={{ position: 'fixed', inset: 0 }}>
       {/* Streak counter */}
       <StreakCounter streak={swipeStreak} isSpeedBonus={isSpeedBonus} />
 

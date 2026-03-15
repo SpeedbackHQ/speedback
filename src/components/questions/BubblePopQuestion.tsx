@@ -137,12 +137,22 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current)
     }
+  }, [poppedBubble])
 
-    // Auto-submit after brief delay
-    setTimeout(() => {
-      onAnswer(bubble.label)
-    }, 1200)
+  const handleConfirm = useCallback(() => {
+    if (poppedBubble) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      onAnswer(poppedBubble)
+    }
   }, [poppedBubble, onAnswer])
+
+  const handleRetry = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(30)
+    setPoppedBubble(null)
+    setShowResult(false)
+    // Re-initialize bubbles by resetting state — the useEffect will re-create them
+    setBubbles([])
+  }, [])
 
   return (
     <div className="w-full h-full max-w-md mx-auto px-4 flex flex-col">
@@ -261,29 +271,29 @@ export function BubblePopQuestion({ question, onAnswer }: BubblePopQuestionProps
                   🫧
                 </motion.div>
                 <p className="text-lg font-bold text-gray-800">{poppedBubble}</p>
-                <p className="text-sm text-gray-500">Popped!</p>
+                <p className="text-sm text-gray-500 mb-4">Popped!</p>
+
+                <div className="flex gap-3 w-56">
+                  <motion.button
+                    onClick={handleRetry}
+                    className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Pop Again
+                  </motion.button>
+                  <motion.button
+                    onClick={handleConfirm}
+                    className="flex-1 py-2 px-4 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Confirm
+                  </motion.button>
+                </div>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* Options legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2 flex-shrink-0">
-        {options.map((option, index) => (
-          <motion.span
-            key={option}
-            className={`px-3 py-1 rounded-full text-sm text-white bg-gradient-to-r ${bubbleColors[index % bubbleColors.length]} ${
-              poppedBubble === option ? 'ring-2 ring-offset-2 ring-gray-400' : ''
-            }`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * index }}
-          >
-            {option}
-          </motion.span>
-        ))}
-      </div>
     </div>
   )
 }

@@ -130,8 +130,8 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
           }}
           animate={{
             x: -20,
-            rotateY: 25,
-            scale: 0.85,
+            rotateY: 35,
+            scale: 0.8,
             opacity: 0.6,
           }}
           transition={{ type: 'spring', stiffness: 250, damping: 40 }}
@@ -157,8 +157,8 @@ export function FannedSwipeQuestion({ question, onAnswer }: FannedSwipeQuestionP
           }}
           animate={{
             x: 20,
-            rotateY: -25,
-            scale: 0.85,
+            rotateY: -35,
+            scale: 0.8,
             opacity: 0.6,
           }}
           transition={{ type: 'spring', stiffness: 250, damping: 40 }}

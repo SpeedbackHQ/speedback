@@ -104,9 +104,19 @@ export function TapMeterQuestion({ question, onAnswer }: TapMeterQuestionProps) 
         {question.text}
       </motion.h2>
 
-      <p className="text-gray-500 text-center mb-8">
-        Tap rapidly to fill the meter!
-      </p>
+      {!selectedOption && Object.values(meters).every(v => !v || v === 0) ? (
+        <motion.p
+          className="text-center mb-8 text-2xl font-black text-violet-600 select-none"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          TAP!
+        </motion.p>
+      ) : (
+        <p className="text-gray-500 text-center mb-8">
+          {selectedOption ? 'Locked in!' : 'Tap rapidly to fill the meter!'}
+        </p>
+      )}
 
       {/* Options with meters */}
       <div className="space-y-4">

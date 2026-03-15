@@ -94,13 +94,19 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
         {question.text}
       </motion.h2>
 
-      <p className="text-gray-500 text-center mb-6 text-sm">
-        {phase === 'select'
-          ? 'Pick a pinata to smash!'
-          : phase === 'hitting'
-          ? 'Tap to smash it open!'
-          : 'Smashed!'}
-      </p>
+      {phase === 'hitting' ? (
+        <motion.p
+          className="text-center mb-6 text-2xl font-black text-pink-600 select-none"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          TAP!
+        </motion.p>
+      ) : (
+        <p className="text-gray-500 text-center mb-6 text-sm">
+          {phase === 'select' ? 'Pick a pinata to smash!' : 'Smashed!'}
+        </p>
+      )}
 
       {/* Phase: Select */}
       {phase === 'select' && (
@@ -303,7 +309,7 @@ export function PinataQuestion({ question, onAnswer }: PinataQuestionProps) {
                 className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
                 whileTap={{ scale: 0.95 }}
               >
-                Try Again
+                Pick Again
               </motion.button>
               <motion.button
                 onClick={handleConfirm}

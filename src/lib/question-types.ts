@@ -39,6 +39,7 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'door_choice', label: 'Door Choice', emoji: '🚪', description: 'Open a door' },
       { type: 'whack_a_mole', label: 'Whack-a-Mole', emoji: '🔨', description: 'Bonk your pick' },
       { type: 'flick', label: 'Flick Cards', emoji: '📲', description: 'Flick through & pick' },
+      { type: 'wheel', label: 'Spin the Wheel', emoji: '🎡', description: 'Spin to pick' },
     ],
   },
   'Multi-Select': {
@@ -98,4 +99,21 @@ Object.entries(questionCategories).forEach(([category, { types }]) => {
 
 export function getQuestionCategory(type: QuestionType): string {
   return _categoryLookup[type] || 'Unknown'
+}
+
+// Mechanics that reward speed over deliberation
+const SPEED_BIASED_MECHANICS: Set<string> = new Set([
+  'swipe', 'countdown_tap', 'tap_meter', 'racing_lanes', 'conveyor_belt',
+])
+
+// Categories where deliberation matters for response quality
+const DELIBERATION_CATEGORIES: Set<string> = new Set([
+  'Scale/Rating', 'Open Response',
+])
+
+export function getSpeedBiasWarning(type: QuestionType): string | null {
+  if (!SPEED_BIASED_MECHANICS.has(type)) return null
+  const category = getQuestionCategory(type)
+  if (!DELIBERATION_CATEGORIES.has(category)) return null
+  return `This mechanic rewards speed, which may reduce response quality for ${category.toLowerCase()} questions.`
 }

@@ -104,46 +104,52 @@ export function WhackAMoleQuestion({ question, onAnswer }: WhackAMoleQuestionPro
     return events
   }, [options])
 
-  // Run the schedule
+  // Run the schedule — loops continuously until a mole is whacked
+  const cycleRef = useRef(0)
+
   useEffect(() => {
     if (whackedHole !== null) return
 
-    schedule.forEach((event) => {
-      const showT = setTimeout(() => {
-        if (whackedHole !== null) return
-        holesRef.current = [...holesRef.current]
-        holesRef.current[event.hole] = event.option
-        setHoles([...holesRef.current])
-      }, event.showAt)
-
-      const hideT = setTimeout(() => {
-        holesRef.current = [...holesRef.current]
-        // Only clear if option hasn't been changed (prevents clearing a newly assigned mole)
-        if (holesRef.current[event.hole] === event.option) {
-          holesRef.current[event.hole] = null
+    const runCycle = (offset: number) => {
+      schedule.forEach((event) => {
+        const showT = setTimeout(() => {
+          if (whackedHole !== null) return
+          holesRef.current = [...holesRef.current]
+          holesRef.current[event.hole] = event.option
           setHoles([...holesRef.current])
-        }
-      }, event.hideAt)
+        }, offset + event.showAt)
 
-      timeoutsRef.current.push(showT, hideT)
-    })
+        const hideT = setTimeout(() => {
+          holesRef.current = [...holesRef.current]
+          if (holesRef.current[event.hole] === event.option) {
+            holesRef.current[event.hole] = null
+            setHoles([...holesRef.current])
+          }
+        }, offset + event.hideAt)
 
-    // After all events, show all holes as final chance
-    const lastEvent = schedule[schedule.length - 1]
-    if (lastEvent) {
-      const allShowTime = lastEvent.hideAt + 800
-      const allT = setTimeout(() => {
-        if (whackedHole !== null) return
-        const finalHoles: (string | null)[] = Array(HOLE_COUNT).fill(null)
-        for (let i = 0; i < HOLE_COUNT; i++) {
-          finalHoles[i] = options[i % options.length]
-        }
-        holesRef.current = finalHoles
-        setHoles(finalHoles)
-      }, allShowTime)
-      timeoutsRef.current.push(allT)
+        timeoutsRef.current.push(showT, hideT)
+      })
+
+      // Schedule next cycle after this one ends
+      const lastEvent = schedule[schedule.length - 1]
+      if (lastEvent) {
+        const cycleLength = lastEvent.hideAt + 800
+        const loopT = setTimeout(() => {
+          if (whackedHole !== null) return
+          cycleRef.current++
+          runCycle(0)
+        }, offset + cycleLength)
+        timeoutsRef.current.push(loopT)
+      }
     }
-  }, [schedule, options, whackedHole])
+
+    runCycle(0)
+
+    return () => {
+      timeoutsRef.current.forEach(t => clearTimeout(t))
+      timeoutsRef.current = []
+    }
+  }, [schedule, whackedHole]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleWhack = useCallback((holeIndex: number) => {
     if (whackedHole !== null) return

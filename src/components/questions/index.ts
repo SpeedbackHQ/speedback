@@ -39,6 +39,8 @@ export { JarFillQuestion } from './JarFillQuestion'
 export { ConveyorBeltQuestion } from './ConveyorBeltQuestion'
 export { MagnetBoardQuestion } from './MagnetBoardQuestion'
 export { ClawMachineQuestion } from './ClawMachineQuestion'
+// Wheel
+export { WheelQuestion } from './WheelQuestion'
 // Qualitative / Open Response
 export { ShortTextQuestion } from './ShortTextQuestion'
 export { MadLibsQuestion } from './MadLibsQuestion'

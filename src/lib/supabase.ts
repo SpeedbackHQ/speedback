@@ -19,6 +19,8 @@ export type QuestionType =
   | 'dial' | 'press_hold' | 'toggle_switch' | 'spin_stop'
   | 'countdown_tap' | 'door_choice' | 'whack_a_mole'
   | 'tug_of_war' | 'tilt' | 'flick'
+  // Wheel
+  | 'wheel'
   // Multi-select games
   | 'paint_splatter' | 'bingo_card' | 'shopping_cart' | 'sticker_board'
   | 'jar_fill' | 'conveyor_belt' | 'magnet_board' | 'claw_machine'
@@ -80,6 +82,7 @@ export interface Response {
     question_id: string
     value: unknown // varies by question type
     follow_up_value?: unknown
+    time_spent_ms?: number
   }>
   completed_at: string
   duration_ms: number | null

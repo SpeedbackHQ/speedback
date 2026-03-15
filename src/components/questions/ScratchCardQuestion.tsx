@@ -222,6 +222,7 @@ export function ScratchCardQuestion({ question, onAnswer }: ScratchCardQuestionP
           {/* Scratch card with reveal underneath */}
           <div
             className={`relative rounded-xl bg-gradient-to-br ${cardColors[selectedIndex! % cardColors.length].bg} p-5 shadow-xl overflow-hidden`}
+            style={{ touchAction: 'none', overscrollBehavior: 'none' }}
           >
             {/* Content underneath the scratch area */}
             <div className="bg-white rounded-lg p-5 text-center min-h-[140px] flex flex-col items-center justify-center">

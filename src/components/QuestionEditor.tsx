@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { QuestionType, InlineFollowUp } from '@/lib/types'
-import { questionCategories, questionTypeInfo } from '@/lib/question-types'
+import { questionCategories, questionTypeInfo, getSpeedBiasWarning } from '@/lib/question-types'
 export type { QuestionTypeEntry } from '@/lib/question-types'
 export { questionCategories, questionTypeInfo }
 
@@ -79,6 +79,8 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
       return { options: ['Bugs', 'Meetings', 'Email', 'Slack'] }
     case 'flick':
       return { options: ['Chips', 'Chocolate', 'Fruit', 'Coffee'] }
+    case 'wheel':
+      return { options: ['Italian', 'Mexican', 'Japanese', 'Thai'] }
     case 'bullseye':
       return { min_label: 'Disagree', max_label: 'Agree' }
     case 'dial':
@@ -164,7 +166,8 @@ export function QuestionEditor({
       case 'spin_stop':
       case 'door_choice':
       case 'whack_a_mole':
-      case 'flick': {
+      case 'flick':
+      case 'wheel': {
         // Tap supports up to 6 options (2-column grid for 5+), others cap at 4
         const maxOptions = question.type === 'tap' ? 6 : 4
         return (
@@ -791,6 +794,17 @@ export function QuestionEditor({
                     />
                   </div>
                 )}
+
+                {/* Speed-bias warning */}
+                {(() => {
+                  const warning = getSpeedBiasWarning(question.type)
+                  return warning ? (
+                    <div className="mt-2 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                      <span className="text-amber-500 text-sm flex-shrink-0 mt-px">&#9888;</span>
+                      <span className="text-xs text-amber-700">{warning}</span>
+                    </div>
+                  ) : null
+                })()}
 
                 {/* Config section - always visible */}
                 {changingTypeFor !== question.id && (

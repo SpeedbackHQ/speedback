@@ -134,7 +134,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
             bg-gradient-to-br ${cardColors[nextIndex2 % cardColors.length]}
           `}
           style={{ zIndex: 1 }}
-          animate={{ y: -20, opacity: 0.5, scale: 0.88 }}
+          animate={{ y: -28, opacity: 0.5, scale: 0.86, rotateZ: 2 }}
           transition={{ type: 'spring', stiffness: 250, damping: 40 }}
         >
           <span className="text-lg font-bold text-white text-center px-6 opacity-50">
@@ -150,7 +150,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
             bg-gradient-to-br ${cardColors[nextIndex1 % cardColors.length]}
           `}
           style={{ zIndex: 2 }}
-          animate={{ y: -10, opacity: 0.7, scale: 0.94 }}
+          animate={{ y: -14, opacity: 0.7, scale: 0.93, rotateZ: -1 }}
           transition={{ type: 'spring', stiffness: 250, damping: 40 }}
         >
           <span className="text-xl font-bold text-white text-center px-6 opacity-70">

@@ -230,7 +230,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
         )}
 
         {/* Buckets at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 flex" style={{ height: '25%' }}>
+        <div className="absolute bottom-0 left-0 right-0 flex px-1" style={{ height: '25%' }}>
           {options.map((option, index) => {
             const colors = bucketColors[index % bucketColors.length]
             const isSelected = selectedBucket === option
@@ -295,7 +295,7 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                     className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"
                     whileTap={{ scale: 0.95 }}
                   >
-                    Try Again
+                    Drop Again
                   </motion.button>
                   <motion.button
                     onClick={handleConfirm}
