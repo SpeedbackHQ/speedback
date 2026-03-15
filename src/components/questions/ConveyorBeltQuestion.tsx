@@ -61,19 +61,13 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
     return () => cancelAnimationFrame(rafRef.current)
   }, [done, totalBeltLength])
 
-  // Auto-done after LOOPS cycles
-  useEffect(() => {
-    if (loopCount >= LOOPS && !done) {
-      setDone(true)
-    }
-  }, [loopCount, done])
-
   const handleGrab = useCallback((option: string) => {
     if (done) return
-    if (grabbed.includes(option)) return
     if (navigator.vibrate) navigator.vibrate(40)
-    setGrabbed(prev => [...prev, option])
-  }, [done, grabbed])
+    setGrabbed(prev =>
+      prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]
+    )
+  }, [done])
 
   const handleRemove = useCallback((option: string) => {
     if (navigator.vibrate) navigator.vibrate(20)
@@ -146,17 +140,17 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
           const x = ((rawX % totalBeltLength) + totalBeltLength) % totalBeltLength - ITEM_SPACING / 2
           const isVisible = x > -60 && x < containerWidth + 20
 
-          if (isGrabbed || !isVisible) return null
+          if (!isVisible) return null
 
           return (
             <motion.button
               key={`${option}-${index}`}
-              className={`absolute top-1/2 -translate-y-1/2 ${beltColors[index % beltColors.length]} text-white rounded-xl px-4 py-3 font-bold text-sm shadow-lg whitespace-nowrap`}
+              className={`absolute top-1/2 -translate-y-1/2 ${beltColors[index % beltColors.length]} text-white rounded-xl px-4 py-3 font-bold text-sm shadow-lg whitespace-nowrap ${isGrabbed ? 'opacity-40 ring-2 ring-white' : ''}`}
               style={{ left: x }}
               onClick={() => handleGrab(option)}
               whileTap={{ scale: 0.9, y: -20 }}
             >
-              {option}
+              {option} {isGrabbed && '✓'}
             </motion.button>
           )
         })}
@@ -179,7 +173,7 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
 
         {/* Loop counter */}
         <div className="absolute top-1.5 right-2 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded-full">
-          Loop {Math.min(loopCount + 1, LOOPS)}/{LOOPS}
+          Loop {loopCount + 1}
         </div>
       </div>
 
@@ -194,9 +188,7 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
         }`}
         whileTap={grabbed.length > 0 ? { scale: 0.98 } : {}}
       >
-        {done
-          ? grabbed.length > 0 ? `🏭 Done! (${grabbed.length})` : 'Grab items first!'
-          : grabbed.length > 0 ? `🏭 Done (${grabbed.length})` : 'Tap items to grab'}
+        {grabbed.length > 0 ? `🏭 Done (${grabbed.length})` : 'Tap items to grab'}
       </motion.button>
     </div>
   )

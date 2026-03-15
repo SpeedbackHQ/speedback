@@ -41,6 +41,8 @@ export { MagnetBoardQuestion } from './MagnetBoardQuestion'
 export { ClawMachineQuestion } from './ClawMachineQuestion'
 // Wheel
 export { WheelQuestion } from './WheelQuestion'
+// Rank
+export { RankQuestion } from './RankQuestion'
 // Qualitative / Open Response
 export { ShortTextQuestion } from './ShortTextQuestion'
 export { MadLibsQuestion } from './MadLibsQuestion'

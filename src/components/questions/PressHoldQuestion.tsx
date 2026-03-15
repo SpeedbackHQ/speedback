@@ -179,8 +179,8 @@ export function PressHoldQuestion({ question, onAnswer }: PressHoldQuestionProps
 
       {/* Scale legend */}
       <div className="flex justify-between text-xs text-gray-500 mb-4 px-4">
-        <span>{min_label}</span>
-        <span>{max_label}</span>
+        <span>0% = {min_label}</span>
+        <span>100% = {max_label}</span>
       </div>
 
       {/* Confirm + Retry buttons */}

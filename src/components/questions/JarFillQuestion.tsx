@@ -84,9 +84,13 @@ export function JarFillQuestion({ question, onAnswer }: JarFillQuestionProps) {
         {question.text}
       </motion.h2>
 
-      <p className="text-gray-500 text-center mb-4 text-sm">
-        Drag items into the jar!
-      </p>
+      <motion.p
+        className="text-center mb-4 text-base font-bold text-violet-600 select-none"
+        animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        ↕ Drag items into the jar!
+      </motion.p>
 
       {/* Jar visualization */}
       <motion.div

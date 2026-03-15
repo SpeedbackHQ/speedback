@@ -302,18 +302,16 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
                 )}
               </div>
 
-              {/* Label below target */}
+              {/* Letter label below target */}
               <div
-                className="mt-2 text-xs font-bold px-2 py-1 rounded-lg text-center leading-tight shadow-md line-clamp-3"
+                className="mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow-md"
                 style={{
                   backgroundColor: 'white',
                   color: target.color.label,
                   border: `2px solid ${target.color.label}`,
-                  maxWidth: options.length === 2 ? '120px' : options.length === 3 ? '90px' : '75px',
-                  minHeight: '2.5rem',
                 }}
               >
-                {target.label}
+                {String.fromCharCode(65 + index)}
               </div>
             </motion.div>
           )
@@ -513,11 +511,11 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
       </motion.div>
 
       {/* Options legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2 flex-shrink-0">
+      <div className="mt-3 flex flex-wrap justify-center gap-2 flex-shrink-0">
         {targets.map((target, index) => (
           <motion.span
             key={target.label}
-            className={`px-3 py-1 rounded-full text-sm font-medium text-white ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white ${
               hitTarget === target.label ? 'ring-2 ring-offset-2 ring-gray-400' : ''
             }`}
             style={{ backgroundColor: target.color.outer }}
@@ -525,6 +523,7 @@ export function SlingshotQuestion({ question, onAnswer }: SlingshotQuestionProps
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
           >
+            <span className="font-black">{String.fromCharCode(65 + index)}</span>
             {target.label}
           </motion.span>
         ))}

@@ -65,7 +65,6 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'bullseye', label: 'Bullseye', emoji: '🎯', description: 'Hit the target' },
       { type: 'dial', label: 'Dial', emoji: '🎛️', description: 'Turn the knob' },
       { type: 'press_hold', label: 'Press & Hold', emoji: '👇', description: 'Hold to fill' },
-      { type: 'countdown_tap', label: 'Countdown Tap', emoji: '⏱️', description: 'Tap fast!' },
       { type: 'tilt', label: 'Tilt Meter', emoji: '⚖️', description: 'Tilt to rate' },
     ],
   },

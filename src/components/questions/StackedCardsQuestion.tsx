@@ -102,7 +102,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
       </p>
 
       {/* Stacked cards container with vertical dots */}
-      <div className="relative flex items-center justify-center gap-3">
+      <div className="relative flex items-center justify-center gap-6">
       <div
         ref={containerRef}
         className="relative h-72 flex-1 flex items-center justify-center"

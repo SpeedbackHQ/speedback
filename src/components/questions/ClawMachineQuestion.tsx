@@ -183,11 +183,11 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
           {/* Grabbed item */}
           {grabbedItem && (
             <motion.div
-              className={`${prizeColors[options.indexOf(grabbedItem) % prizeColors.length].bg} text-white rounded-lg px-2 py-1 text-[10px] font-bold mt-0.5`}
+              className={`${prizeColors[options.indexOf(grabbedItem) % prizeColors.length].bg} text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-black mt-0.5`}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
             >
-              {grabbedItem}
+              {String.fromCharCode(65 + options.indexOf(grabbedItem))}
             </motion.div>
           )}
         </motion.div>
@@ -202,13 +202,13 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
             return (
               <div
                 key={option}
-                className={`absolute bottom-3 ${color.bg} text-white rounded-xl px-3 py-2 text-xs font-bold shadow-lg`}
+                className={`absolute bottom-3 ${color.bg} text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-black shadow-lg`}
                 style={{
                   left: `${prizePositions[index]}%`,
                   transform: 'translateX(-50%)',
                 }}
               >
-                {option}
+                {String.fromCharCode(65 + index)}
               </div>
             )
           })}
@@ -216,6 +216,22 @@ export function ClawMachineQuestion({ question, onAnswer }: ClawMachineQuestionP
 
         {/* Glass reflection */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+      </div>
+
+      {/* Option legend */}
+      <div className="mt-2 flex flex-wrap justify-center gap-2">
+        {options.map((option, index) => {
+          const color = prizeColors[index % prizeColors.length]
+          return (
+            <span
+              key={option}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white ${color.bg}`}
+            >
+              <span className="font-black">{String.fromCharCode(65 + index)}</span>
+              {option}
+            </span>
+          )
+        })}
       </div>
 
       {/* Drop button */}
