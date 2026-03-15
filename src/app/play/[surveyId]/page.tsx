@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase'
 import { SurveyPlayer } from '@/components/SurveyPlayer'
 import { SurveyFull } from '@/components/SurveyFull'
 import { SurveyClosed } from '@/components/SurveyClosed'
-import { FullscreenShell } from '@/components/FullscreenShell'
 import { notFound } from 'next/navigation'
 
 // Force dynamic rendering to avoid caching issues
@@ -83,9 +82,5 @@ export default async function PlaySurveyPage({ params }: PageProps) {
       survey.max_responses !== null
     )
 
-  return (
-    <FullscreenShell>
-      <SurveyPlayer survey={survey} showSpeedbackBranding={showSpeedbackBranding} />
-    </FullscreenShell>
-  )
+  return <SurveyPlayer survey={survey} showSpeedbackBranding={showSpeedbackBranding} />
 }

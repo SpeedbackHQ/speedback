@@ -27,6 +27,13 @@ export function CountdownIntro({ survey, questionCount, onComplete }: CountdownI
   const primaryColor = survey.branding_config?.primary_color || '#8B5CF6'
 
   const startCountdown = () => {
+    // Request fullscreen on user tap to hide mobile browser chrome
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {
+        // Silently fail — fullscreen is a nice-to-have, not required
+      })
+    }
+
     setHasStarted(true)
     setPhase('3')
 
