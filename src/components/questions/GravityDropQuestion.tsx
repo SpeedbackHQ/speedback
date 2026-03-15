@@ -256,8 +256,8 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
                     clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)',
                   }}
                 >
-                  <span className="text-white font-bold text-sm text-center px-2 leading-tight">
-                    {option}
+                  <span className="text-white font-black text-lg">
+                    {String.fromCharCode(65 + index)}
                   </span>
                 </motion.div>
               </motion.div>
@@ -310,6 +310,22 @@ export function GravityDropQuestion({ question, onAnswer }: GravityDropQuestionP
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Option legend */}
+      <div className="mt-3 flex flex-wrap justify-center gap-2 flex-shrink-0">
+        {options.map((option, index) => {
+          const colors = bucketColors[index % bucketColors.length]
+          return (
+            <span
+              key={option}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white ${colors.bg}`}
+            >
+              <span className="font-black">{String.fromCharCode(65 + index)}</span>
+              {option}
+            </span>
+          )
+        })}
+      </div>
     </div>
   )
 }

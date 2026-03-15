@@ -180,21 +180,6 @@ export function SpinStopQuestion({ question, onAnswer }: SpinStopQuestionProps) 
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
       </motion.div>
 
-      {/* Result display */}
-      <AnimatePresence>
-        {selectedOption && (
-          <motion.div
-            className="text-center mt-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <span className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full font-medium text-sm">
-              🎰 {selectedOption}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Buttons */}
       {spinState !== 'stopped' ? (
         <motion.button

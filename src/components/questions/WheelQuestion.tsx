@@ -113,7 +113,7 @@ export function WheelQuestion({ question, onAnswer }: WheelQuestionProps) {
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-4 text-sm">
-        {result ? `Landed on: ${result}` : 'Tap the wheel to spin!'}
+        Spin the wheel!
       </p>
 
       {/* Wheel container */}
@@ -199,16 +199,7 @@ export function WheelQuestion({ question, onAnswer }: WheelQuestionProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <motion.div
-              className="text-3xl mb-2"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 0.5, repeat: 2 }}
-            >
-              🎡
-            </motion.div>
-            <p className="text-lg font-bold text-gray-800 mb-1">{result}</p>
-
-            <div className="flex gap-3 w-64 mx-auto mt-3">
+            <div className="flex gap-3 w-64 mx-auto mt-1">
               <motion.button
                 onClick={handleRetry}
                 className="flex-1 py-2 px-4 rounded-lg border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50"

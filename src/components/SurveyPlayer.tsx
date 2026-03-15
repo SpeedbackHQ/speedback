@@ -429,6 +429,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         return <ClawMachineQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'wheel':
         return <WheelQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'slot_machine':
+        return <SpinStopQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

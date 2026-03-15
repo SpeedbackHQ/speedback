@@ -101,10 +101,11 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
         Swipe up or down to browse options
       </p>
 
-      {/* Stacked cards container */}
+      {/* Stacked cards container with vertical dots */}
+      <div className="relative flex items-center justify-center gap-3">
       <div
         ref={containerRef}
-        className="relative h-72 flex items-center justify-center"
+        className="relative h-72 flex-1 flex items-center justify-center"
         style={{ perspective: '1000px' }}
       >
         {/* Previous card peeking from bottom */}
@@ -183,14 +184,6 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
             {optionsArray[currentIndex]}
           </motion.span>
 
-          {/* Swipe hint */}
-          <motion.div
-            className="absolute -top-3 left-1/2 -translate-x-1/2 text-white/50 text-sm"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            ↑ swipe ↓
-          </motion.div>
         </motion.div>
 
         {/* Navigation buttons */}
@@ -216,8 +209,8 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
         )}
       </div>
 
-      {/* Progress indicator */}
-      <div className="flex justify-center gap-2 mt-6">
+      {/* Vertical progress dots (right side) */}
+      <div className="flex flex-col gap-2 py-4">
         {optionsArray.map((_, i) => (
           <motion.button
             key={i}
@@ -237,16 +230,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
           />
         ))}
       </div>
-
-      {/* Current position */}
-      <motion.p
-        className="text-center text-gray-600 font-medium mt-4"
-        key={currentIndex}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <span className="font-bold text-violet-500">{currentIndex + 1}</span> of {totalOptions}
-      </motion.p>
+      </div>
 
       {/* Submit button */}
       <motion.button

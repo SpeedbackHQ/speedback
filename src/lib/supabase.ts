@@ -19,8 +19,8 @@ export type QuestionType =
   | 'dial' | 'press_hold' | 'toggle_switch' | 'spin_stop'
   | 'countdown_tap' | 'door_choice' | 'whack_a_mole'
   | 'tug_of_war' | 'tilt' | 'flick'
-  // Wheel
-  | 'wheel'
+  // Wheel / Slot Machine
+  | 'wheel' | 'slot_machine'
   // Multi-select games
   | 'paint_splatter' | 'bingo_card' | 'shopping_cart' | 'sticker_board'
   | 'jar_fill' | 'conveyor_belt' | 'magnet_board' | 'claw_machine'

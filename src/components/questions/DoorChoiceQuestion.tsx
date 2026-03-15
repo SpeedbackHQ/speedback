@@ -144,8 +144,8 @@ export function DoorChoiceQuestion({ question, onAnswer }: DoorChoiceQuestionPro
                   {/* Panel divider line */}
                   <div className="absolute left-3 right-8 top-[45%] h-px bg-white/20 rounded-full" />
 
-                  {/* Knob — positioned bottom-right to avoid text overlap */}
-                  <div className={`absolute right-2.5 bottom-3 w-4 h-4 rounded-full ${color.knob} shadow-md ring-1 ring-black/10`} />
+                  {/* Knob — positioned right side, above divider line */}
+                  <div className={`absolute right-2.5 top-[35%] w-5 h-5 rounded-full ${color.knob} shadow-md ring-1 ring-black/10`} />
                 </motion.div>
               </div>
             </motion.div>

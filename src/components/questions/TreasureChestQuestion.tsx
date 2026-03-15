@@ -236,14 +236,14 @@ export function TreasureChestQuestion({ question, onAnswer }: TreasureChestQuest
           animate={{ opacity: 1 }}
         >
           {/* Opened chest */}
-          <div className="relative w-40 h-36 mb-4">
+          <div className="relative w-40 h-36 mb-4 mt-8 overflow-visible" style={{ perspective: '600px' }}>
             {/* Chest lid - flipped open */}
             <motion.div
-              className={`absolute top-0 w-full h-14 rounded-t-xl bg-gradient-to-b ${colors.base} shadow-md origin-top`}
+              className={`absolute top-0 w-full h-14 rounded-t-xl bg-gradient-to-b ${colors.base} shadow-md`}
               initial={{ rotateX: 0 }}
-              animate={{ rotateX: -120 }}
+              animate={{ rotateX: -110 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              style={{ transformStyle: 'preserve-3d' }}
+              style={{ transformOrigin: 'top center', transformStyle: 'preserve-3d' }}
             />
             {/* Chest body */}
             <div className={`absolute bottom-0 w-full h-20 rounded-b-xl bg-gradient-to-b ${colors.base} shadow-xl`}>
