@@ -1,5 +1,5 @@
 // Re-export types from supabase for convenience
-export type { Organization, Survey, Question, Response, QuestionType } from './supabase'
+export type { Organization, Survey, Question, Response, QuestionType, Lead, FestivalConfig } from './supabase'
 import type { Question } from './supabase'
 
 // Extended types for the app
@@ -18,6 +18,8 @@ export interface SurveyWithQuestions {
   is_active: boolean
   max_responses?: number | null
   context?: Record<string, unknown>
+  slug?: string | null
+  folder?: string | null
   created_at: string
   questions: Question[]
 }
@@ -31,7 +33,7 @@ export interface FollowUpCondition {
 export interface InlineFollowUp {
   condition: FollowUpCondition
   question: {
-    type: 'bubble_pop' | 'short_text' | 'slider' | 'swipe'
+    type: 'bubble_pop' | 'short_text' | 'slider' | 'swipe' | 'email_capture' | 'paint_splatter' | 'tap'
     text: string
     config: {
       options?: string[]
@@ -60,6 +62,11 @@ export interface QuestionConfig {
   items?: string[]
   // Conditional follow-up
   follow_up?: InlineFollowUp
+  // Cross-question conditional visibility (show if ANY condition matches)
+  show_conditions?: Array<{
+    question_index: number  // which earlier question to check (0-based)
+    value: string | string[] // show only if that answer matches (array = OR)
+  }>
 }
 
 // Answer types

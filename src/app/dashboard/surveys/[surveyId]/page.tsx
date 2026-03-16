@@ -667,6 +667,43 @@ export default function SurveyEditorPage() {
     URL.revokeObjectURL(url)
   }
 
+  const downloadLeads = async () => {
+    if (!survey) return
+    const { data: leads } = await supabase
+      .from('leads')
+      .select('email, is_organizer, created_at')
+      .eq('survey_id', surveyId)
+      .order('created_at', { ascending: false })
+
+    if (!leads || leads.length === 0) return
+
+    const headers = ['Email', 'Organizer', 'Captured At']
+    const rows = leads.map((l: { email: string; is_organizer: boolean; created_at: string }) => [
+      l.email,
+      l.is_organizer ? 'Yes' : 'No',
+      new Date(l.created_at).toLocaleString(),
+    ])
+
+    const escapeCsvField = (field: string) => {
+      if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+        return `"${field.replace(/"/g, '""')}"`
+      }
+      return field
+    }
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(escapeCsvField).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${survey.title || 'survey'}-leads.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -978,15 +1015,28 @@ export default function SurveyEditorPage() {
               <h2 className="text-lg font-bold text-slate-800">Responses</h2>
               {survey.responses.length > 0 && (
                 canExportCSV() ? (
-                  <button
-                    onClick={downloadCSV}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
-                  >
-                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Download CSV
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={downloadCSV}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                    >
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download CSV
+                    </button>
+                    {survey.questions.some(q => q.type === 'email_capture') && (
+                      <button
+                        onClick={downloadLeads}
+                        className="flex items-center gap-2 px-4 py-2 bg-violet-50 hover:bg-violet-100 text-violet-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                      >
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Download Leads
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-sm font-medium cursor-not-allowed" title="CSV export available on Starter plan or with per-event purchase">
                     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

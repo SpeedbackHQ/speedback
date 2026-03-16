@@ -7,6 +7,7 @@ import { Celebration } from './Celebration'
 import { StreakCounter } from './StreakCounter'
 import { GestureHint, getGestureType } from './GestureHint'
 import { SwipeQuestion, ThisOrThatQuestion, SliderQuestion, TapQuestion, TapMeterQuestion, RolodexQuestion, StarsQuestion, ThermometerQuestion, FannedCardsQuestion, FannedSwipeQuestion, StackedCardsQuestion, TiltMazeQuestion, RacingLanesQuestion, GravityDropQuestion, BubblePopQuestion, BullseyeQuestion, SlingshotQuestion, ScratchCardQuestion, TreasureChestQuestion, PinataQuestion, ToggleSwitchQuestion, PressHoldQuestion, DialQuestion, SpinStopQuestion, DoorChoiceQuestion, WhackAMoleQuestion, TugOfWarQuestion, TiltQuestion, FlickQuestion, ShortTextQuestion, MadLibsQuestion, EmojiReactionQuestion, WordCloudQuestion, VoiceNoteQuestion, PaintSplatterQuestion, BingoCardQuestion, ShoppingCartQuestion, StickerBoardQuestion, JarFillQuestion, ConveyorBeltQuestion, MagnetBoardQuestion, ClawMachineQuestion, WheelQuestion, RankQuestion, CounterQuestion } from './questions'
+import { EmailCaptureQuestion } from './questions/EmailCaptureQuestion'
 import { supabase } from '@/lib/supabase'
 import { Question, AnswerValue, SurveyWithQuestions, InlineFollowUp, QuestionConfig } from '@/lib/types'
 import { track } from '@/lib/analytics'
@@ -15,11 +16,12 @@ import { getQuestionCategory } from '@/lib/question-types'
 interface SurveyPlayerProps {
   survey: SurveyWithQuestions
   showSpeedbackBranding?: boolean
+  metadata?: Record<string, unknown>
 }
 
 type GameState = 'intro' | 'playing' | 'complete'
 
-export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPlayerProps) {
+export function SurveyPlayer({ survey, showSpeedbackBranding = false, metadata }: SurveyPlayerProps) {
   const [gameState, setGameState] = useState<GameState>('intro')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Array<{ question_id: string; value: AnswerValue; time_spent_ms?: number }>>([])
@@ -47,6 +49,36 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
   // Conditional follow-up state
   const [pendingFollowUp, setPendingFollowUp] = useState<InlineFollowUp | null>(null)
   const pendingFollowUpParentId = useRef<string>('')
+
+  // Check if a question should be shown based on show_conditions (cross-question conditionals)
+  function shouldShowQuestion(question: Question, currentAnswers: Array<{ question_id: string; value: AnswerValue }>): boolean {
+    const config = question.config as QuestionConfig
+    const conditions = config.show_conditions
+    if (!conditions || conditions.length === 0) return true
+
+    // Show if ANY condition matches (OR logic)
+    return conditions.some(cond => {
+      const targetQuestion = questions[cond.question_index]
+      if (!targetQuestion) return false
+      const targetAnswer = currentAnswers.find(a => a.question_id === targetQuestion.id)
+      if (!targetAnswer) return false
+      const answerVal = String(targetAnswer.value)
+      if (Array.isArray(cond.value)) {
+        return cond.value.includes(answerVal)
+      }
+      return answerVal === cond.value
+    })
+  }
+
+  // Find the next question index that should be shown (skipping questions whose show_conditions aren't met)
+  function findNextVisibleIndex(fromIndex: number, currentAnswers: Array<{ question_id: string; value: AnswerValue }>): number | null {
+    for (let i = fromIndex; i < questions.length; i++) {
+      if (shouldShowQuestion(questions[i], currentAnswers)) {
+        return i
+      }
+    }
+    return null // no more visible questions
+  }
 
   function shouldShowFollowUp(config: QuestionConfig, value: AnswerValue): boolean {
     const fu = config.follow_up
@@ -171,8 +203,10 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
       lastAnswerTime.current = now
       setPendingFollowUp(null)
 
-      if (currentIndex < questions.length - 1) {
-        setTimeout(() => setCurrentIndex(prev => prev + 1), 400)
+      const nextIdx = findNextVisibleIndex(currentIndex + 1, newAnswers)
+      if (nextIdx !== null) {
+        const targetIdx = nextIdx
+        setTimeout(() => setCurrentIndex(targetIdx), 400)
       } else {
         // eslint-disable-next-line react-hooks/purity -- Date.now() is valid in event handlers
         const finalElapsed = startTime ? Date.now() - startTime : 0
@@ -215,9 +249,10 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
     const newAnswers = [...answers, newAnswer]
     setAnswers(newAnswers)
 
-    // Track swipe streaks
+    // Track swipe streaks (look ahead to next *visible* question)
     const isSwipe = currentQuestion.type === 'swipe'
-    const nextQuestion = questions[currentIndex + 1]
+    const nextVisibleIdx = findNextVisibleIndex(currentIndex + 1, newAnswers)
+    const nextQuestion = nextVisibleIdx !== null ? questions[nextVisibleIdx] : null
     const isNextSwipe = nextQuestion?.type === 'swipe'
 
     if (isSwipe) {
@@ -255,11 +290,15 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
       return
     }
 
-    if (currentIndex < questions.length - 1) {
+    const nextIdx = findNextVisibleIndex(currentIndex + 1, newAnswers)
+    if (nextIdx !== null) {
       // Next question - faster transition during streaks
-      const transitionDelay = swipeStreak >= 2 && isNextSwipe ? 250 : 400
+      const nextQ = questions[nextIdx]
+      const isNextSwipeQ = nextQ?.type === 'swipe'
+      const transitionDelay = swipeStreak >= 2 && isNextSwipeQ ? 250 : 400
+      const targetIdx = nextIdx
       setTimeout(() => {
-        setCurrentIndex(prev => prev + 1)
+        setCurrentIndex(targetIdx)
       }, transitionDelay)
     } else {
       // Complete - capture final elapsed time and save response
@@ -293,6 +332,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         survey_id: survey.id,
         answers,
         duration_ms: duration,
+        ...(metadata ? { metadata } : {}),
       }).select('id').single()
       return data?.id ?? null
     } catch (error) {
@@ -433,6 +473,8 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false }: SurveyPl
         return <RankQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
       case 'counter':
         return <CounterQuestion {...props} onAnswer={(v) => handleAnswer(v)} />
+      case 'email_capture':
+        return <EmailCaptureQuestion {...props} onAnswer={(v) => handleAnswer(v)} surveyId={survey.id} responseSessionId={responseSessionId.current} />
       default:
         return <div>Unknown question type: {question.type}</div>
     }

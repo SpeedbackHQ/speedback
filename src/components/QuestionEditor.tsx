@@ -100,6 +100,8 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
       return { words: ['Creative', 'Fun', 'Boring', 'Innovative', 'Slow', 'Exciting', 'Confusing', 'Clear', 'Inspiring', 'Tedious'], max_selections: 5 }
     case 'voice_note':
       return { max_duration: 15 }
+    case 'email_capture':
+      return { placeholder: 'your@email.com', show_organizer_checkbox: true }
     default:
       return {}
   }
@@ -463,6 +465,24 @@ export function QuestionEditor({
               max={30}
               className="w-20 ml-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900"
             />
+          </div>
+        )
+
+      case 'email_capture':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 font-medium">Placeholder text</label>
+              <input
+                type="text"
+                value={(question.config.placeholder as string) || ''}
+                onChange={(e) => onQuestionUpdate(question.id, {
+                  config: { ...question.config, placeholder: e.target.value }
+                })}
+                placeholder="your@email.com"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
           </div>
         )
 

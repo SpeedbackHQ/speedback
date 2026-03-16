@@ -26,6 +26,8 @@ export type QuestionType =
   | 'jar_fill' | 'conveyor_belt' | 'magnet_board' | 'claw_machine'
   // Qualitative
   | 'short_text' | 'mad_libs' | 'emoji_reaction' | 'word_cloud' | 'voice_note'
+  // Lead capture
+  | 'email_capture'
 
 export interface Organization {
   id: string
@@ -49,6 +51,8 @@ export interface Survey {
   is_active: boolean
   max_responses?: number | null // null = unlimited (paid); default 25 (free)
   context?: Record<string, unknown> // Optional metadata: audience_size, event_type, industry
+  slug?: string | null // Human-readable slug for festival URLs
+  folder?: string | null // Groups surveys in dashboard (e.g. 'Narrativa 2026')
   created_at: string
 }
 
@@ -87,6 +91,7 @@ export interface Response {
   completed_at: string
   duration_ms: number | null
   initials: string | null
+  metadata?: Record<string, unknown> // Workshop selection data, festival context
 }
 
 export interface UserProfile {
@@ -110,4 +115,29 @@ export interface Subscription {
   cancel_at_period_end: boolean
   created_at: string
   updated_at: string
+}
+
+export interface Lead {
+  id: string
+  email: string
+  is_organizer: boolean
+  source_survey_slug: string | null
+  survey_id: string | null
+  response_session_id: string | null
+  created_at: string
+}
+
+export interface FestivalConfig {
+  id: string
+  festival_slug: string
+  name: string
+  config: {
+    [slug: string]: {
+      survey_slug: string
+      type: 'workshop' | 'show' | 'community' | 'meta'
+      day?: string
+      workshops?: Array<{ name: string; facilitator: string }>
+    }
+  }
+  created_at: string
 }

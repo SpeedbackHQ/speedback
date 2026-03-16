@@ -50,6 +50,7 @@ import {
   MagnetBoardQuestion,
   ClawMachineQuestion,
 } from './questions'
+import { EmailCaptureQuestion } from './questions/EmailCaptureQuestion'
 
 interface MechanicRendererProps {
   question: Question
@@ -153,6 +154,8 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
       content = <MagnetBoardQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'claw_machine':
       content = <ClawMachineQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
+    case 'email_capture':
+      content = <EmailCaptureQuestion {...props} onAnswer={(v) => onAnswer(v)} surveyId="" responseSessionId="" />; break
     default:
       content = <div className="p-8 text-center text-gray-400">Unknown question type: {question.type}</div>
   }

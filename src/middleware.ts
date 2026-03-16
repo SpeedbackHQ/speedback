@@ -87,6 +87,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - play/* (public survey pages)
      */
-    '/((?!api/stripe/webhook|_next/static|_next/image|favicon.ico|play/).*)',
+    '/((?!api/stripe/webhook|api/leads|_next/static|_next/image|favicon.ico|play/|f/).*)',
   ],
 }

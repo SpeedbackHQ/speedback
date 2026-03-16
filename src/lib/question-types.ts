@@ -76,6 +76,7 @@ export const questionCategories: Record<string, { description: string; types: Qu
       { type: 'emoji_reaction', label: 'Emoji Reaction', emoji: '😍', description: 'React with emoji' },
       { type: 'word_cloud', label: 'Word Cloud', emoji: '☁️', description: 'Pick describing words' },
       { type: 'voice_note', label: 'Voice Note', emoji: '🎤', description: 'Record a voice clip' },
+      { type: 'email_capture', label: 'Email Capture', emoji: '📧', description: 'Collect email leads' },
     ],
   },
 }
