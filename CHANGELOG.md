@@ -4,6 +4,22 @@ All notable changes to SpeedBack are documented in this file.
 
 ---
 
+## [2026-03-16] — Narrativa Festival
+
+### Added
+- **Festival URL routing** — `/f/[festival]/[slug]` public routes for branded QR code links
+- **Workshop selection flow** — daily QR codes load a picker screen (workshop name + facilitator) before the shared survey
+- **show_conditions system** — cross-question conditional visibility with OR logic across multiple questions (e.g., show Q10 only if Q1 or Q2 was negative)
+- **Email capture question type** (`email_capture`) — collects email + organizer checkbox, saves lead immediately via `/api/leads` (not on survey completion)
+- **Dashboard folders** — surveys grouped under collapsible folder headers by `folder` column (e.g., "Narrativa 2026")
+- **Dashboard inline delete** — trash icon on each survey card with confirm/cancel dialog (no more navigating in to delete)
+- **Leads CSV export** — "Download Leads" button on survey detail page for surveys with email_capture questions
+- **10 Narrativa surveys seeded** (69 questions total) covering workshops, shows, community events, and meta feedback
+- **13 QR slugs** mapped via `festival_configs` table (4 workshop days, 3 shows, 5 community events, 1 meta)
+- **Database**: `slug` + `folder` columns on surveys, `metadata` on responses, `leads` table, `festival_configs` table
+
+---
+
 ## [Unreleased] — 2026-03-16
 
 ### Added
