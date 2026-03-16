@@ -30,9 +30,9 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
     case 'tap':
       return { options: ['Flying', 'Invisibility', 'Time travel'], multi_select: true }
     case 'paint_splatter':
-      return { options: ['Leadership', 'Creativity', 'Communication'] }
+      return { options: ['Leadership', 'Creativity', 'Communication'], multi_select: true }
     case 'bingo_card':
-      return { options: ['AI', 'Design', 'Marketing', 'Engineering'] }
+      return { options: ['AI', 'Design', 'Marketing', 'Engineering'], multi_select: true }
     case 'shopping_cart':
       return { options: ['Free lunch', 'Gym pass', 'Extra PTO'] }
     case 'sticker_board':
@@ -222,7 +222,7 @@ export function QuestionEditor({
             {((question.config.options as string[]) || []).length >= maxOptions && (
               <p className="text-xs text-gray-400 mt-1">Maximum {maxOptions} options</p>
             )}
-            {question.type === 'tap' && (
+            {(['tap', 'paint_splatter', 'bingo_card'] as string[]).includes(question.type) && (
               <label className="flex items-center gap-2 cursor-pointer mt-3">
                 <input
                   type="checkbox"

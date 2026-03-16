@@ -6,7 +6,7 @@ import { Question } from '@/lib/types'
 
 interface PaintSplatterQuestionProps {
   question: Question
-  onAnswer: (answer: string[]) => void
+  onAnswer: (answer: string | string[]) => void
 }
 
 const splatColors = [
@@ -17,7 +17,7 @@ const splatColors = [
 ]
 
 export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuestionProps) {
-  const { options: rawOptions = [] } = question.config as { options?: string[] }
+  const { options: rawOptions = [], multi_select = true } = question.config as { options?: string[]; multi_select?: boolean }
   const options = (rawOptions as string[]).slice(0, 4)
 
   const [selected, setSelected] = useState<string[]>([])
@@ -27,12 +27,18 @@ export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuest
     if (navigator.vibrate) navigator.vibrate(30)
     setSplatKey(prev => prev + 1)
 
-    setSelected(prev =>
-      prev.includes(option)
-        ? prev.filter(o => o !== option)
-        : [...prev, option]
-    )
-  }, [])
+    if (multi_select) {
+      setSelected(prev =>
+        prev.includes(option)
+          ? prev.filter(o => o !== option)
+          : [...prev, option]
+      )
+    } else {
+      // Single-select: select and auto-submit
+      setSelected([option])
+      setTimeout(() => onAnswer(option), 600)
+    }
+  }, [multi_select, onAnswer])
 
   const handleSubmit = useCallback(() => {
     if (selected.length === 0) return
@@ -51,7 +57,7 @@ export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuest
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-6 text-sm">
-        Tap to splash your picks!
+        {multi_select ? 'Tap to splash your picks!' : 'Tap to splash your pick!'}
       </p>
 
       <div className="grid grid-cols-2 gap-3">
@@ -135,30 +141,33 @@ export function PaintSplatterQuestion({ question, onAnswer }: PaintSplatterQuest
         })}
       </div>
 
-      {/* Selected count */}
-      {selected.length > 0 && (
-        <motion.p
-          className="text-center text-gray-500 mt-4 text-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <span className="font-bold text-violet-500">{selected.length}</span> splashed
-        </motion.p>
-      )}
+      {/* Selected count + submit (multi-select only) */}
+      {multi_select && (
+        <>
+          {selected.length > 0 && (
+            <motion.p
+              className="text-center text-gray-500 mt-4 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <span className="font-bold text-violet-500">{selected.length}</span> splashed
+            </motion.p>
+          )}
 
-      {/* Submit */}
-      <motion.button
-        onClick={handleSubmit}
-        disabled={selected.length === 0}
-        className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
-          selected.length > 0
-            ? 'bg-violet-500 text-white hover:bg-violet-600'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-        whileTap={selected.length > 0 ? { scale: 0.98 } : {}}
-      >
-        {selected.length > 0 ? '🎨 Done!' : 'Tap to splash'}
-      </motion.button>
+          <motion.button
+            onClick={handleSubmit}
+            disabled={selected.length === 0}
+            className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
+              selected.length > 0
+                ? 'bg-violet-500 text-white hover:bg-violet-600'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            whileTap={selected.length > 0 ? { scale: 0.98 } : {}}
+          >
+            {selected.length > 0 ? '🎨 Done!' : 'Tap to splash'}
+          </motion.button>
+        </>
+      )}
     </div>
   )
 }

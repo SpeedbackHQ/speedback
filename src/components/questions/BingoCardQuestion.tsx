@@ -6,7 +6,7 @@ import { Question } from '@/lib/types'
 
 interface BingoCardQuestionProps {
   question: Question
-  onAnswer: (answer: string[]) => void
+  onAnswer: (answer: string | string[]) => void
 }
 
 const stampColors = [
@@ -17,7 +17,7 @@ const stampColors = [
 ]
 
 export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps) {
-  const { options: rawOptions = [] } = question.config as { options?: string[] }
+  const { options: rawOptions = [], multi_select = true } = question.config as { options?: string[]; multi_select?: boolean }
   const options = (rawOptions as string[]).slice(0, 4)
 
   const [selected, setSelected] = useState<string[]>([])
@@ -28,12 +28,17 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
     setStampAnimating(option)
     setTimeout(() => setStampAnimating(null), 400)
 
-    setSelected(prev =>
-      prev.includes(option)
-        ? prev.filter(o => o !== option)
-        : [...prev, option]
-    )
-  }, [])
+    if (multi_select) {
+      setSelected(prev =>
+        prev.includes(option)
+          ? prev.filter(o => o !== option)
+          : [...prev, option]
+      )
+    } else {
+      setSelected([option])
+      setTimeout(() => onAnswer(option), 600)
+    }
+  }, [multi_select, onAnswer])
 
   const handleSubmit = useCallback(() => {
     if (selected.length === 0) return
@@ -55,7 +60,7 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-5 text-sm">
-        Stamp your picks!
+        {multi_select ? 'Stamp your picks!' : 'Stamp your pick!'}
       </p>
 
       {/* Bingo card container */}
@@ -126,30 +131,33 @@ export function BingoCardQuestion({ question, onAnswer }: BingoCardQuestionProps
         </div>
       </motion.div>
 
-      {/* Selected count */}
-      {selected.length > 0 && (
-        <motion.p
-          className="text-center text-gray-500 mt-4 text-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <span className="font-bold text-violet-500">{selected.length}</span> stamped
-        </motion.p>
-      )}
+      {/* Selected count + submit (multi-select only) */}
+      {multi_select && (
+        <>
+          {selected.length > 0 && (
+            <motion.p
+              className="text-center text-gray-500 mt-4 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <span className="font-bold text-violet-500">{selected.length}</span> stamped
+            </motion.p>
+          )}
 
-      {/* Submit */}
-      <motion.button
-        onClick={handleSubmit}
-        disabled={selected.length === 0}
-        className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
-          selected.length > 0
-            ? 'bg-violet-500 text-white hover:bg-violet-600'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-        whileTap={selected.length > 0 ? { scale: 0.98 } : {}}
-      >
-        {selected.length > 0 ? '🎰 Bingo!' : 'Stamp to select'}
-      </motion.button>
+          <motion.button
+            onClick={handleSubmit}
+            disabled={selected.length === 0}
+            className={`w-full mt-4 py-4 font-bold text-lg rounded-xl shadow-lg transition-colors ${
+              selected.length > 0
+                ? 'bg-violet-500 text-white hover:bg-violet-600'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            whileTap={selected.length > 0 ? { scale: 0.98 } : {}}
+          >
+            {selected.length > 0 ? '🎰 Bingo!' : 'Stamp to select'}
+          </motion.button>
+        </>
+      )}
     </div>
   )
 }
