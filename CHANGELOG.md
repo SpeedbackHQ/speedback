@@ -4,26 +4,47 @@ All notable changes to SpeedBack are documented in this file.
 
 ---
 
-## [Unreleased] — 2026-03-15
+## [Unreleased] — 2026-03-16
 
 ### Added
-- **Wheel mechanic** — new spinning wheel question type with SVG segments, tap-to-spin, deceleration animation, and confirm/retry flow
-- **TEST MECHANICS survey** — comprehensive test survey with all 46+ question mechanics for QA testing
-- Pulsing **TAP!** cue on Treasure Chest, Pinata, and Tap Meter mechanics (replaces easy-to-miss gray instruction text)
-- Confirm/retry buttons on **Bubble Pop** (replaces auto-submit after 1200ms)
+- **Wheel mechanic** — spinning wheel with SVG segments, tap-to-spin, deceleration, confirm/retry
+- **Rank mechanic** — drag-to-reorder list with Framer Motion `Reorder`, grip handles
+- **Counter mechanic** — +/− buttons with large number display for counting questions
+- **Single-select mode** for Paint Splatter and Bingo Card — "Allow multiple selections" toggle in editor; single-select auto-submits on tap
+- **TEST MECHANICS survey** — comprehensive test survey with all mechanics for QA testing
+- Pulsing **TAP!** cue on Treasure Chest, Pinata, and Tap Meter (replaces gray instruction text); persists throughout entire tapping phase
+- Confirm/retry buttons on **Bubble Pop** (replaces auto-submit)
+- **Flick Cards** — left/right arrow navigation buttons beside cards
+- **Sticker Board + Jar Fill** — prominent animated drag hint ("↕ Drag items...")
+- **Fullscreen API** — requests fullscreen on Start tap to hide mobile browser chrome
+- **Leaderboard re-entry** — clicking "See where you rank" after submitting initials goes directly to leaderboard (no re-prompting)
 
 ### Fixed
-- **Mobile viewport** — SurveyPlayer now uses `position: fixed; inset: 0` to prevent page scroll on mobile browsers (Samsung S23 confirmed)
-- **Door Choice** — doorknob moved to bottom-right corner so it no longer overlaps option text; added right padding to text
-- **Gravity Drop** — added horizontal padding to bucket container to prevent right-edge clipping on 4-option layouts
-- **Scratch Card** — added `touch-action: none` and `overscroll-behavior: none` to wrapper to prevent page scroll while scratching on mobile
-- **Bubble Pop** — removed bottom legend (unnecessary for short option names)
+- **Mobile viewport** — SurveyPlayer uses `position: fixed; inset: 0` to prevent page scroll on mobile
+- **Door Choice** — doorknob repositioned to right side above divider line (no longer overlaps text or sits in bottom corner)
+- **Gravity Drop** — letter-coded buckets (A/B/C/D) with color legend below; horizontal padding prevents right-edge clipping
+- **Scratch Card** — `touch-action: none` on wrapper prevents page scroll while scratching
+- **Bubble Pop** — removed bottom legend (unnecessary for short options)
+- **Slingshot** — letter-coded targets (A/B/C/D) with color legend below (fixes text overflow on targets)
+- **Claw Machine** — letter-coded items with color legend below
+- **Treasure Chest** — improved opened phase with `overflow-visible` and perspective
+- **Spin & Stop** — removed duplicate result badge below reel
+- **Stacked Cards** — increased container height for bottom spacing; vertical dots on right side with more gap
+- **Conveyor Belt** — infinite looping (removed 3-loop limit); toggle grab/ungrab; removed loop counter
+- **Press & Hold** — labels now show "0% = Meh" / "100% = All in" for clear scale endpoints
+- **Leaderboard "← you" arrow** — changed to yellow bold for readability on dark overlay
+- **Slot Machine (`slot_machine`)** — mapped to SpinStopQuestion (no more "unknown type" error)
 
 ### Changed
-- **Whack-a-Mole** — moles now loop continuously until user whacks one (previously all popped up and stayed after 6 pairs)
-- **"Try Again" labels** — contextual labels per mechanic: "Pick Again" (Treasure Chest, Pinata), "Drop Again" (Gravity Drop), "Pop Again" (Bubble Pop), "Spin Again" (Wheel)
-- **Fanned Swipe** — increased 3D perspective effect (rotateY 25° → 35°, scale 0.85 → 0.8) for more dramatic fanning
-- **Stacked Cards** — added rotateZ tilt (-1° to 2°) and increased y offsets between stacked cards for more visual depth
+- **Whack-a-Mole** — moles loop continuously until user whacks one (no more all-show freeze)
+- **"Try Again" labels** — contextual per mechanic: Pick Again, Drop Again, Pop Again, Spin Again
+- **Fanned Swipe** — increased 3D perspective (rotateY 25° → 35°, scale 0.85 → 0.8)
+- **Stacked Cards** — rotateZ tilt on background cards for visual depth
+- **Wheel** — reduced result redundancy (removed subtitle update + emoji, kept confirm/retry only)
+
+### Removed
+- **Countdown Tap** mechanic — fully removed (component, editor, types, templates, playground). Not collecting valuable data.
+- Thermometer gesture overlay (intuitive without it)
 
 ---
 
