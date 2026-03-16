@@ -171,10 +171,6 @@ export function ConveyorBeltQuestion({ question, onAnswer }: ConveyorBeltQuestio
           />
         </div>
 
-        {/* Loop counter */}
-        <div className="absolute top-1.5 right-2 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded-full">
-          Loop {loopCount + 1}
-        </div>
       </div>
 
       {/* Submit */}
