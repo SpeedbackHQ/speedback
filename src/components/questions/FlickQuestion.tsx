@@ -91,33 +91,66 @@ export function FlickQuestion({ question, onAnswer }: FlickQuestionProps) {
         Swipe through cards, then tap Select
       </p>
 
-      {/* Card area */}
-      <div className="relative h-64 mb-6">
-        {/* Stack shadow cards */}
-        <div className="absolute inset-x-4 top-2 bottom-0 rounded-2xl bg-gray-200 -rotate-2" />
-        <div className="absolute inset-x-2 top-1 bottom-0 rounded-2xl bg-gray-100 rotate-1" />
-
-        {/* Current card */}
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={currentIndex}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate={isSubmitting ? 'selected' : 'center'}
-            exit="exit"
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            drag={isSubmitting ? false : 'x'}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.7}
-            onDragEnd={handleDragEnd}
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${cardColors[currentIndex % cardColors.length]} shadow-xl flex items-center justify-center cursor-grab active:cursor-grabbing touch-none`}
+      {/* Card area with arrow buttons */}
+      <div className="relative h-64 mb-6 flex items-center">
+        {/* Left arrow */}
+        {!isSubmitting && (
+          <motion.button
+            onClick={() => {
+              setDirection(-1)
+              setCurrentIndex(prev => (prev - 1 + options.length) % options.length)
+            }}
+            className="absolute left-0 z-20 w-9 h-9 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-violet-500"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <span className="text-white text-2xl font-bold px-6 text-center drop-shadow-md">
-              {options[currentIndex]}
-            </span>
-          </motion.div>
-        </AnimatePresence>
+            ‹
+          </motion.button>
+        )}
+
+        {/* Cards */}
+        <div className="relative flex-1 h-full mx-10">
+          {/* Stack shadow cards */}
+          <div className="absolute inset-x-4 top-2 bottom-0 rounded-2xl bg-gray-200 -rotate-2" />
+          <div className="absolute inset-x-2 top-1 bottom-0 rounded-2xl bg-gray-100 rotate-1" />
+
+          {/* Current card */}
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate={isSubmitting ? 'selected' : 'center'}
+              exit="exit"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              drag={isSubmitting ? false : 'x'}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.7}
+              onDragEnd={handleDragEnd}
+              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${cardColors[currentIndex % cardColors.length]} shadow-xl flex items-center justify-center cursor-grab active:cursor-grabbing touch-none`}
+            >
+              <span className="text-white text-2xl font-bold px-6 text-center drop-shadow-md">
+                {options[currentIndex]}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Right arrow */}
+        {!isSubmitting && (
+          <motion.button
+            onClick={() => {
+              setDirection(1)
+              setCurrentIndex(prev => (prev + 1) % options.length)
+            }}
+            className="absolute right-0 z-20 w-9 h-9 rounded-full bg-white/90 shadow-md flex items-center justify-center text-gray-500 hover:text-violet-500"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            ›
+          </motion.button>
+        )}
       </div>
 
       {/* Dot indicators */}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Reorder, motion } from 'framer-motion'
 import { Question } from '@/lib/types'
 
 interface RankQuestionProps {
@@ -14,6 +14,8 @@ const rankColors = [
   'from-pink-500 to-rose-500',
   'from-amber-500 to-orange-500',
   'from-emerald-500 to-teal-500',
+  'from-cyan-500 to-blue-500',
+  'from-red-500 to-rose-600',
 ]
 
 export function RankQuestion({ question, onAnswer }: RankQuestionProps) {
@@ -22,26 +24,6 @@ export function RankQuestion({ question, onAnswer }: RankQuestionProps) {
 
   const [ranked, setRanked] = useState<string[]>(initialItems)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const moveUp = useCallback((index: number) => {
-    if (index === 0 || isSubmitting) return
-    if (navigator.vibrate) navigator.vibrate(15)
-    setRanked(prev => {
-      const next = [...prev]
-      ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
-      return next
-    })
-  }, [isSubmitting])
-
-  const moveDown = useCallback((index: number) => {
-    if (index === ranked.length - 1 || isSubmitting) return
-    if (navigator.vibrate) navigator.vibrate(15)
-    setRanked(prev => {
-      const next = [...prev]
-      ;[next[index], next[index + 1]] = [next[index + 1], next[index]]
-      return next
-    })
-  }, [ranked.length, isSubmitting])
 
   const handleSubmit = useCallback(() => {
     if (isSubmitting) return
@@ -63,64 +45,46 @@ export function RankQuestion({ question, onAnswer }: RankQuestionProps) {
       </motion.h2>
 
       <p className="text-gray-500 text-center mb-6 text-sm">
-        Use arrows to reorder from best to worst
+        Drag to reorder
       </p>
 
-      {/* Ranked list */}
-      <div className="space-y-2">
-        <AnimatePresence>
-          {ranked.map((item, index) => (
-            <motion.div
-              key={item}
-              layout
-              className={`flex items-center gap-3 bg-gradient-to-r ${rankColors[index % rankColors.length]} rounded-xl px-4 py-3 shadow-md`}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              {/* Rank number */}
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-black text-lg">{index + 1}</span>
-              </div>
+      {/* Draggable ranked list */}
+      <Reorder.Group
+        axis="y"
+        values={ranked}
+        onReorder={(newOrder) => {
+          if (!isSubmitting) {
+            setRanked(newOrder)
+            if (navigator.vibrate) navigator.vibrate(10)
+          }
+        }}
+        className="space-y-2"
+      >
+        {ranked.map((item, index) => (
+          <Reorder.Item
+            key={item}
+            value={item}
+            dragListener={!isSubmitting}
+            className={`flex items-center gap-3 bg-gradient-to-r ${rankColors[index % rankColors.length]} rounded-xl px-4 py-3.5 shadow-md cursor-grab active:cursor-grabbing active:shadow-xl active:z-10`}
+            whileDrag={{ scale: 1.03 }}
+          >
+            {/* Drag handle */}
+            <div className="text-white/50 text-lg select-none flex-shrink-0" style={{ lineHeight: 1 }}>
+              ⠿
+            </div>
 
-              {/* Item name */}
-              <span className="flex-1 text-white font-semibold text-base">
-                {item}
-              </span>
+            {/* Rank number */}
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-black text-sm">{index + 1}</span>
+            </div>
 
-              {/* Move buttons */}
-              {!isSubmitting && (
-                <div className="flex flex-col gap-0.5">
-                  <motion.button
-                    onClick={() => moveUp(index)}
-                    disabled={index === 0}
-                    className={`w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold ${
-                      index === 0
-                        ? 'bg-white/10 text-white/30'
-                        : 'bg-white/25 text-white hover:bg-white/40'
-                    }`}
-                    whileTap={index > 0 ? { scale: 0.85 } : {}}
-                  >
-                    ▲
-                  </motion.button>
-                  <motion.button
-                    onClick={() => moveDown(index)}
-                    disabled={index === ranked.length - 1}
-                    className={`w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold ${
-                      index === ranked.length - 1
-                        ? 'bg-white/10 text-white/30'
-                        : 'bg-white/25 text-white hover:bg-white/40'
-                    }`}
-                    whileTap={index < ranked.length - 1 ? { scale: 0.85 } : {}}
-                  >
-                    ▼
-                  </motion.button>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+            {/* Item name */}
+            <span className="flex-1 text-white font-semibold text-base select-none">
+              {item}
+            </span>
+          </Reorder.Item>
+        ))}
+      </Reorder.Group>
 
       {/* Submit button */}
       <motion.button

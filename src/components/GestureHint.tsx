@@ -14,7 +14,7 @@ const gestureForType: Partial<Record<QuestionType, GestureType>> = {
   slingshot: 'pull-release',
   // slider: omitted — visible thumb + gradient track + "Slide to rate" button text are sufficient affordance
   // tug_of_war: omitted — visible rope makes the drag mechanic self-evident
-  thermometer: 'drag-updown',
+  // thermometer: omitted — visible gauge + drag affordance are self-evident
   tilt: 'drag-side',
   dial: 'drag-side',
   rolodex: 'swipe-browse',

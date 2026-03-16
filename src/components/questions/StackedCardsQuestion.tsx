@@ -105,7 +105,7 @@ export function StackedCardsQuestion({ question, onAnswer }: StackedCardsQuestio
       <div className="relative flex items-center justify-center gap-6">
       <div
         ref={containerRef}
-        className="relative h-72 flex-1 flex items-center justify-center"
+        className="relative h-80 flex-1 flex items-center justify-center"
         style={{ perspective: '1000px' }}
       >
         {/* Previous card peeking from bottom */}

@@ -42,6 +42,8 @@ export { ClawMachineQuestion } from './ClawMachineQuestion'
 export { WheelQuestion } from './WheelQuestion'
 // Rank
 export { RankQuestion } from './RankQuestion'
+// Counter
+export { CounterQuestion } from './CounterQuestion'
 // Qualitative / Open Response
 export { ShortTextQuestion } from './ShortTextQuestion'
 export { MadLibsQuestion } from './MadLibsQuestion'
