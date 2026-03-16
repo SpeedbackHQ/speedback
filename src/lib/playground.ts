@@ -29,7 +29,6 @@ const demoQuestionTexts: Record<string, string> = {
   press_hold: 'How much energy do you have?',
   toggle_switch: 'Are you a morning person?',
   spin_stop: 'What should we focus on?',
-  countdown_tap: 'How pumped are you?',
   door_choice: 'Pick a mystery door!',
   whack_a_mole: 'Bonk your favorite!',
   tug_of_war: 'Which side are you on?',

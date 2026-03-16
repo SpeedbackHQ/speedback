@@ -403,11 +403,6 @@ export const surveyTemplates: SurveyTemplate[] = [
         config: { options: ['Missing features', 'Performance', 'UX complexity', 'Integrations'] },
       },
       {
-        type: 'countdown_tap',
-        text: 'How urgently do you need improvements?',
-        config: { min_label: 'No rush', max_label: 'Yesterday!' },
-      },
-      {
         type: 'slider',
         text: 'Would you pay extra for priority features?',
         config: { min_label: 'No way', max_label: 'Definitely' },

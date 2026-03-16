@@ -438,7 +438,7 @@ export default function SurveyEditorPage() {
       // Binary types: answer is 'left' | 'right' (| 'up' for swipe)
       const binaryTypes = ['swipe', 'toggle_switch', 'tug_of_war']
       // Scale types: answer is a number 0-100
-      const scaleTypes = ['slider', 'thermometer', 'bullseye', 'stars', 'dial', 'press_hold', 'countdown_tap', 'tilt']
+      const scaleTypes = ['slider', 'thermometer', 'bullseye', 'stars', 'dial', 'press_hold', 'tilt']
       // Single-select types: answer is a string (one of the options)
       const singleSelectTypes = [
         'tap_meter', 'rolodex', 'fanned', 'fanned_swipe', 'stacked',

@@ -85,7 +85,6 @@ export function getDefaultConfig(type: QuestionType): Record<string, unknown> {
       return { min_label: 'Disagree', max_label: 'Agree' }
     case 'dial':
     case 'press_hold':
-    case 'countdown_tap':
     case 'tilt':
       return { min_label: 'Low', max_label: 'High' }
     case 'toggle_switch':
@@ -277,8 +276,7 @@ export function QuestionEditor({
       case 'bullseye':
       case 'dial':
       case 'press_hold':
-      case 'countdown_tap':
-      case 'tilt':
+        case 'tilt':
         return (
           <p className="text-sm text-gray-400 italic">No additional settings for this question type.</p>
         )

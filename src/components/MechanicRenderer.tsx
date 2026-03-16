@@ -31,7 +31,6 @@ import {
   PressHoldQuestion,
   DialQuestion,
   SpinStopQuestion,
-  CountdownTapQuestion,
   DoorChoiceQuestion,
   WhackAMoleQuestion,
   TugOfWarQuestion,
@@ -118,8 +117,6 @@ export function MechanicRenderer({ question, onAnswer }: MechanicRendererProps) 
       content = <DialQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'spin_stop':
       content = <SpinStopQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
-    case 'countdown_tap':
-      content = <CountdownTapQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'door_choice':
       content = <DoorChoiceQuestion {...props} onAnswer={(v) => onAnswer(v)} />; break
     case 'whack_a_mole':

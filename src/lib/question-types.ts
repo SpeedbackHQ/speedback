@@ -102,7 +102,7 @@ export function getQuestionCategory(type: QuestionType): string {
 
 // Mechanics that reward speed over deliberation
 const SPEED_BIASED_MECHANICS: Set<string> = new Set([
-  'swipe', 'countdown_tap', 'tap_meter', 'racing_lanes', 'conveyor_belt',
+  'swipe', 'tap_meter', 'racing_lanes', 'conveyor_belt',
 ])
 
 // Categories where deliberation matters for response quality
