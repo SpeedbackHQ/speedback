@@ -115,6 +115,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [userOverallRank, setUserOverallRank] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [initialsSubmitted, setInitialsSubmitted] = useState(false)
   const initialsInputRef = useRef<HTMLInputElement>(null)
 
   // Play completion chime once on mount
@@ -200,12 +201,14 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
       console.error('Failed to save initials:', error)
     }
     setIsSubmitting(false)
+    setInitialsSubmitted(true)
     await fetchLeaderboard()
     setStage('leaderboard')
   }
 
   const skipInitials = async () => {
     track('initials_skipped', { survey_id: surveyId, duration_ms: elapsedTime })
+    setInitialsSubmitted(true)
     await fetchLeaderboard()
     setStage('leaderboard')
   }
@@ -329,7 +332,15 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
               {/* Leaderboard opt-in button */}
               {showLeaderboardButton && (
                 <motion.button
-                  onClick={() => buttonInteractive && setStage('initials')}
+                  onClick={async () => {
+                    if (!buttonInteractive) return
+                    if (initialsSubmitted) {
+                      await fetchLeaderboard()
+                      setStage('leaderboard')
+                    } else {
+                      setStage('initials')
+                    }
+                  }}
                   className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white/90 font-medium hover:bg-white/30 transition-colors"
                   style={{ pointerEvents: buttonInteractive ? 'auto' : 'none' }}
                   initial={{ y: 20, opacity: 0 }}
@@ -457,7 +468,7 @@ export function Celebration({ message = 'Thanks for your feedback!', elapsedTime
                         {/* User indicator */}
                         {isUser && (
                           <motion.span
-                            className="ml-2 text-sm"
+                            className="ml-2 text-sm text-yellow-400 font-bold"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', delay: i * 0.08 + 0.2 }}
