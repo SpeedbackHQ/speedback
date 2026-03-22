@@ -10,6 +10,44 @@ export function getStyledQRConfig(
   brandColor?: string
 ): Options {
   const primaryColor = brandColor || '#8B5CF6' // Default indigo
+  const isDefault = !brandColor || brandColor === '#8B5CF6'
+
+  // SpeedBack default: gradient with purple/amber
+  // Custom brand color: solid single color (clean, no gradient)
+  const dotsStyle = isDefault
+    ? {
+        type: 'rounded' as const,
+        gradient: {
+          type: 'linear' as const,
+          rotation: 135,
+          colorStops: [
+            { offset: 0, color: primaryColor },
+            { offset: 0.5, color: '#A855F7' },
+            { offset: 1, color: '#F59E0B' },
+          ],
+        },
+      }
+    : {
+        type: 'rounded' as const,
+        color: primaryColor,
+      }
+
+  const cornersStyle = isDefault
+    ? {
+        type: 'extra-rounded' as const,
+        gradient: {
+          type: 'linear' as const,
+          rotation: 135,
+          colorStops: [
+            { offset: 0, color: primaryColor },
+            { offset: 1, color: '#A855F7' },
+          ],
+        },
+      }
+    : {
+        type: 'extra-rounded' as const,
+        color: primaryColor,
+      }
 
   return {
     width: size,
@@ -28,29 +66,8 @@ export function getStyledQRConfig(
       margin: 8,
       crossOrigin: 'anonymous',
     },
-    dotsOptions: {
-      type: 'rounded',
-      gradient: {
-        type: 'linear',
-        rotation: 135,
-        colorStops: [
-          { offset: 0, color: primaryColor },
-          { offset: 0.5, color: '#A855F7' }, // Purple
-          { offset: 1, color: '#F59E0B' }, // Amber
-        ],
-      },
-    },
-    cornersSquareOptions: {
-      type: 'extra-rounded',
-      gradient: {
-        type: 'linear',
-        rotation: 135,
-        colorStops: [
-          { offset: 0, color: primaryColor },
-          { offset: 1, color: '#A855F7' },
-        ],
-      },
-    },
+    dotsOptions: dotsStyle,
+    cornersSquareOptions: cornersStyle,
     cornersDotOptions: {
       type: 'dot',
       color: primaryColor,
