@@ -361,7 +361,8 @@ async function main() {
         is_active: true,
         max_responses: null, // unlimited
         branding_config: {
-          primary_color: '#8B5CF6',
+          primary_color: '#00BFDF',
+          secondary_color: '#FF6D4D',
           mascot_enabled: false,
         },
       })

@@ -936,12 +936,7 @@ export default function SurveyEditorPage() {
                 <p className="text-xs text-slate-500 mt-2">
                   Make scanning feel like starting a game
                 </p>
-                <button
-                  onClick={() => setPosterModalOpen(true)}
-                  className="w-full mt-3 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold"
-                >
-                  Create Poster
-                </button>
+                {/* Poster button hidden — use Canva for physical materials */}
               </div>
 
               {/* Link and embed */}
