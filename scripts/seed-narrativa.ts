@@ -48,19 +48,20 @@ type Q = {
 // --- Survey definitions ---
 
 const WORKSHOP_QUESTIONS: Q[] = [
-  // Swipe stack (Q1-Q4)
+  // Swipe stack (Q1-Q5) — 5 consecutive swipes for streak
   { type: 'swipe', text: 'How valuable was this workshop?', config: { left_label: 'Not really', right_label: 'Very!' } },
   { type: 'swipe', text: 'Would you recommend it?', config: { left_label: 'No', right_label: 'Yes!' } },
   { type: 'swipe', text: 'Would you take another workshop by this facilitator?', config: { left_label: 'No', right_label: 'Absolutely' } },
   { type: 'swipe', text: 'Worth the price?', config: { left_label: 'Not really', right_label: 'Definitely' } },
-  // This or That (Q5-Q6)
+  { type: 'swipe', text: 'Would you want a deeper dive on this topic?', config: { left_label: 'No', right_label: 'Yes!' } },
+  // This or That (Q6-Q7)
   { type: 'this_or_that', text: 'Content or facilitator — what mattered more?', config: { left_label: 'Content', right_label: 'Facilitator' } },
-  { type: 'this_or_that', text: 'Better suited for beginners or experienced players?', config: { left_label: 'Beginners', right_label: 'Experienced' } },
-  // Other mechanics (Q7-Q9)
+  { type: 'this_or_that', text: 'How new was the material?', config: { left_label: 'Mostly New', right_label: 'Good Refresher' } },
+  // Other mechanics (Q8-Q10)
   { type: 'stars', text: 'Overall rating', config: {} },
   { type: 'slider', text: 'Pacing', config: { min_label: 'Too Slow', max_label: 'Too Fast' } },
   { type: 'tap', text: 'Best part of the workshop?', config: { options: ['Concepts', 'Exercises', 'Facilitator Energy', 'Group Dynamic'] } },
-  // Q10 — conditional: only if Q1 or Q2 negative
+  // Q11 — conditional: only if Q1 or Q2 negative
   { type: 'short_text', text: 'One thing to improve?', config: { placeholder: 'What would make it better?', max_length: 140, show_conditions: [{ question_index: 0, value: 'left' }, { question_index: 1, value: 'left' }] } },
 ]
 
@@ -155,8 +156,26 @@ interface SurveyDef {
 
 const ALL_SURVEYS: SurveyDef[] = [
   {
-    slug: 'narrativa-workshops',
-    title: 'Workshop Feedback',
+    slug: 'narrativa-workshops-thu',
+    title: 'Thursday Workshop Feedback',
+    thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
+    questions: WORKSHOP_QUESTIONS,
+  },
+  {
+    slug: 'narrativa-workshops-fri',
+    title: 'Friday Workshop Feedback',
+    thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
+    questions: WORKSHOP_QUESTIONS,
+  },
+  {
+    slug: 'narrativa-workshops-sat',
+    title: 'Saturday Workshop Feedback',
+    thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
+    questions: WORKSHOP_QUESTIONS,
+  },
+  {
+    slug: 'narrativa-workshops-sun',
+    title: 'Sunday Workshop Feedback',
     thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
     questions: WORKSHOP_QUESTIONS,
   },
@@ -219,7 +238,7 @@ const ALL_SURVEYS: SurveyDef[] = [
 // --- Festival config ---
 const FESTIVAL_CONFIG = {
   'workshops-thu': {
-    survey_slug: 'narrativa-workshops',
+    survey_slug: 'narrativa-workshops-thu',
     type: 'workshop',
     day: 'Thursday Mar 26',
     workshops: [
@@ -230,7 +249,7 @@ const FESTIVAL_CONFIG = {
     ],
   },
   'workshops-fri': {
-    survey_slug: 'narrativa-workshops',
+    survey_slug: 'narrativa-workshops-fri',
     type: 'workshop',
     day: 'Friday Mar 27',
     workshops: [
@@ -241,7 +260,7 @@ const FESTIVAL_CONFIG = {
     ],
   },
   'workshops-sat': {
-    survey_slug: 'narrativa-workshops',
+    survey_slug: 'narrativa-workshops-sat',
     type: 'workshop',
     day: 'Saturday Mar 28',
     workshops: [
@@ -252,7 +271,7 @@ const FESTIVAL_CONFIG = {
     ],
   },
   'workshops-sun': {
-    survey_slug: 'narrativa-workshops',
+    survey_slug: 'narrativa-workshops-sun',
     type: 'workshop',
     day: 'Sunday Mar 29',
     workshops: [
