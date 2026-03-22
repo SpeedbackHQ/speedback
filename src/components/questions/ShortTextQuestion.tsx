@@ -13,7 +13,8 @@ export function ShortTextQuestion({ question, onAnswer }: ShortTextQuestionProps
   const {
     max_length = 140,
     placeholder = 'Share your thought...',
-  } = question.config as { max_length?: number; placeholder?: string }
+    allow_skip = false,
+  } = question.config as { max_length?: number; placeholder?: string; allow_skip?: boolean }
 
   const [text, setText] = useState('')
   const [isSent, setIsSent] = useState(false)
@@ -100,6 +101,16 @@ export function ShortTextQuestion({ question, onAnswer }: ShortTextQuestionProps
               >
                 Send
               </motion.button>
+
+              {/* Skip option for optional questions */}
+              {allow_skip && (
+                <button
+                  onClick={() => onAnswer('')}
+                  className="w-full mt-3 py-2 text-gray-400 hover:text-gray-600 text-sm font-medium transition-colors"
+                >
+                  Skip
+                </button>
+              )}
             </motion.div>
           ) : (
             <motion.div

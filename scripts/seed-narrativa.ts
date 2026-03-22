@@ -62,8 +62,8 @@ const WORKSHOP_SHARED_QUESTIONS: Q[] = [
   { type: 'stars', text: 'Overall rating', config: {} },
   { type: 'slider', text: 'Pacing', config: { min_label: 'Too Slow', max_label: 'Too Fast' } },
   { type: 'tap', text: 'Best part of the workshop?', config: { options: ['Concepts', 'Exercises', 'Facilitator Energy', 'Group Dynamic'] } },
-  // Q12 — conditional: only if Q2 or Q3 negative (index 1 and 2, after workshop selection at 0)
-  { type: 'short_text', text: 'One thing to improve?', config: { placeholder: 'What would make it better?', max_length: 140, show_conditions: [{ question_index: 1, value: 'left' }, { question_index: 2, value: 'left' }] } },
+  // Q12 — optional, always shown, skippable
+  { type: 'short_text', text: 'One thing to improve?', config: { placeholder: 'Leave blank if nothing comes to mind', max_length: 140, allow_skip: true } },
 ]
 
 // Per-day workshop questions: workshop selection Q0 + shared questions
