@@ -88,6 +88,7 @@ const OPENING_PARTY_QUESTIONS: Q[] = [
   { type: 'treasure_chest', text: 'Arriving energy?', config: { options: ['Just Getting Started', 'Warmed Up', 'Full Send'] } },
   { type: 'swipe', text: 'Met anyone interesting yet?', config: { left_label: 'Not yet', right_label: 'Yes!' } },
   { type: 'stars', text: 'Festival excitement level', config: {} },
+  { type: 'tap', text: 'How did you hear about Narrativa?', config: { options: ['Word of Mouth', 'Social Media', 'A Friend Invited Me', 'Improv Community', 'Other'] } },
 ]
 
 const MURDER_MYSTERY_QUESTIONS: Q[] = [
