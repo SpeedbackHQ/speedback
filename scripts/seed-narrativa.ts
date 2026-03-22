@@ -47,23 +47,37 @@ type Q = {
 
 // --- Survey definitions ---
 
-const WORKSHOP_QUESTIONS: Q[] = [
-  // Swipe stack (Q1-Q5) — 5 consecutive swipes for streak
+// Shared questions after workshop selection (Q1 onward)
+const WORKSHOP_SHARED_QUESTIONS: Q[] = [
+  // Swipe stack (Q2-Q6) — 5 consecutive swipes for streak
   { type: 'swipe', text: 'How valuable was this workshop?', config: { left_label: 'Not really', right_label: 'Very!' } },
   { type: 'swipe', text: 'Would you recommend it?', config: { left_label: 'No', right_label: 'Yes!' } },
   { type: 'swipe', text: 'Would you take another workshop by this facilitator?', config: { left_label: 'No', right_label: 'Absolutely' } },
   { type: 'swipe', text: 'Worth the price?', config: { left_label: 'Not really', right_label: 'Definitely' } },
   { type: 'swipe', text: 'Would you want a deeper dive on this topic?', config: { left_label: 'No', right_label: 'Yes!' } },
-  // This or That (Q6-Q7)
+  // This or That (Q7-Q8)
   { type: 'this_or_that', text: 'Content or facilitator — what mattered more?', config: { left_label: 'Content', right_label: 'Facilitator' } },
   { type: 'this_or_that', text: 'How new was the material?', config: { left_label: 'Mostly New', right_label: 'Good Refresher' } },
-  // Other mechanics (Q8-Q10)
+  // Other mechanics (Q9-Q11)
   { type: 'stars', text: 'Overall rating', config: {} },
   { type: 'slider', text: 'Pacing', config: { min_label: 'Too Slow', max_label: 'Too Fast' } },
   { type: 'tap', text: 'Best part of the workshop?', config: { options: ['Concepts', 'Exercises', 'Facilitator Energy', 'Group Dynamic'] } },
-  // Q11 — conditional: only if Q1 or Q2 negative
-  { type: 'short_text', text: 'One thing to improve?', config: { placeholder: 'What would make it better?', max_length: 140, show_conditions: [{ question_index: 0, value: 'left' }, { question_index: 1, value: 'left' }] } },
+  // Q12 — conditional: only if Q2 or Q3 negative (index 1 and 2, after workshop selection at 0)
+  { type: 'short_text', text: 'One thing to improve?', config: { placeholder: 'What would make it better?', max_length: 140, show_conditions: [{ question_index: 1, value: 'left' }, { question_index: 2, value: 'left' }] } },
 ]
+
+// Per-day workshop questions: workshop selection Q0 + shared questions
+function makeWorkshopQuestions(workshopNames: string[]): Q[] {
+  return [
+    { type: 'tap', text: 'Which workshop did you attend?', config: { options: workshopNames } },
+    ...WORKSHOP_SHARED_QUESTIONS,
+  ]
+}
+
+const WORKSHOP_THU_QUESTIONS = makeWorkshopQuestions(['Tournus (Mixer)', 'Fantasy', 'Seven Basic Plots', 'Intro to Storytelling'])
+const WORKSHOP_FRI_QUESTIONS = makeWorkshopQuestions(['Man Band', 'No Words Needed', 'Didaskalia', 'The Art of Soft Editing'])
+const WORKSHOP_SAT_QUESTIONS = makeWorkshopQuestions(['Postcards From The Future Past', 'Black Mirror', 'Improv Toolbox', 'Side Characters'])
+const WORKSHOP_SUN_QUESTIONS = makeWorkshopQuestions(['The (Improvised) Improvised Play', 'Adventure Time', 'Improvised Dramaturgy', 'Object Work'])
 
 function makeShowQuestions(actNames: string[]): Q[] {
   return [
@@ -160,25 +174,25 @@ const ALL_SURVEYS: SurveyDef[] = [
     slug: 'narrativa-workshops-thu',
     title: 'Thursday Workshop Feedback',
     thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
-    questions: WORKSHOP_QUESTIONS,
+    questions: WORKSHOP_THU_QUESTIONS,
   },
   {
     slug: 'narrativa-workshops-fri',
     title: 'Friday Workshop Feedback',
     thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
-    questions: WORKSHOP_QUESTIONS,
+    questions: WORKSHOP_FRI_QUESTIONS,
   },
   {
     slug: 'narrativa-workshops-sat',
     title: 'Saturday Workshop Feedback',
     thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
-    questions: WORKSHOP_QUESTIONS,
+    questions: WORKSHOP_SAT_QUESTIONS,
   },
   {
     slug: 'narrativa-workshops-sun',
     title: 'Sunday Workshop Feedback',
     thank_you_message: 'Thanks for your feedback! Enjoy the rest of Narrativa 🎭',
-    questions: WORKSHOP_QUESTIONS,
+    questions: WORKSHOP_SUN_QUESTIONS,
   },
   {
     slug: 'narrativa-show-thu',
