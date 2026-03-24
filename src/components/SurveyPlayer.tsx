@@ -550,7 +550,7 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false, metadata }
           {displayQuestion && (
           <motion.div
             key={displayKey}
-            className="w-full h-full relative"
+            className="w-full h-full relative flex flex-col"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
@@ -560,7 +560,20 @@ export function SurveyPlayer({ survey, showSpeedbackBranding = false, metadata }
               damping: swipeStreak >= 2 ? 35 : 30,
             }}
           >
-            {renderQuestion(displayQuestion)}
+            <div className="flex-1 min-h-0">
+              {renderQuestion(displayQuestion)}
+            </div>
+            {/* Skip button for optional questions (email_capture has its own) */}
+            {displayQuestion.type !== 'email_capture' && (displayQuestion.config as QuestionConfig).optional && (
+              <div className="flex-shrink-0 pb-4 pt-1 flex justify-center">
+                <button
+                  onClick={() => handleAnswer('skipped')}
+                  className="px-6 py-2 text-slate-400 text-sm font-medium hover:text-slate-600 transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            )}
             {showHint && (
               <GestureHint
                 questionType={displayQuestion.type}

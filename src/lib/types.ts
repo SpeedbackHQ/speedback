@@ -67,6 +67,8 @@ export interface QuestionConfig {
     question_index: number  // which earlier question to check (0-based)
     value: string | string[] // show only if that answer matches (array = OR)
   }>
+  // Optional question — respondents can skip
+  optional?: boolean
 }
 
 // Answer types

@@ -828,6 +828,20 @@ export function QuestionEditor({
                 {changingTypeFor !== question.id && (
                   <div className="mt-3 pt-3 border-t border-gray-200">
                     {renderQuestionConfig(question)}
+                    {/* Optional toggle — allow respondents to skip this question */}
+                    <label className="flex items-center gap-2 cursor-pointer mt-3 pt-3 border-t border-gray-100">
+                      <input
+                        type="checkbox"
+                        checked={(question.config.optional as boolean) ?? false}
+                        onChange={(e) => onQuestionUpdate(question.id, {
+                          config: { ...question.config, optional: e.target.checked }
+                        })}
+                        className="w-4 h-4 text-violet-500 border-slate-300 rounded focus:ring-violet-500"
+                      />
+                      <span className="text-sm text-slate-600">
+                        Optional (respondents can skip)
+                      </span>
+                    </label>
                     {renderFollowUpSection(question)}
                   </div>
                 )}
