@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 80" width="520" height="80">
+  <style>
+    @font-face {
+      font-family: 'Chunko';
+      src: url('/assets/Chunko Bold Demo.otf') format('opentype');
+      font-weight: 800;
+    }
+    .logo-text {
+      font-family: 'Chunko', 'Montserrat', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 56px;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+  </style>
+  <text x="0" y="60" class="logo-text">
+    <tspan fill="#1E293B">SPEED</tspan><tspan fill="#8B5CF6">BACK</tspan>
+  </text>
+  <text x="460" y="60" style="font-size: 48px;">⚡</text>
+</svg>

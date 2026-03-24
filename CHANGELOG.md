@@ -4,6 +4,23 @@ All notable changes to SpeedBack are documented in this file.
 
 ---
 
+## [2026-03-24] — Narrativa Survey Refinements
+
+### Changed
+- **4 daily workshop surveys** instead of 1 shared survey — each day (Thu/Fri/Sat/Sun) gets its own survey with its own QR code
+- **Workshop selection as Q1** — each daily survey starts with Tap to Select for that day's 4 workshops
+- **Combined Opening Party + Murder Mystery** into one survey — "Did you play the Murder Mystery?" gate question with conditional follow-ups (12 surveys, 12 QR codes total)
+- **Workshop Q12 unconditional** — "One thing to improve?" always shown with skip option (`allow_skip: true`) instead of conditional on negative swipes
+- Replaced workshop Q6 ("beginners or experienced?") with two new questions: "Would you want a deeper dive?" (Swipe) and "How new was the material?" (This or That)
+- **Narrativa QR codes** now solid black (`#212121`) instead of SpeedBack gradient — custom brand colors use solid color, SpeedBack default keeps gradient
+- **"How did you hear about Narrativa?"** added to Opening Party (Tap to Select)
+
+### Added
+- **Favicon** — ⚡ lightning bolt emoji as SVG favicon
+- **SpeedBack logo SVG** in public assets
+
+---
+
 ## [2026-03-16] — Narrativa Festival
 
 ### Added
@@ -14,8 +31,8 @@ All notable changes to SpeedBack are documented in this file.
 - **Dashboard folders** — surveys grouped under collapsible folder headers by `folder` column (e.g., "Narrativa 2026")
 - **Dashboard inline delete** — trash icon on each survey card with confirm/cancel dialog (no more navigating in to delete)
 - **Leads CSV export** — "Download Leads" button on survey detail page for surveys with email_capture questions
-- **10 Narrativa surveys seeded** (69 questions total) covering workshops, shows, community events, and meta feedback
-- **13 QR slugs** mapped via `festival_configs` table (4 workshop days, 3 shows, 5 community events, 1 meta)
+- **12 Narrativa surveys seeded** covering workshops, shows, community events, and meta feedback
+- **12 QR slugs** mapped via `festival_configs` table (4 workshop days, 3 shows, 4 community events, 1 meta)
 - **Database**: `slug` + `folder` columns on surveys, `metadata` on responses, `leads` table, `festival_configs` table
 
 ---

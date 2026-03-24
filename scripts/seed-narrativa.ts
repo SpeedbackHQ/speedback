@@ -99,24 +99,25 @@ const SHOW_FRI_QUESTIONS = makeShowQuestions(['Man Band', 'The Winchesters', 'So
 const SHOW_SAT_QUESTIONS = makeShowQuestions(['Postcards', 'Object of Affection', "Roh's Choice"])
 
 const OPENING_PARTY_QUESTIONS: Q[] = [
+  // Opening Party (everyone)
   { type: 'treasure_chest', text: 'Arriving energy?', config: { options: ['Just Getting Started', 'Warmed Up', 'Full Send'] } },
   { type: 'swipe', text: 'Met anyone interesting yet?', config: { left_label: 'Not yet', right_label: 'Yes!' } },
   { type: 'stars', text: 'Festival excitement level', config: {} },
   { type: 'tap', text: 'How did you hear about Narrativa?', config: { options: ['Word of Mouth', 'Social Media', 'A Friend Invited Me', 'Improv Community', 'Other'] } },
-]
-
-const MURDER_MYSTERY_QUESTIONS: Q[] = [
-  { type: 'stars', text: 'Was your character interesting to play?', config: {} },
-  { type: 'swipe', text: 'Did you have enough to do and say throughout?', config: { left_label: 'Not enough', right_label: 'Plenty' } },
-  { type: 'slider', text: 'Could you follow the mystery logic?', config: { min_label: 'Totally Lost', max_label: 'Crystal Clear' } },
-  { type: 'swipe', text: 'Did you figure out the murderer?', config: { left_label: 'No', right_label: 'Yes' } },
-  // Q4a — only if Q4 = Yes (right)
-  { type: 'swipe', text: 'Did the reveal feel fair?', config: { left_label: 'Not really', right_label: 'Yes', show_conditions: [{ question_index: 3, value: 'right' }] } },
-  // Q4b — only if Q4 = No (left)
-  { type: 'this_or_that', text: 'Was that frustrating or fine?', config: { left_label: 'Frustrating', right_label: 'Fine, Part of the Fun', show_conditions: [{ question_index: 3, value: 'left' }] } },
-  { type: 'slider', text: 'Pacing of the game', config: { min_label: 'Way Too Short', max_label: 'Way Too Long' } },
-  { type: 'swipe', text: 'Did the ending feel satisfying?', config: { left_label: 'Not really', right_label: 'Yes!' } },
-  { type: 'short_text', text: 'What would have made it better?', config: { placeholder: 'Any thoughts...', max_length: 140 } },
+  // Gate question (index 4)
+  { type: 'swipe', text: 'Did you play the Murder Mystery?', config: { left_label: 'No', right_label: 'Yes' } },
+  // Murder Mystery section (conditional on Q5 = yes, index 4)
+  { type: 'stars', text: 'Was your character interesting to play?', config: { show_conditions: [{ question_index: 4, value: 'right' }] } },
+  { type: 'swipe', text: 'Did you have enough to do and say throughout?', config: { left_label: 'Not enough', right_label: 'Plenty', show_conditions: [{ question_index: 4, value: 'right' }] } },
+  { type: 'slider', text: 'Could you follow the mystery logic?', config: { min_label: 'Totally Lost', max_label: 'Crystal Clear', show_conditions: [{ question_index: 4, value: 'right' }] } },
+  { type: 'swipe', text: 'Did you figure out the murderer?', config: { left_label: 'No', right_label: 'Yes', show_conditions: [{ question_index: 4, value: 'right' }] } },
+  // Q9a — only if Q9 (index 8) = Yes (right)
+  { type: 'swipe', text: 'Did the reveal feel fair?', config: { left_label: 'Not really', right_label: 'Yes', show_conditions: [{ question_index: 8, value: 'right' }] } },
+  // Q9b — only if Q9 (index 8) = No (left)
+  { type: 'this_or_that', text: 'Was that frustrating or fine?', config: { left_label: 'Frustrating', right_label: 'Fine, Part of the Fun', show_conditions: [{ question_index: 8, value: 'left' }] } },
+  { type: 'slider', text: 'Pacing of the game', config: { min_label: 'Way Too Short', max_label: 'Way Too Long', show_conditions: [{ question_index: 4, value: 'right' }] } },
+  { type: 'swipe', text: 'Did the ending feel satisfying?', config: { left_label: 'Not really', right_label: 'Yes!', show_conditions: [{ question_index: 4, value: 'right' }] } },
+  { type: 'short_text', text: 'What would have made it better?', config: { placeholder: 'Any thoughts...', max_length: 140, show_conditions: [{ question_index: 4, value: 'right' }] } },
 ]
 
 const CJR_QUESTIONS: Q[] = [
@@ -219,12 +220,6 @@ const ALL_SURVEYS: SurveyDef[] = [
     questions: OPENING_PARTY_QUESTIONS,
   },
   {
-    slug: 'narrativa-murder-mystery',
-    title: 'Murder Mystery',
-    thank_you_message: 'Case closed! Thanks for playing 🔍',
-    questions: MURDER_MYSTERY_QUESTIONS,
-  },
-  {
     slug: 'narrativa-cjr',
     title: 'Cozy Juicy Real',
     thank_you_message: 'Thanks for playing! Keep those conversations going 💬',
@@ -300,7 +295,6 @@ const FESTIVAL_CONFIG = {
   'show-fri-mar27': { survey_slug: 'narrativa-show-fri', type: 'show' },
   'show-sat-mar28': { survey_slug: 'narrativa-show-sat', type: 'show' },
   'community-wed-opening': { survey_slug: 'narrativa-opening', type: 'community' },
-  'community-wed-murder-mystery': { survey_slug: 'narrativa-murder-mystery', type: 'community' },
   'community-thu-cjr': { survey_slug: 'narrativa-cjr', type: 'community' },
   'community-fri-questscape': { survey_slug: 'narrativa-questscape', type: 'community' },
   'community-sun-closing': { survey_slug: 'narrativa-closing', type: 'community' },
