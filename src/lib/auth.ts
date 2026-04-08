@@ -111,8 +111,6 @@ export async function getUserProfile(userId: string) {
  */
 export async function upsertUserProfile(userId: string, profile: {
   display_name?: string
-  plan_type?: 'free' | 'starter' | 'per-event'
-  stripe_customer_id?: string
 }) {
   const supabase = await createServerSupabaseClient()
 
@@ -128,27 +126,6 @@ export async function upsertUserProfile(userId: string, profile: {
 
   if (error) {
     throw new Error(`Failed to update profile: ${error.message}`)
-  }
-
-  return data
-}
-
-/**
- * Get the user's current subscription
- */
-export async function getUserSubscription(userId: string) {
-  const supabase = await createServerSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .maybeSingle()
-
-  if (error || !data) {
-    // No active subscription = free tier
-    return null
   }
 
   return data

@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
           {
             id: data.user.id,
             display_name: data.user.user_metadata.display_name || data.user.email?.split('@')[0] || 'User',
-            plan_type: 'free',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           },

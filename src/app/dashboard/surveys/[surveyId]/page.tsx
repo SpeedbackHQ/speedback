@@ -47,7 +47,6 @@ export default function SurveyEditorPage() {
 
   const [survey, setSurvey] = useState<SurveyData | null>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
-  const [isTestAccount, setIsTestAccount] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -138,9 +137,6 @@ export default function SurveyEditorPage() {
     // Load user profile to check plan type
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      // Check if test account
-      setIsTestAccount(user.email === 'millerdjonathan@proton.me')
-
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
@@ -191,33 +187,9 @@ export default function SurveyEditorPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Check if user can export CSV (paid feature)
-  const canExportCSV = () => {
-    if (!survey) return false
-    // Test account bypass
-    if (isTestAccount) return true
-    // Regular plan checks
-    if (!userProfile) return false
-    // Starter plan: unlimited for all surveys
-    if (userProfile.plan_type === 'starter') return true
-    // Per-event or free with premium credit: only for unlimited surveys
-    if ((userProfile.plan_type === 'per-event' || userProfile.plan_type === 'free') && survey.max_responses === null) return true
-    return false
-  }
-
-  // Check if user can view full analytics (paid feature)
-  const canViewFullAnalytics = () => {
-    if (!survey) return false
-    // Test account bypass
-    if (isTestAccount) return true
-    // Regular plan checks
-    if (!userProfile) return false
-    // Starter plan: full analytics for all surveys
-    if (userProfile.plan_type === 'starter') return true
-    // Per-event or free with premium credit: only for unlimited surveys
-    if ((userProfile.plan_type === 'per-event' || userProfile.plan_type === 'free') && survey.max_responses === null) return true
-    return false
-  }
+  // All features available in the open source community edition
+  const canExportCSV = () => !!survey
+  const canViewFullAnalytics = () => !!survey
 
   // Auto-save with debounce
   const saveWithFeedback = useCallback(async (saveFn: () => Promise<void>) => {
@@ -1032,47 +1004,9 @@ export default function SurveyEditorPage() {
                       </button>
                     )}
                   </div>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-lg text-sm font-medium cursor-not-allowed" title="CSV export available on Starter plan or with per-event purchase">
-                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span className="whitespace-nowrap">CSV Export (Premium)</span>
-                    <a href="/pricing" className="text-violet-600 hover:text-violet-700 underline whitespace-nowrap">
-                      Upgrade
-                    </a>
-                  </div>
-                )
+                ) : null
               )}
             </div>
-
-            {/* Response limit banner (free tier) */}
-            {survey.max_responses != null && (() => {
-              const limit = survey.max_responses as number
-              const used = survey.responses.length
-              const isFull = used >= limit
-              const isNearFull = used >= limit * 0.8
-              return (
-                <div className={`flex items-center justify-between rounded-xl px-4 py-3 mb-4 text-sm font-medium ${
-                  isFull
-                    ? 'bg-red-50 border border-red-200 text-red-700'
-                    : isNearFull
-                    ? 'bg-amber-50 border border-amber-200 text-amber-700'
-                    : 'bg-violet-50 border border-violet-100 text-violet-700'
-                }`}>
-                  <span>
-                    <strong>{used} / {limit}</strong> responses used
-                    {isFull && ' — survey is full'}
-                  </span>
-                  <a
-                    href="/pricing"
-                    className="underline underline-offset-2 hover:opacity-80 font-semibold"
-                  >
-                    Upgrade to remove limit →
-                  </a>
-                </div>
-              )
-            })()}
 
             {survey.responses.length === 0 ? (
               <div className="text-center py-12 text-slate-500">

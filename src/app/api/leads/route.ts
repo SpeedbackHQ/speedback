@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 10 requests per minute per IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const { success } = rateLimit(`leads:${ip}`, { maxRequests: 10, windowMs: 60_000 })
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const body = await request.json()
     const { email, is_organizer, survey_id, response_session_id } = body
 

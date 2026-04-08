@@ -14,17 +14,15 @@ interface WorkshopPickerProps {
   workshops: Workshop[]
   dayLabel: string
   survey: SurveyWithQuestions
-  showSpeedbackBranding: boolean
 }
 
-export function WorkshopPicker({ workshops, dayLabel, survey, showSpeedbackBranding }: WorkshopPickerProps) {
+export function WorkshopPicker({ workshops, dayLabel, survey }: WorkshopPickerProps) {
   const [selected, setSelected] = useState<Workshop | null>(null)
 
   if (selected) {
     return (
       <SurveyPlayer
         survey={survey}
-        showSpeedbackBranding={showSpeedbackBranding}
         metadata={{
           workshop_name: selected.name,
           facilitator: selected.facilitator,
@@ -69,7 +67,7 @@ export function WorkshopPicker({ workshops, dayLabel, survey, showSpeedbackBrand
           ))}
         </div>
 
-        {showSpeedbackBranding && (
+        {(
           <div className="mt-8 text-center">
             <span className="text-xs text-slate-400">
               Powered by{' '}

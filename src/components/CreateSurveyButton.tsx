@@ -28,32 +28,6 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         throw new Error('Not authenticated')
       }
 
-      // Test account bypass - millerdjonathan@proton.me gets unlimited everything
-      const isTestAccount = user.email === 'millerdjonathan@proton.me'
-
-      // Get user's profile to check plan type and credits
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('plan_type, premium_credits')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      // Determine max_responses based on plan type and credits
-      let maxResponses: number | null = 25 // Default for free users
-      let shouldDecrementCredit = false
-
-      if (isTestAccount) {
-        // Test account gets unlimited everything
-        maxResponses = null
-      } else if (profile?.plan_type === 'starter') {
-        // Subscription users get unlimited responses
-        maxResponses = null
-      } else if ((profile?.plan_type === 'free' || profile?.plan_type === 'per-event') && (profile?.premium_credits || 0) > 0) {
-        // Free or per-event users with credits get unlimited responses
-        maxResponses = null
-        shouldDecrementCredit = true
-      }
-
       // Ensure we have an organization
       let { data: org } = await supabase
         .from('organizations')
@@ -70,7 +44,7 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
         org = newOrg
       }
 
-      // Create empty survey with default title
+      // Create empty survey — unlimited responses (community edition)
       const { data: survey, error } = await supabase
         .from('surveys')
         .insert({
@@ -78,20 +52,12 @@ export function CreateSurveyButton({ className, children }: CreateSurveyButtonPr
           user_id: user.id,
           title: 'Untitled Survey',
           branding_config: { primary_color: '#8B5CF6', mascot_enabled: true },
-          max_responses: maxResponses,
+          max_responses: null,
         })
         .select()
         .single()
 
       if (error) throw error
-
-      // Decrement premium credit if used
-      if (shouldDecrementCredit && profile) {
-        await supabase
-          .from('user_profiles')
-          .update({ premium_credits: (profile.premium_credits || 1) - 1 })
-          .eq('id', user.id)
-      }
 
       // Redirect to the editor
       router.push(`/dashboard/surveys/${survey!.id}`)

@@ -96,7 +96,7 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
   const isActive = (item: NavItem) =>
     item.matchPrefix ? pathname?.startsWith(item.href) : pathname === item.href
 
-  const planLabel = profile?.plan_type === 'starter' ? 'Starter Plan' : profile?.plan_type === 'per-event' ? 'Per-Event' : 'Free Plan'
+  const planLabel = 'Community Edition'
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50/30">
@@ -234,6 +234,15 @@ export default function AppShell({ children, accountTabs }: AppShellProps) {
       <main className="max-w-6xl mx-auto px-4 py-8 pb-20 md:pb-8 overflow-x-hidden">
         {children}
       </main>
+
+      <footer className="hidden md:block text-center py-4 text-xs text-slate-400">
+        Built with ❤️ &mdash;{' '}
+        {process.env.NEXT_PUBLIC_DONATION_URL ? (
+          <a href={process.env.NEXT_PUBLIC_DONATION_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-500">support this project</a>
+        ) : (
+          <span>open source &amp; free forever</span>
+        )}
+      </footer>
 
       <BottomNav />
     </div>

@@ -81,12 +81,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/stripe/webhook (Stripe webhooks don't have auth)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - play/* (public survey pages)
+     * - f/* (festival pages)
+     * - api/leads (public lead capture)
      */
-    '/((?!api/stripe/webhook|api/leads|_next/static|_next/image|favicon.ico|play/|f/).*)',
+    '/((?!api/leads|_next/static|_next/image|favicon.ico|play/|f/).*)',
   ],
 }

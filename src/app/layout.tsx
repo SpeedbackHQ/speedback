@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { ClarityInit } from "@/components/ClarityInit";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Navigation } from "@/components/Navigation";
 import { ToastProvider } from "@/components/ui/ToastProvider";
@@ -39,7 +38,6 @@ export default function RootLayout({
     <html lang="en" style={{ colorScheme: 'light' }}>
       <body className={`${plusJakarta.variable} antialiased`}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
-        <ClarityInit />
         <PostHogProvider>
           <ToastProvider>
             <Navigation />

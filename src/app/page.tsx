@@ -44,7 +44,7 @@ export default async function Home() {
             href="/pricing"
             className="btn-secondary text-lg px-8 py-4"
           >
-            See Pricing
+            Learn More
           </Link>
         </div>
 
@@ -109,8 +109,41 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* Open source callout */}
+        <div className="mt-24 bg-white rounded-2xl p-8 text-center animate-fade-in-up delay-600" style={{ border: '1px solid rgba(100, 116, 139, 0.1)', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)' }}>
+          <div className="text-4xl mb-4">🌍</div>
+          <h2 className="text-2xl font-outfit mb-3" style={{ color: '#0F172A' }}>Open source &amp; free forever</h2>
+          <p className="font-manrope mb-6 max-w-lg mx-auto" style={{ color: '#64748B' }}>
+            SpeedBack is community-built. Self-host it, customize it, contribute to it.
+            <br />
+            <strong style={{ color: '#8B5CF6' }}>Contributors welcome — especially designers!</strong>
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {process.env.NEXT_PUBLIC_GITHUB_ISSUES_URL && (
+              <a
+                href={process.env.NEXT_PUBLIC_GITHUB_ISSUES_URL.replace('/issues', '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary px-6 py-3"
+              >
+                View on GitHub
+              </a>
+            )}
+            {process.env.NEXT_PUBLIC_DONATION_URL && (
+              <a
+                href={process.env.NEXT_PUBLIC_DONATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold rounded-xl transition-colors"
+              >
+                Support SpeedBack
+              </a>
+            )}
+          </div>
+        </div>
+
         {/* Trust badge / tagline */}
-        <div className="mt-20 animate-fade-in-up delay-600">
+        <div className="mt-12 animate-fade-in-up delay-600">
           <p className="font-manrope text-sm" style={{ color: '#64748B' }}>
             Fast. Fun. Insightful. Feedback that actually gets completed.
           </p>
@@ -120,9 +153,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="relative text-center py-8 bg-white border-t" style={{ borderColor: 'rgba(100, 116, 139, 0.1)' }}>
         <p className="font-manrope text-sm" style={{ color: '#94A3B8' }}>
-          Questions? Email <a href="mailto:hello@speedback.app" className="underline hover:text-slate-600">hello@speedback.app</a>
-          <span className="mx-2">·</span>
-          <Link href="/pricing" className="underline hover:text-slate-600">Pricing</Link>
+          Open source &middot; Free forever &middot; <Link href="/pricing" className="underline hover:text-slate-600">Support this project</Link>
         </p>
       </footer>
     </div>

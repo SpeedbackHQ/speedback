@@ -66,14 +66,6 @@ export function Navigation() {
                   Home
                 </Link>
                 <Link
-                  href="/pricing"
-                  className={`font-medium ${
-                    pathname === '/pricing' ? 'text-violet-500' : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Pricing
-                </Link>
-                <Link
                   href="/login"
                   className="font-medium text-gray-600 hover:text-gray-900"
                 >
@@ -129,7 +121,7 @@ export function Navigation() {
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
                         <div className="px-4 py-2 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-                          <p className="text-xs text-gray-500">Free Plan</p>
+                          <p className="text-xs text-gray-500">Community Edition</p>
                         </div>
                         <Link
                           href="/account/profile"
